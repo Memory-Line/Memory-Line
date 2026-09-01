@@ -4,7 +4,7 @@
 // and change provider below to "postgresql".
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
