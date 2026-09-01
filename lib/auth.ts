@@ -47,7 +47,7 @@ export const authOptions: NextAuthOptions = {
           select: { subscriptionStatus: true, subscriptionRenewsAt: true },
         });
         token.subscriptionStatus = dbUser?.subscriptionStatus ?? "inactive";
-        token.subscriptionRenewsAt = dbUser?.subscriptionRenewsAt ?? null;
+                token.subscriptionRenewsAt = dbUser?.subscriptionRenewsAt?.toISOString() ?? null;
       }
       return token;
     },
