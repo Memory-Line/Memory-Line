@@ -1,0 +1,39 @@
+// Prisma schema for Memory-Line
+// Dev default is SQLite (file-based, zero setup). For production, point
+// DATABASE_URL at a real Postgres instance (Vercel Postgres, Supabase, etc.)
+// and change provider below to "postgresql".
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                   String    @id @default(cuid())
+  name                 String?
+  email                String    @unique
+  passwordHash         String
+  createdAt            DateTime  @default(now())
+
+  // Stripe
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  subscriptionStatus   String    @default("inactive") // inactive | active | past_due | canceled
+  subscriptionRenewsAt DateTime?
+
+  downloads            Download[]
+}
+
+model Download {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  templateId   String
+  templateName String
+  category     String
+  downloadedAt DateTime @default(now())
+}
