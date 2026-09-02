@@ -7,7 +7,7 @@ export type Category = {
 
 export const CATEGORIES: Category[] = [
   { key: "Reminiscence", slug: "reminiscence", color: "#C97B5A", tint: "#EFDCCB" },
-  { key: "Sensory", slug: "sensory", color: "#5B9AA0", tint: "#D9E7E6" },
+  { key: "Seasonal", slug: "seasonal", color: "#B5652E", tint: "#F2E1CC" },
   { key: "Music & Movement", slug: "music-movement", color: "#A78BB5", tint: "#E7DEEC" },
   { key: "Arts & Crafts", slug: "arts-crafts", color: "#D4A94B", tint: "#F1E4C4" },
   { key: "Conversation & Games", slug: "conversation-games", color: "#7B93AB", tint: "#E1E6ED" },
@@ -36,13 +36,10 @@ const RAW: Record<string, [string, string, string][]> = {
     ["School Days & Friendship Circle", "Reminiscence of school memories, friendships, and formative years — includes adaptations for different education systems", "Quick (15 min)"],
     ["Wedding & Love Story Sharing", "Guided prompts for sharing wedding memories and love stories across cultures", "30 min"],
   ],
-  Sensory: [
-    ["Scent Jar Memory Trail", "A set of labelled scent jars used to prompt memory and conversation through smell", "20 min"],
-    ["Texture Board Exploration", "Hands-on texture board pairing tactile objects with guided prompts", "15 min"],
-    ["Hand Massage & Aromatherapy", "A calming hand massage session using scented oils, suited to 1:1 sessions", "20 min"],
-    ["Sound Bingo", "A gentle bingo game using everyday and nostalgic sounds", "25 min"],
-    ["Taste & Tell Tea Session", "A guided tasting session pairing teas and biscuits with conversation prompts", "30 min"],
-    ["Light & Colour Tray", "A sensory tray using coloured light and fabric for calm engagement", "15 min"],
+    Seasonal: [
+    ["Spring Woodland Animals Pack", "A seasonal activity pack exploring woodland animals seen in springtime", "30 min"],
+    ["Christmas Memories & Carols", "A festive reminiscence and sing-along pack for the Christmas season", "30 min"],
+    ["Halloween Fun & Games", "A lighthearted Halloween-themed activity pack for group sessions", "25 min"],
   ],
   "Music & Movement": [
     ["Sing-Along Classics", "A printable lyric sheet set for a seated sing-along session of well-loved classics", "30 min"],
