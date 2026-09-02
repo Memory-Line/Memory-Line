@@ -40,7 +40,7 @@ export default function LandingPage() {
           A ready-made library of dementia engagement activities
         </h1>
         <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
-          {ALL_TEMPLATES.length}+ downloadable activities across reminiscence, seasonal, music, 
+         1000+ downloadable activities across reminiscence, seasonal, music, 
           arts & crafts, and conversation — built for carers who need something meaningful ready
           to run in minutes, not hours.
         </p>
@@ -120,7 +120,7 @@ export default function LandingPage() {
 
           <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
             {[
-              `Unlimited access to all ${ALL_TEMPLATES.length}+ activities`,
+              "Unlimited access to all 1000+ activities", 
 "New activities added every 3 months",
               "Professional Services directory access",
               "Downloadable PDFs, no expiry",
