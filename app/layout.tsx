@@ -3,9 +3,9 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "Memory-Line — Engagement templates for care home staff",
+  title: "Memory-Line — Engagement activities for care home staff",
   description:
-    "A subscription library of dementia engagement templates for care home activity teams — reminiscence, sensory, music, arts & crafts, and conversation resources, ready to download.",
+     "A subscription library of dementia engagement activities for care home activity teams — reminiscence, seasonal, music, arts & crafts, and conversation resources, ready to download.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
