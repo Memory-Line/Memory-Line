@@ -37,19 +37,19 @@ export default async function DashboardHome() {
     TEMPLATES["Reminiscence"][0],
     TEMPLATES["Conversation & Games"][0],
     TEMPLATES["Music & Movement"][0],
-    TEMPLATES["Sensory"][2],
+    TEMPLATES["Seasonal"][1],
   ];
 
   return (
     <div>
       <h1 className="font-serif text-3xl">Welcome back, {firstName}</h1>
-      <p className="text-clay text-sm mt-0.5">Your library of engagement templates is ready to use</p>
+      <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
 
       <div className="flex items-center justify-between rounded-xl px-5 py-3 mt-5 bg-card border border-line">
         <div>
           <p className="text-sm font-bold text-sageDeep">✓ Subscription Active</p>
           <p className="text-xs text-inkSoft mt-0.5">
-            {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {Object.values(TEMPLATES).flat().length} templates available
+             {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {Object.values(TEMPLATES).flat().length} activities available
           </p>
         </div>
         <form action="/api/stripe/portal" method="POST">
