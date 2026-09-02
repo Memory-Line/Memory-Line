@@ -40,7 +40,7 @@ export default function LandingPage() {
           A ready-made library of dementia engagement activities
         </h1>
         <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
-          {ALL_TEMPLATES.length}+ downloadable Activities across reminiscence, seasonal, music,
+          {ALL_TEMPLATES.length}+ downloadable activities across reminiscence, seasonal, music, 
           arts & crafts, and conversation — built for carers who need something meaningful ready
           to run in minutes, not hours.
         </p>
@@ -65,7 +65,7 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-8 pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">Five categories, every session covered</h2>
         <p className="text-inkSoft text-center mb-10">
-          Each template includes step-by-step facilitator notes, duration, and group size.
+          Each activity includes step-by-step facilitator notes, duration, and group size.
         </p>
         <div className="grid grid-cols-5 gap-4">
           {CATEGORIES.map((c) => {
@@ -92,7 +92,7 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-8 pb-20">
         <div className="rounded-2xl border border-line bg-card p-8 flex items-center justify-between gap-8">
           <div>
-            <h3 className="font-serif text-xl mb-2">Need more than templates?</h3>
+            <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
             <p className="text-inkSoft text-sm max-w-md">
               Every subscription includes access to our Professional Services directory —
               vetted activity coaches, music and reminiscence therapists, and sensory design
@@ -111,7 +111,7 @@ export default function LandingPage() {
       {/* Pricing */}
       <section id="pricing" className="max-w-3xl mx-auto px-8 pb-24">
         <h2 className="font-serif text-2xl text-center mb-2">Simple, single-tier pricing</h2>
-        <p className="text-inkSoft text-center mb-10">One subscription. Every template. Cancel anytime.</p>
+        <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
 
         <div className="rounded-2xl border-2 border-sage bg-card p-8 text-center">
           <p className="font-serif text-lg text-sageDeep mb-1">Memory-Line Membership</p>
@@ -120,8 +120,8 @@ export default function LandingPage() {
 
           <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
             {[
-              `Unlimited access to all ${ALL_TEMPLATES.length}+ templates`,
-              "New templates added monthly",
+              `Unlimited access to all ${ALL_TEMPLATES.length}+ activities`,
+"New activities added every 3 months",
               "Professional Services directory access",
               "Downloadable PDFs, no expiry",
               "Cancel anytime from your account",
