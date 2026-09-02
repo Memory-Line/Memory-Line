@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Camera, Sparkles, Music, Grid3x3, MessageCircle, Briefcase, Flower2,
+  LayoutDashboard, Camera, Sparkles, Leaf, Music, Grid3x3, MessageCircle, Briefcase, Flower2,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-  Sensory: Sparkles,
+    Seasonal: Leaf,
   "Music & Movement": Music,
   "Arts & Crafts": Grid3x3,
   "Conversation & Games": MessageCircle,
