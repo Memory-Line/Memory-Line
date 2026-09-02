@@ -51,7 +51,7 @@ export default function PricingPage() {
 
           <ul className="text-sm text-left space-y-2.5 mb-8">
             {[
-              `Unlimited access to all ${ALL_TEMPLATES.length}+ templates`,
+              `Unlimited access to all ${ALL_TEMPLATES.length}+ activities`, "New activities added every 3 months",
               "New templates added monthly",
               "Professional Services directory access",
               "Downloadable PDFs, no expiry",
