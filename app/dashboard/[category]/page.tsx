@@ -6,7 +6,7 @@ import DownloadButton from "@/components/DownloadButton";
 export function generateStaticParams() {
   return [
     { category: "reminiscence" },
-    { category: "sensory" },
+    { category: "seasonal" },
     { category: "music-movement" },
     { category: "arts-crafts" },
     { category: "conversation-games" },
