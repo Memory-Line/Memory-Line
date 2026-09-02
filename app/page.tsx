@@ -40,7 +40,7 @@ export default function LandingPage() {
           A ready-made library of dementia engagement activities
         </h1>
         <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
-          {ALL_TEMPLATES.length}+ downloadable templates across reminiscence, sensory, music,
+          {ALL_TEMPLATES.length}+ downloadable Activities across reminiscence, seasonal, music,
           arts & crafts, and conversation — built for carers who need something meaningful ready
           to run in minutes, not hours.
         </p>
