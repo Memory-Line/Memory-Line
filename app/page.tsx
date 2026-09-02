@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { Camera, Sparkles, Music, Grid3x3, MessageCircle, Flower2, Check } from "lucide-react";
+import { Camera, Sparkles,Leaf, Music, Grid3x3, MessageCircle, Flower2, Check } from "lucide-react";
 import { CATEGORIES, ALL_TEMPLATES } from "@/lib/data";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-  Sensory: Sparkles,
+    Seasonal: Leaf,
   "Music & Movement": Music,
   "Arts & Crafts": Grid3x3,
   "Conversation & Games": MessageCircle,
