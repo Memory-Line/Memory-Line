@@ -3,11 +3,11 @@ import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, SERVICES, TEMPLATES, categoryBySlug } from "@/lib/data";
-import { Camera, Sparkles, Music, Grid3x3, MessageCircle } from "lucide-react";
+import { Camera, Sparkles,Leaf, Music, Grid3x3, MessageCircle } from "lucide-react";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-  Sensory: Sparkles,
+    Seasonal: Leaf,
   "Music & Movement": Music,
   "Arts & Crafts": Grid3x3,
   "Conversation & Games": MessageCircle,
