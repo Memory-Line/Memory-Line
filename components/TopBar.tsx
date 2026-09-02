@@ -19,7 +19,7 @@ export default function TopBar({ userName }: { userName: string }) {
         <div className="flex items-center gap-2 rounded-lg px-3 py-2 flex-1 bg-card border border-line">
           <Search size={15} className="text-inkSoft" />
           <input
-            placeholder="Search across all templates"
+            placeholder="Search across all activities"
             className="flex-1 outline-none bg-transparent text-sm"
           />
         </div>
