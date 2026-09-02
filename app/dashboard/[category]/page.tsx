@@ -21,7 +21,7 @@ export default function CategoryPage({ params }: { params: { category: string } 
 
   return (
     <div>
-      <h1 className="font-serif text-[26px]">{category.key} Templates</h1>
+      <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         {templates.length} downloadable activities — choose from memory boxes, conversation prompts,
         photo collections, and more
