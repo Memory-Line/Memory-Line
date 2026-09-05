@@ -2,15 +2,23 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES, SERVICES, TEMPLATES, categoryBySlug } from "@/lib/data";
-import { Camera, Sparkles,Leaf, Music, Grid3x3, MessageCircle } from "lucide-react";
+import { CATEGORIES, SERVICES, TEMPLATES } from "@/lib/data";
+import {
+  Camera, Music, Footprints, Grid3x3, Type, HelpCircle, Gamepad2,
+  MessageCircle, Gift, Leaf,
+} from "lucide-react";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-    Seasonal: Leaf,
-  "Music & Movement": Music,
+  "Sing-Along": Music,
+  "Physical & Exercise": Footprints,
   "Arts & Crafts": Grid3x3,
-  "Conversation & Games": MessageCircle,
+  "Word Games": Type,
+  "Trivia & Quizzes": HelpCircle,
+  "Card & Board Games": Gamepad2,
+  "Conversation Starters": MessageCircle,
+  Christmas: Gift,
+  "Four Seasons": Leaf,
 };
 
 export default async function DashboardHome() {
@@ -35,9 +43,9 @@ export default async function DashboardHome() {
   // swap for a real download-count aggregation once there's usage data.
   const popular = [
     TEMPLATES["Reminiscence"][0],
-    TEMPLATES["Conversation & Games"][0],
-    TEMPLATES["Music & Movement"][0],
-    TEMPLATES["Seasonal"][1],
+    TEMPLATES["Trivia & Quizzes"][0],
+    TEMPLATES["Sing-Along"][0],
+    TEMPLATES["Christmas"][0],
   ];
 
   return (
@@ -49,7 +57,7 @@ export default async function DashboardHome() {
         <div>
           <p className="text-sm font-bold text-sageDeep">✓ Subscription Active</p>
           <p className="text-xs text-inkSoft mt-0.5">
-             {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {Object.values(TEMPLATES).flat().length} activities available
+            {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {Object.values(TEMPLATES).flat().length} activities available
           </p>
         </div>
         <form action="/api/stripe/portal" method="POST">
