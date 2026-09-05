@@ -20,7 +20,7 @@ const ICONS: Record<string, any> = {
 };
 
 export default function LandingPage() {
-   const freeSamples = [
+  const freeSamples = [
     templateById("Reminiscence-0"),
     templateById("Sing-Along-0"),
     templateById("Trivia & Quizzes-0"),
@@ -181,3 +181,4 @@ export default function LandingPage() {
       </footer>
     </main>
   );
+}
