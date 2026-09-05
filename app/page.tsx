@@ -1,16 +1,31 @@
 import Link from "next/link";
-import { Camera, Sparkles,Leaf, Music, Grid3x3, MessageCircle, Flower2, Check } from "lucide-react";
-import { CATEGORIES, ALL_TEMPLATES } from "@/lib/data";
+import {
+  Camera, Music, Footprints, Grid3x3, Type, HelpCircle, Gamepad2,
+  MessageCircle, Gift, Leaf, Flower2, Check,
+} from "lucide-react";
+import { CATEGORIES, ALL_TEMPLATES, templateById } from "@/lib/data";
+import FreeDownloadButton from "@/components/FreeDownloadButton";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-    Seasonal: Leaf,
-  "Music & Movement": Music,
+  "Sing-Along": Music,
+  "Physical & Exercise": Footprints,
   "Arts & Crafts": Grid3x3,
-  "Conversation & Games": MessageCircle,
+  "Word Games": Type,
+  "Trivia & Quizzes": HelpCircle,
+  "Card & Board Games": Gamepad2,
+  "Conversation Starters": MessageCircle,
+  Christmas: Gift,
+  "Four Seasons": Leaf,
 };
 
 export default function LandingPage() {
+  const freeSamples = [
+    templateById("Reminiscence-0"),
+    templateById("Sing-Along-0"),
+    templateById("Trivia & Quizzes-0"),
+  ].filter((t): t is NonNullable<typeof t> => !!t);
+
   return (
     <main>
       {/* Nav */}
@@ -40,8 +55,8 @@ export default function LandingPage() {
           A ready-made library of dementia engagement activities
         </h1>
         <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
-         1000+ downloadable activities across reminiscence, seasonal, music, 
-          arts & crafts, and conversation — built for carers who need something meaningful ready
+          1000+ downloadable activities across reminiscence, sing-along, word games, trivia,
+          arts &amp; crafts, and more — built for carers who need something meaningful ready
           to run in minutes, not hours.
         </p>
         <div className="flex items-center justify-center gap-3">
@@ -51,7 +66,7 @@ export default function LandingPage() {
           >
             Start your free trial
           </Link>
-          <a
+          
             href="#pricing"
             className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors"
           >
@@ -63,7 +78,7 @@ export default function LandingPage() {
 
       {/* Categories */}
       <section className="max-w-5xl mx-auto px-8 pb-20">
-        <h2 className="font-serif text-2xl text-center mb-2">Five categories, every session covered</h2>
+        <h2 className="font-serif text-2xl text-center mb-2">{CATEGORIES.length} categories, every session covered</h2>
         <p className="text-inkSoft text-center mb-10">
           Each activity includes step-by-step facilitator notes, duration, and group size.
         </p>
@@ -85,6 +100,25 @@ export default function LandingPage() {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      {/* Free preview */}
+      <section className="max-w-5xl mx-auto px-8 pb-20">
+        <h2 className="font-serif text-2xl text-center mb-2">Try a few, free — no signup needed</h2>
+        <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
+        <div className="grid grid-cols-3 gap-4">
+          {freeSamples.map((t) => (
+            <div key={t.id} className="rounded-2xl p-5 border border-line bg-card flex flex-col justify-between">
+              <div>
+                <p className="font-serif text-base mb-1">{t.title}</p>
+                <p className="text-xs text-inkSoft">{t.desc}</p>
+              </div>
+              <div className="mt-4">
+                <FreeDownloadButton templateId={t.id} />
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -115,13 +149,13 @@ export default function LandingPage() {
 
         <div className="rounded-2xl border-2 border-sage bg-card p-8 text-center">
           <p className="font-serif text-lg text-sageDeep mb-1">Memory-Line Membership</p>
-          <p className="font-serif text-5xl text-ink mb-1">£29<span className="text-lg text-inkSoft">/month</span></p>
+          <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
           <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
 
           <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
             {[
-              "Unlimited access to all 1000+ activities", 
-"New activities added every 3 months",
+              "Unlimited access to all 1000+ activities",
+              "New activities added regularly — you'll be notified",
               "Professional Services directory access",
               "Downloadable PDFs, no expiry",
               "Cancel anytime from your account",
@@ -147,4 +181,3 @@ export default function LandingPage() {
       </footer>
     </main>
   );
-}
