@@ -3,16 +3,22 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Camera, Sparkles, Leaf, Music, Grid3x3, MessageCircle, Briefcase, Flower2,
+  LayoutDashboard, Camera, Music, Footprints, Grid3x3, Type, HelpCircle,
+  Gamepad2, MessageCircle, Gift, Leaf, Briefcase, Flower2,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
 const ICONS: Record<string, any> = {
   Reminiscence: Camera,
-    Seasonal: Leaf,
-  "Music & Movement": Music,
+  "Sing-Along": Music,
+  "Physical & Exercise": Footprints,
   "Arts & Crafts": Grid3x3,
-  "Conversation & Games": MessageCircle,
+  "Word Games": Type,
+  "Trivia & Quizzes": HelpCircle,
+  "Card & Board Games": Gamepad2,
+  "Conversation Starters": MessageCircle,
+  Christmas: Gift,
+  "Four Seasons": Leaf,
 };
 
 function NavItem({ href, icon: Icon, label, active }: { href: string; icon: any; label: string; active: boolean }) {
