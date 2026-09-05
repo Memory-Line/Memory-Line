@@ -6,10 +6,15 @@ import DownloadButton from "@/components/DownloadButton";
 export function generateStaticParams() {
   return [
     { category: "reminiscence" },
-    { category: "seasonal" },
-    { category: "music-movement" },
+    { category: "sing-along" },
+    { category: "physical-exercise" },
     { category: "arts-crafts" },
-    { category: "conversation-games" },
+    { category: "word-games" },
+    { category: "trivia-quizzes" },
+    { category: "card-board-games" },
+    { category: "conversation-starters" },
+    { category: "christmas" },
+    { category: "four-seasons" },
   ];
 }
 
