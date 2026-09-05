@@ -67,7 +67,7 @@ export default function LandingPage() {
             Start your free trial
           </Link>
           
-            href="#pricing"
+              href="#pricing"
             className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors"
           >
             See pricing
