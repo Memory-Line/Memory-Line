@@ -37,3 +37,13 @@ model Download {
   category     String
   downloadedAt DateTime @default(now())
 }
+model Template {
+  id            String   @id @default(cuid())
+  title         String
+  category      String
+  fileUrl       String
+  fileName      String
+  answerFileUrl String?
+  videoUrl      String?
+  createdAt     DateTime @default(now())
+}
