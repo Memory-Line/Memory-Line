@@ -20,11 +20,11 @@ const ICONS: Record<string, any> = {
 };
 
 export default function LandingPage() {
-  const freeSamples = [
+   const freeSamples = [
     templateById("Reminiscence-0"),
     templateById("Sing-Along-0"),
     templateById("Trivia & Quizzes-0"),
-  ].filter((t): t is NonNullable<typeof t> => !!t);
+  ].filter(Boolean) as typeof ALL_TEMPLATES;
 
   return (
     <main>
