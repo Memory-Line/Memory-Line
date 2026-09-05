@@ -67,14 +67,9 @@ export default function LandingPage() {
             Start your free trial
           </Link>
           
-            href="#pricing"
-            className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors"
-          >
+           <Link href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
             See pricing
-          </a>
-        </div>
-        <p className="text-xs text-inkSoft mt-4">No card required to browse the library preview.</p>
-      </section>
+          </Link>
 
       {/* Categories */}
       <section className="max-w-5xl mx-auto px-8 pb-20">
