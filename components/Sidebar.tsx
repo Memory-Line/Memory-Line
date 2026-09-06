@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Camera, Music, Footprints, Grid3x3, Type, HelpCircle,
-  Gamepad2, MessageCircle, Gift, Leaf, Briefcase,
+  Gamepad2, MessageCircle, Gift, Leaf, Briefcase, Flower2,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -41,8 +40,9 @@ export default function Sidebar() {
 
   return (
     <aside className="w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen">
-      <Link href="/dashboard" className="flex items-center mb-6 px-1">
-        <Image src="/logo.png" alt="Memory-Line" width={1336} height={619} className="h-10 w-auto" priority />
+      <Link href="/dashboard" className="flex items-center gap-2 mb-6 px-1">
+        <Flower2 size={20} className="text-sageDeep" />
+        <span className="font-serif text-lg">Memory-Line</span>
       </Link>
 
       <div className="space-y-0.5">
