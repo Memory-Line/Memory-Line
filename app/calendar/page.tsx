@@ -121,8 +121,8 @@ export default function CalendarPage() {
   const cells = getMonthGrid(monthIndex);
   const eventsByDay = Object.fromEntries(month.events.map((e) => [e.day, e]));
 
-  const standardHref = `/holidays-calendar-2027-${month.slug}-standard.pdf`;
-  const largePrintHref = `/holidays-calendar-2027-${month.slug}-large-print.pdf`;
+  const standardHref = "/holidays-calendar-2027-" + month.slug + "-standard.pdf";
+  const largePrintHref = "/holidays-calendar-2027-" + month.slug + "-large-print.pdf";
 
   return (
     <div style={{ background: "#F5F0E4", minHeight: "100vh", padding: "40px 20px" }}>
