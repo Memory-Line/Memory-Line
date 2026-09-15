@@ -136,19 +136,19 @@ export default function CalendarPage() {
             ← Back to Dashboard
           </Link>
           <div style={{ display: "flex", gap: 8 }}>
-            
+            <a
               href={standardHref}
               download
               style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", fontWeight: 600, fontSize: 13, color: "#3F3237", textDecoration: "none" }}
             >
-              ⬇ Download {month.name}
+              Download {month.name}
             </a>
-            
+            <a
               href={largePrintHref}
               download
               style={{ padding: "8px 16px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", fontWeight: 600, fontSize: 13, color: "#3F3237", textDecoration: "none" }}
             >
-              ⬇ Download {month.name} (Large Print)
+              Download {month.name} (Large Print)
             </a>
           </div>
         </div>
@@ -170,7 +170,7 @@ export default function CalendarPage() {
           </div>
           <div style={{ textAlign: "center", flex: 1 }}>
             <p style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
-              HOLIDAYS &amp; CELEBRATIONS
+              HOLIDAYS AND CELEBRATIONS
             </p>
             <h1 style={{ fontFamily: "Georgia, serif", fontSize: 42, fontWeight: 400, color: "#3F3237", margin: "2px 0" }}>
               {month.name}
@@ -199,13 +199,13 @@ export default function CalendarPage() {
             onClick={() => setMonthIndex((m) => (m === 0 ? 11 : m - 1))}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", cursor: "pointer", fontWeight: 600, color: "#3F3237" }}
           >
-            ← Previous
+            Previous
           </button>
           <button
             onClick={() => setMonthIndex((m) => (m === 11 ? 0 : m + 1))}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", cursor: "pointer", fontWeight: 600, color: "#3F3237" }}
           >
-            Next →
+            Next
           </button>
         </div>
 
@@ -274,7 +274,7 @@ export default function CalendarPage() {
                       ) : (
                         <div style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
                           {ev.label}
-                          {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
+                          {ev.bankHoliday && <span style={{ marginLeft: 3 }}>*</span>}
                         </div>
                       ))}
                   </>
@@ -291,7 +291,7 @@ export default function CalendarPage() {
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
           <span>Date sources: UK bank holidays, 2027 observances</span>
-          <span>UK | {String(monthIndex + 1).padStart(2, "0")} / 12</span>
+          <span>{"UK | " + String(monthIndex + 1).padStart(2, "0") + " / 12"}</span>
         </div>
       </div>
     </div>
