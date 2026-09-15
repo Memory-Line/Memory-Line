@@ -1,4 +1,3 @@
-mkdir -p /home/claude/output && cat > /home/claude/output/calendar-page.tsx << 'CALEOF'
 "use client";
 
 import { useState } from "react";
@@ -21,17 +20,17 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
     { day: 6, label: "Chinese / Lunar New Year", link: null },
     { day: 9, label: "Pancake Day (Shrove Tuesday)", link: null },
     { day: 10, label: "Ash Wednesday", link: null },
-    { day: 14, label: "Valentine's Day", link: null }, // e.g. "/categories/valentines-day" once that page exists
+    { day: 14, label: "Valentine's Day", link: null },
   ]},
   { name: "March", note: "Easter falls in March in 2027.", events: [
     { day: 1, label: "St David's Day", link: null },
     { day: 7, label: "Mother's Day", link: null },
     { day: 8, label: "International Women's Day", link: null },
     { day: 17, label: "St Patrick's Day", link: null },
-    { day: 20, label: "First day of spring", link: null }, // e.g. "/categories/four-seasons"
+    { day: 20, label: "First day of spring", link: null },
     { day: 21, label: "Palm Sunday", link: null },
     { day: 26, label: "Good Friday", bankHoliday: true, link: null },
-    { day: 28, label: "Easter Sunday", link: null }, // e.g. "/categories/easter"
+    { day: 28, label: "Easter Sunday", link: null },
     { day: 29, label: "Easter Monday", bankHoliday: true, link: null },
   ]},
   { name: "April", note: "Easter was on 28 March this year.", events: [
@@ -75,7 +74,7 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   { name: "October", note: "Harvest Festival: local dates vary through September and October.", events: [
     { day: 1, label: "International Day of Older Persons", link: null },
     { day: 10, label: "World Mental Health Day", link: null },
-    { day: 31, label: "Halloween", link: null }, // e.g. "/categories/halloween"
+    { day: 31, label: "Halloween", link: null },
   ]},
   { name: "November", note: "Advent begins on Sunday 28 November.", events: [
     { day: 1, label: "All Saints' Day", link: null },
@@ -89,7 +88,7 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
     { day: 6, label: "St Nicholas Day", link: null },
     { day: 20, label: "First day of winter", link: null },
     { day: 24, label: "Christmas Eve / Hanukkah begins", link: null },
-    { day: 25, label: "Christmas Day", bankHoliday: true, link: null }, // e.g. "/categories/christmas"
+    { day: 25, label: "Christmas Day", bankHoliday: true, link: null },
     { day: 26, label: "Boxing Day", bankHoliday: true, link: null },
     { day: 27, label: "Christmas bank holiday (substitute)", bankHoliday: true, link: null },
     { day: 28, label: "Boxing Day bank holiday (substitute)", bankHoliday: true, link: null },
@@ -102,7 +101,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function getMonthGrid(monthIndex: number) {
   const first = new Date(YEAR, monthIndex, 1);
-  const startWeekday = (first.getDay() + 6) % 7; // Mon=0
+  const startWeekday = (first.getDay() + 6) % 7;
   const daysInMonth = new Date(YEAR, monthIndex + 1, 0).getDate();
   const cells: (number | null)[] = Array(startWeekday).fill(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
@@ -126,7 +125,6 @@ export default function CalendarPage() {
           HOLIDAYS &amp; CELEBRATIONS
         </p>
 
-        {/* Month navigation */}
         <div style={{ display: "flex", justifyContent: "center", gap: 16, margin: "20px 0" }}>
           <button
             onClick={() => setMonthIndex((m) => (m === 0 ? 11 : m - 1))}
@@ -142,7 +140,6 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        {/* Calendar grid */}
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #EAE4D6", overflow: "hidden" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
             {WEEKDAYS.map((w) => (
@@ -192,5 +189,3 @@ export default function CalendarPage() {
     </div>
   );
 }
-CALEOF
-echo "File written"
