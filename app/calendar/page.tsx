@@ -95,15 +95,14 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
 const YEAR = 2027;
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-const PALETTE = [
-  { bg: "#CFE3F2", text: "#3E6E96" },
-  { bg: "#C9E6DD", text: "#2F7A63" },
-  { bg: "#F1D2BE", text: "#B5714A" },
-  { bg: "#DFD5EC", text: "#6E56A0" },
-  { bg: "#F2E2B8", text: "#A6822C" },
-  { bg: "#D3E6F5", text: "#3E7CAA" },
-  { bg: "#F2D6DA", text: "#B05F6C" },
-  { bg: "#D8E7CB", text: "#5A8A44" },
+const WEEKDAY_COLORS = [
+  "#F1D2BE",
+  "#DFD5EC",
+  "#CFE3F2",
+  "#F2E2B8",
+  "#C9E6DD",
+  "#F5F0E4",
+  "#F2D6DA",
 ];
 
 function getMonthGrid(monthIndex: number) {
@@ -124,25 +123,48 @@ export default function CalendarPage() {
 
   return (
     <div style={{ background: "#F5F0E4", minHeight: "100vh", padding: "40px 20px" }}>
-      <div style={{ maxWidth: 920, margin: "0 auto" }}>
+      <div style={{ maxWidth: 980, margin: "0 auto" }}>
 
-        <div style={{ textAlign: "center", marginBottom: 4 }}>
-          <div style={{ fontFamily: "Georgia, serif", fontWeight: 700, fontSize: 16, color: "#3F3237", letterSpacing: 0.5 }}>
-            Memory-Line
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              background: "#F2DED0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 22,
+            }}
+          >
+            📅
+          </div>
+          <div style={{ textAlign: "center", flex: 1 }}>
+            <p style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
+              HOLIDAYS &amp; CELEBRATIONS
+            </p>
+            <h1 style={{ fontFamily: "Georgia, serif", fontSize: 42, fontWeight: 400, color: "#3F3237", margin: "2px 0" }}>
+              {month.name}
+            </h1>
+            <p style={{ color: "#8A7A6B", fontSize: 13, margin: 0 }}>
+              A year of meaningful moments together
+            </p>
+          </div>
+          <div
+            style={{
+              border: "1px solid #EAE4D6",
+              borderRadius: 20,
+              padding: "8px 20px",
+              background: "#fff",
+              fontWeight: 700,
+              fontSize: 18,
+              color: "#3F3237",
+            }}
+          >
+            {YEAR}
           </div>
         </div>
-        <p style={{ textAlign: "center", color: "#B5714A", fontWeight: 700, fontSize: 13, letterSpacing: 1.5, margin: "6px 0 2px" }}>
-          HOLIDAYS &amp; CELEBRATIONS
-        </p>
-        <h1 style={{ fontFamily: "Georgia, serif", fontSize: 36, fontWeight: 700, textAlign: "center", color: "#3F3237", margin: "2px 0" }}>
-          {month.name}
-        </h1>
-        <p style={{ textAlign: "center", color: "#8A7A6B", fontSize: 14, margin: "4px 0" }}>
-          A year of meaningful moments together
-        </p>
-        <p style={{ textAlign: "center", color: "#3F3237", fontWeight: 700, fontSize: 15, margin: "2px 0 0" }}>
-          {YEAR}
-        </p>
 
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
           <button
@@ -159,72 +181,90 @@ export default function CalendarPage() {
           </button>
         </div>
 
-        <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #EAE4D6", overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#6E8F73" }}>
-            {WEEKDAYS.map((w) => (
-              <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: 11, color: "#fff", padding: "10px 4px", letterSpacing: 0.3 }}>
-                {w}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+          {WEEKDAYS.map((w, i) => (
+            <div
+              key={w}
+              style={{
+                textAlign: "center",
+                fontWeight: 700,
+                fontSize: 13,
+                color: "#3F3237",
+                padding: "10px 0",
+                background: WEEKDAY_COLORS[i],
+                borderRadius: 10,
+              }}
+            >
+              {w}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+          {cells.map((day, i) => {
+            const ev = day ? eventsByDay[day] : undefined;
+            const columnColor = WEEKDAY_COLORS[i % 7];
+            return (
+              <div
+                key={i}
+                style={{
+                  minHeight: 92,
+                  borderRadius: 10,
+                  padding: 10,
+                  background: ev ? columnColor : "#fff",
+                  border: ev ? "none" : "1px solid #EAE4D6",
+                }}
+              >
+                {day && (
+                  <>
+                    {ev ? (
+                      <div
+                        style={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          background: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#3F3237",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {day}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 15, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
+                    )}
+                    {ev &&
+                      (ev.link ? (
+                        <Link href={ev.link} style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, display: "block", lineHeight: 1.3, textDecoration: "underline" }}>
+                          {ev.label}
+                        </Link>
+                      ) : (
+                        <div style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
+                          {ev.label}
+                          {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
+                        </div>
+                      ))}
+                  </>
+                )}
               </div>
-            ))}
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
-            {cells.map((day, i) => {
-              const colors = day ? PALETTE[(day - 1) % PALETTE.length] : { bg: "#FAF7F0", text: "#8A7A6B" };
-              const ev = day ? eventsByDay[day] : undefined;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    minHeight: 96,
-                    border: "1px solid #EAE4D6",
-                    padding: 8,
-                    background: day ? colors.bg : "#FAF7F0",
-                  }}
-                >
-                  {day && (
-                    <>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: colors.text, marginBottom: 4 }}>{day}</div>
-                      {ev &&
-                        (ev.link ? (
-                          <Link
-                            href={ev.link}
-                            style={{
-                              fontSize: 10.5,
-                              color: "#3F3237",
-                              fontWeight: 700,
-                              display: "block",
-                              lineHeight: 1.3,
-                              textDecoration: "underline",
-                            }}
-                          >
-                            {ev.label}
-                          </Link>
-                        ) : (
-                          <div style={{ fontSize: 10.5, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
-                            {ev.label}
-                            {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
-                          </div>
-                        ))}
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+            );
+          })}
         </div>
 
         <div style={{ background: "#fff", border: "1px solid #EAE4D6", borderRadius: 12, padding: "16px 20px", marginTop: 20 }}>
-          <div style={{ fontWeight: 700, fontSize: 12, color: "#B5714A", letterSpacing: 0.5, marginBottom: 6 }}>
-            THIS MONTH
-          </div>
-          <p style={{ fontSize: 13, color: "#3F3237", margin: 0, lineHeight: 1.5 }}>
-            {month.note}
-          </p>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#3F3237", marginBottom: 6 }}>This month</div>
+          <p style={{ fontSize: 13, color: "#3F3237", margin: 0, lineHeight: 1.5 }}>{month.note}</p>
         </div>
 
-        <p style={{ textAlign: "center", fontSize: 11, color: "#8A7A6B", marginTop: 16 }}>
-          Memory-Line · memoryline.co.uk
-        </p>
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
+          <span>Date sources: UK bank holidays, 2027 observances</span>
+          <span>UK | {String(monthIndex + 1).padStart(2, "0")} / 12</span>
+        </div>
       </div>
     </div>
   );
