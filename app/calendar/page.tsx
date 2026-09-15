@@ -101,7 +101,9 @@ const PALETTE = [
   { bg: "#F1D2BE", text: "#B5714A" },
   { bg: "#DFD5EC", text: "#6E56A0" },
   { bg: "#F2E2B8", text: "#A6822C" },
+  { bg: "#D3E6F5", text: "#3E7CAA" },
   { bg: "#F2D6DA", text: "#B05F6C" },
+  { bg: "#D8E7CB", text: "#5A8A44" },
 ];
 
 function getMonthGrid(monthIndex: number) {
@@ -158,48 +160,47 @@ export default function CalendarPage() {
         </div>
 
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #EAE4D6", overflow: "hidden" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", borderBottom: "1px solid #EAE4D6" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", background: "#6E8F73" }}>
             {WEEKDAYS.map((w) => (
-              <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: 11, color: "#6E8F73", padding: "10px 4px", letterSpacing: 0.3 }}>
+              <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: 11, color: "#fff", padding: "10px 4px", letterSpacing: 0.3 }}>
                 {w}
               </div>
             ))}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)" }}>
             {cells.map((day, i) => {
+              const colors = day ? PALETTE[(day - 1) % PALETTE.length] : { bg: "#FAF7F0", text: "#8A7A6B" };
               const ev = day ? eventsByDay[day] : undefined;
-              const colorIdx = day ? day % PALETTE.length : 0;
-              const colors = PALETTE[colorIdx];
               return (
                 <div
                   key={i}
                   style={{
                     minHeight: 96,
-                    borderTop: i >= 7 ? "1px solid #EAE4D6" : "none",
-                    borderLeft: i % 7 !== 0 ? "1px solid #EAE4D6" : "none",
+                    border: "1px solid #EAE4D6",
                     padding: 8,
-                    background: "#fff",
+                    background: day ? colors.bg : "#FAF7F0",
                   }}
                 >
                   {day && (
                     <>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: colors.text, marginBottom: 4 }}>{day}</div>
                       {ev &&
                         (ev.link ? (
                           <Link
                             href={ev.link}
                             style={{
                               fontSize: 10.5,
-                              color: colors.text,
+                              color: "#3F3237",
                               fontWeight: 700,
                               display: "block",
                               lineHeight: 1.3,
+                              textDecoration: "underline",
                             }}
                           >
                             {ev.label}
                           </Link>
                         ) : (
-                          <div style={{ fontSize: 10.5, color: colors.text, fontWeight: 600, lineHeight: 1.3 }}>
+                          <div style={{ fontSize: 10.5, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
                             {ev.label}
                             {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
                           </div>
