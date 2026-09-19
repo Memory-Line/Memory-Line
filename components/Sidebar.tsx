@@ -79,7 +79,7 @@ export default function Sidebar() {
   return (
     <aside className="w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen">
       <Link href="/dashboard" className="flex items-center gap-2 mb-6 px-1">
-        <Image src="/activity-central-icon.png" alt="Activity Central" width={28} height={28} />
+        <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
         <span className="font-serif text-lg">Activity Central</span>
       </Link>
 
