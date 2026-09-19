@@ -1,7 +1,8 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Camera, Music, Footprints, Grid3x3, Type, HelpCircle, Gamepad2,
-  MessageCircle, Gift, Leaf, Flower2, Check,
+  MessageCircle, Gift, Leaf, Check,
 } from "lucide-react";
 import { CATEGORIES, ALL_TEMPLATES, templateById } from "@/lib/data";
 import FreeDownloadButton from "@/components/FreeDownloadButton";
@@ -31,8 +32,8 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="flex items-center justify-between px-8 py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <Flower2 size={22} className="text-sageDeep" />
-          <span className="font-serif text-xl">Memory-Line</span>
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={26} height={26} />
+          <span className="font-serif text-xl">Activity Central</span>
         </div>
         <div className="flex items-center gap-4 text-sm font-medium">
           <a href="#pricing" className="text-inkSoft hover:text-ink">Pricing</a>
@@ -145,7 +146,7 @@ export default function LandingPage() {
         <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
 
         <div className="rounded-2xl border-2 border-sage bg-card p-8 text-center">
-          <p className="font-serif text-lg text-sageDeep mb-1">Memory-Line Membership</p>
+          <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
           <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
           <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
 
@@ -174,7 +175,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="border-t border-line py-8 px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
-        <p>© {new Date().getFullYear()} Memory-Line. Built for care home activity teams.</p>
+        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams.</p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
       </footer>
     </main>
