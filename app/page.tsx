@@ -32,7 +32,7 @@ export default function LandingPage() {
       {/* Nav */}
       <header className="flex items-center justify-between px-8 py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2">
-          <Image src="/activity-central-icon.png" alt="Activity Central" width={26} height={26} />
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
           <span className="font-serif text-xl">Activity Central</span>
         </div>
         <div className="flex items-center gap-4 text-sm font-medium">
