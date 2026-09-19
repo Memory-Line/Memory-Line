@@ -3,7 +3,7 @@ import "./globals.css";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: "Memory-Line — Engagement activities for care home staff",
+  title: "Activity Central – Engagement activities for care home staff",
   description:
      "A subscription library of dementia engagement activities for care home activity teams — reminiscence, seasonal, music, arts & crafts, and conversation resources, ready to download.",
 };
