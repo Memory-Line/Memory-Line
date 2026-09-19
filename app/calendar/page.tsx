@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null };
 
@@ -128,20 +129,9 @@ export default function CalendarPage() {
 
         {/* Header row: icon left, title centre, year pill right */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              background: "#F2DED0",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 22,
-            }}
-          >
-            📅
-          </div>
+          <Link href="/dashboard" style={{ display: "flex", alignItems: "center" }}>
+            <Image src="/activity-central-icon.png" alt="Activity Central - back to Dashboard" width={60} height={60} />
+          </Link>
           <div style={{ textAlign: "center", flex: 1 }}>
             <p style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
               HOLIDAYS &amp; CELEBRATIONS
