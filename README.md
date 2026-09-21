@@ -1,4 +1,4 @@
-# Memory-Line
+# Activity Central
 
 A subscription platform for care home activity teams: a library of dementia
 engagement templates (Reminiscence, Sensory, Music & Movement, Arts & Crafts,
