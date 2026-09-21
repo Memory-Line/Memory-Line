@@ -1,4 +1,4 @@
-// Prisma schema for Memory-Line
+// Prisma schema for Activity Central
 // Dev default is SQLite (file-based, zero setup). For production, point
 // DATABASE_URL at a real Postgres instance (Vercel Postgres, Supabase, etc.)
 // and change provider below to "postgresql".
