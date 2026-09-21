@@ -131,6 +131,7 @@ export default function CalendarPage() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
           <Link href="/dashboard" style={{ display: "flex", alignItems: "center" }}>
             <Image src="/activity-central-icon.png" alt="Activity Central - back to Dashboard" width={60} height={60} />
+            <span style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#3F3237", marginLeft: 10 }}>Activity Central</span>
           </Link>
           <div style={{ textAlign: "center", flex: 1 }}>
             <p style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
