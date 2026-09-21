@@ -22,9 +22,20 @@ type FileStatus = {
 export default function AdminUploadPage() {
   const [category, setCategory] = useState(CATEGORIES[0].key);
   const [isAnswer, setIsAnswer] = useState(false);
+  const [isLargePrint, setIsLargePrint] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [statuses, setStatuses] = useState<FileStatus[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  function handleAnswerToggle(checked: boolean) {
+    setIsAnswer(checked);
+    if (checked) setIsLargePrint(false);
+  }
+
+  function handleLargePrintToggle(checked: boolean) {
+    setIsLargePrint(checked);
+    if (checked) setIsAnswer(false);
+  }
 
   async function handleUpload() {
     if (!files || files.length === 0) return;
@@ -47,6 +58,7 @@ export default function AdminUploadPage() {
       formData.append("category", category);
       formData.append("title", titleFromFilename(file.name));
       formData.append("isAnswer", String(isAnswer));
+      formData.append("isLargePrint", String(isLargePrint));
 
       try {
         const res = await fetch("/api/admin/upload-template", {
@@ -94,13 +106,22 @@ export default function AdminUploadPage() {
         ))}
       </select>
 
-      <label className="flex items-center gap-2 text-sm mb-4">
+      <label className="flex items-center gap-2 text-sm mb-2">
         <input
           type="checkbox"
           checked={isAnswer}
-          onChange={(e) => setIsAnswer(e.target.checked)}
+          onChange={(e) => handleAnswerToggle(e.target.checked)}
         />
-        These are answer sheets (will be matched to already-uploaded question files by filename)
+        These are answer sheets (will be matched to an already-uploaded worksheet by filename)
+      </label>
+
+      <label className="flex items-center gap-2 text-sm mb-4">
+        <input
+          type="checkbox"
+          checked={isLargePrint}
+          onChange={(e) => handleLargePrintToggle(e.target.checked)}
+        />
+        These are large print files (will be matched to an already-uploaded worksheet by filename)
       </label>
 
       <label className="block text-xs font-semibold text-inkSoft mb-1">Files</label>
