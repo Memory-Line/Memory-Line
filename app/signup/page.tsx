@@ -41,7 +41,7 @@ export default function SignupPage() {
     setLoading(false);
 
     if (signInResult?.error) {
-      setError("Account created â please log in.");
+      setError("Account created — please log in.");
       router.push("/login");
       return;
     }
@@ -59,7 +59,7 @@ export default function SignupPage() {
 
         <div className="rounded-2xl border border-line bg-card p-7">
           <h1 className="font-serif text-2xl mb-1">Create your account</h1>
-          <p className="text-inkSoft text-sm mb-6">Start your free trial â no card needed yet.</p>
+          <p className="text-inkSoft text-sm mb-6">Start your free trial — no card needed yet.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
