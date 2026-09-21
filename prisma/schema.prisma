@@ -44,6 +44,7 @@ model Template {
   fileUrl       String
   fileName      String
   answerFileUrl String?
+  largePrintFileUrl String?
   videoUrl      String?
   createdAt     DateTime @default(now())
 }
