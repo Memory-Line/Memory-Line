@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { Flower2 } from "lucide-react";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -35,13 +35,13 @@ export default function LoginPage() {
     <main className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-sm">
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-          <Flower2 size={22} className="text-sageDeep" />
-          <span className="font-serif text-xl">Memory-Line</span>
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
+          <span className="font-serif text-xl">Activity Central</span>
         </Link>
 
         <div className="rounded-2xl border border-line bg-card p-7">
           <h1 className="font-serif text-2xl mb-1">Welcome back</h1>
-          <p className="text-inkSoft text-sm mb-6">Log in to your Memory-Line account.</p>
+          <p className="text-inkSoft text-sm mb-6">Log in to your Activity Central account.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
