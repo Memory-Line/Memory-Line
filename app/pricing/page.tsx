@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check, Flower2 } from "lucide-react";
+import { Check } from "lucide-react";
+import Image from "next/image";
 import { ALL_TEMPLATES } from "@/lib/data";
 
 export default function PricingPage() {
@@ -37,15 +38,15 @@ export default function PricingPage() {
     <main className="min-h-screen flex items-center justify-center px-6 py-16">
       <div className="w-full max-w-md text-center">
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
-          <Flower2 size={22} className="text-sageDeep" />
-          <span className="font-serif text-xl">Memory-Line</span>
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
+          <span className="font-serif text-xl">Activity Central</span>
         </Link>
 
         <div className="rounded-2xl border-2 border-sage bg-card p-8">
           {session?.user && (
             <p className="text-xs text-inkSoft mb-3">Signed in as {session.user.email}</p>
           )}
-          <p className="font-serif text-lg text-sageDeep mb-1">Memory-Line Membership</p>
+          <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
           <p className="font-serif text-5xl mb-1">£29<span className="text-lg text-inkSoft">/month</span></p>
           <p className="text-xs text-inkSoft mb-6">Cancel anytime from your account.</p>
 
