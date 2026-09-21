@@ -16,9 +16,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/pricing");
   }
 
+  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  const isAdmin =
+    !!session.user.email && !!adminEmail && session.user.email.toLowerCase() === adminEmail;
+
   return (
     <div className="flex min-h-screen bg-bg">
-      <Sidebar />
+      <Sidebar isAdmin={isAdmin} />
       <div className="flex-1">
         <TopBar userName={session.user.name ?? session.user.email ?? "there"} />
         <main className="px-6 pb-10 max-w-[980px]">{children}</main>
