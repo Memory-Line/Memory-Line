@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard, Camera, Music, Footprints, Grid3x3, Type, HelpCircle,
-  Gamepad2, MessageCircle, Gift, Leaf, Briefcase, Calendar,
+  Gamepad2, MessageCircle, Gift, Leaf, Briefcase, Calendar, Shield,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -38,6 +38,7 @@ const HOVER_COLORS: Record<string, string> = {
   Christmas: "#A23B3B",
   "Four Seasons": "#5A8A44",
   Services: "#8A6E52",
+  Admin: "#8A3B3B",
 };
 
 function NavItem({
@@ -73,11 +74,11 @@ function NavItem({
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen">
+    <aside className="w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen flex flex-col">
       <Link href="/dashboard" className="flex items-center gap-2 mb-6 px-1">
         <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
         <span className="font-serif text-lg">Activity Central</span>
@@ -103,6 +104,18 @@ export default function Sidebar() {
           active={pathname === "/dashboard/services"}
         />
       </div>
+
+      {isAdmin && (
+        <div className="mt-auto pt-2.5">
+          <div className="border-t border-line mb-2.5" />
+          <NavItem
+            href="/dashboard/admin/upload"
+            icon={Shield}
+            label="Admin"
+            active={pathname === "/dashboard/admin/upload"}
+          />
+        </div>
+      )}
     </aside>
   );
 }
