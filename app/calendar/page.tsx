@@ -149,11 +149,11 @@ export default function CalendarPage() {
         }
         @media print {
                               [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
-                                        [data-print-size="A3"] .cal-title { font-size: 48px !important; }
+                                        [data-print-size="A3"] .cal-title { font-size: 46px !important; }
                                         [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
-                                        [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 10px 24px !important; }
-                                        [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 10px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { min-height: 140px !important; padding: 14px !important; }
+                                        [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
+                                        [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
+                                        [data-print-size="A3"] .cal-day-cell { min-height: 128px !important; padding: 13px !important; }
                                         [data-print-size="A3"] .cal-day-badge { font-size: 20px !important; width: 40px !important; height: 40px !important; margin-bottom: 6px !important; }
                                         [data-print-size="A3"] .cal-day-plain { font-size: 24px !important; margin-bottom: 6px !important; }
                                         [data-print-size="A3"] .cal-event-label { font-size: 16px !important; }
