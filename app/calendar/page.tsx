@@ -148,18 +148,19 @@ export default function CalendarPage() {
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
         @media print {
-                    [data-print-size="A3"] .cal-eyebrow { font-size: 18px !important; }
-                              [data-print-size="A3"] .cal-title { font-size: 52px !important; }
-                              [data-print-size="A3"] .cal-subtitle { font-size: 17px !important; }
-                              [data-print-size="A3"] .cal-year { font-size: 24px !important; padding: 10px 24px !important; }
-                              [data-print-size="A3"] .cal-weekday { font-size: 17px !important; padding: 11px 0 !important; }
-                              [data-print-size="A3"] .cal-day-cell { min-height: 115px !important; padding: 12px !important; }
-                              [data-print-size="A3"] .cal-day-badge { font-size: 17px !important; width: 34px !important; height: 34px !important; margin-bottom: 5px !important; }
-                              [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 5px !important; }
-                              [data-print-size="A3"] .cal-event-label { font-size: 15px !important; }
+                              [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
+                                        [data-print-size="A3"] .cal-title { font-size: 48px !important; }
+                                        [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
+                                        [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 10px 24px !important; }
+                                        [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 10px 0 !important; }
+                                        [data-print-size="A3"] .cal-day-cell { min-height: 140px !important; padding: 14px !important; }
+                                        [data-print-size="A3"] .cal-day-badge { font-size: 20px !important; width: 40px !important; height: 40px !important; margin-bottom: 6px !important; }
+                                        [data-print-size="A3"] .cal-day-plain { font-size: 24px !important; margin-bottom: 6px !important; }
+                                        [data-print-size="A3"] .cal-event-label { font-size: 16px !important; }
+          [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
         }
       `}</style>
-      <div style={{ maxWidth: 980, margin: "0 auto" }}>
+            <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
 
         {/* Header row: icon left, title centre, year pill right — grid keeps the centre column
             mathematically centred even when the left (logo + name) and right (year pill) content
