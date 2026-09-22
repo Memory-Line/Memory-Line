@@ -123,29 +123,69 @@ export default function CalendarPage() {
   const cells = getMonthGrid(monthIndex);
   const eventsByDay = Object.fromEntries(month.events.map((e) => [e.day, e]));
 
+  function handlePrint(size: "A4" | "A3") {
+    let styleEl = document.getElementById("dynamic-print-page");
+    if (!styleEl) {
+      styleEl = document.createElement("style");
+      styleEl.id = "dynamic-print-page";
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = `@page { size: ${size} portrait; margin: 10mm; }`;
+
+    const wrapper = document.getElementById("calendar-print-area");
+    if (wrapper) wrapper.setAttribute("data-print-size", size);
+
+    setTimeout(() => window.print(), 50);
+  }
+
   return (
-    <div style={{ background: "#F5F0E4", minHeight: "100vh", padding: "40px 20px" }}>
+    <div id="calendar-print-area" data-print-size="A4" style={{ background: "#F5F0E4", minHeight: "100vh", padding: "40px 20px" }}>
+      <style>{`
+        @media print {
+          .cal-no-print { display: none !important; }
+          #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 0 !important; }
+          .cal-grid { page-break-inside: avoid; }
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+        @media print {
+          [data-print-size="A3"] .cal-eyebrow { font-size: 20px !important; }
+          [data-print-size="A3"] .cal-title { font-size: 76px !important; }
+          [data-print-size="A3"] .cal-subtitle { font-size: 20px !important; }
+          [data-print-size="A3"] .cal-year { font-size: 30px !important; padding: 14px 32px !important; }
+          [data-print-size="A3"] .cal-weekday { font-size: 20px !important; padding: 16px 0 !important; }
+          [data-print-size="A3"] .cal-day-cell { min-height: 170px !important; padding: 16px !important; }
+          [data-print-size="A3"] .cal-day-badge { font-size: 24px !important; width: 42px !important; height: 42px !important; margin-bottom: 8px !important; }
+          [data-print-size="A3"] .cal-day-plain { font-size: 26px !important; margin-bottom: 8px !important; }
+          [data-print-size="A3"] .cal-event-label { font-size: 18px !important; }
+          [data-print-size="A3"] .cal-note-heading { font-size: 22px !important; }
+          [data-print-size="A3"] .cal-note-text { font-size: 20px !important; }
+        }
+      `}</style>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
 
-        {/* Header row: icon left, title centre, year pill right */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <Link href="/dashboard" style={{ display: "flex", alignItems: "center" }}>
+        {/* Header row: icon left, title centre, year pill right — grid keeps the centre column
+            mathematically centred even when the left (logo + name) and right (year pill) content
+            widths differ. */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", marginBottom: 4 }}>
+          <Link href="/dashboard" style={{ display: "flex", alignItems: "center", justifySelf: "start" }}>
             <Image src="/activity-central-icon.png" alt="Activity Central - back to Dashboard" width={60} height={60} />
             <span style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#3F3237", marginLeft: 10 }}>Activity Central</span>
           </Link>
-          <div style={{ textAlign: "center", flex: 1 }}>
-            <p style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
+          <div style={{ textAlign: "center" }}>
+            <p className="cal-eyebrow" style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
               HOLIDAYS &amp; CELEBRATIONS
             </p>
-            <h1 style={{ fontFamily: "Georgia, serif", fontSize: 42, fontWeight: 400, color: "#3F3237", margin: "2px 0" }}>
+            <h1 className="cal-title" style={{ fontFamily: "Georgia, serif", fontSize: 42, fontWeight: 400, color: "#3F3237", margin: "2px 0" }}>
               {month.name}
             </h1>
-            <p style={{ color: "#8A7A6B", fontSize: 13, margin: 0 }}>
+            <p className="cal-subtitle" style={{ color: "#8A7A6B", fontSize: 13, margin: 0 }}>
               A year of meaningful moments together
             </p>
           </div>
           <div
+            className="cal-year"
             style={{
+              justifySelf: "end",
               border: "1px solid #EAE4D6",
               borderRadius: 20,
               padding: "8px 20px",
@@ -160,7 +200,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Month navigation */}
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
+        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
           <button
             onClick={() => setMonthIndex((m) => (m === 0 ? 11 : m - 1))}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", cursor: "pointer", fontWeight: 600, color: "#3F3237" }}
@@ -175,11 +215,28 @@ export default function CalendarPage() {
           </button>
         </div>
 
+        {/* Print controls */}
+        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 24px" }}>
+          <button
+            onClick={() => handlePrint("A4")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", cursor: "pointer", fontWeight: 600 }}
+          >
+            🖨 Print (A4)
+          </button>
+          <button
+            onClick={() => handlePrint("A3")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
+          >
+            🖨 Print Large (A3)
+          </button>
+        </div>
+
         {/* Weekday header pills */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
             <div
               key={w}
+              className="cal-weekday"
               style={{
                 textAlign: "center",
                 fontWeight: 700,
@@ -196,13 +253,14 @@ export default function CalendarPage() {
         </div>
 
         {/* Day grid: only event days are coloured */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
           {cells.map((day, i) => {
             const ev = day ? eventsByDay[day] : undefined;
             const columnColor = WEEKDAY_COLORS[i % 7];
             return (
               <div
                 key={i}
+                className="cal-day-cell"
                 style={{
                   minHeight: 92,
                   borderRadius: 10,
@@ -215,6 +273,7 @@ export default function CalendarPage() {
                   <>
                     {ev ? (
                       <div
+                        className="cal-day-badge"
                         style={{
                           width: 26,
                           height: 26,
@@ -232,15 +291,15 @@ export default function CalendarPage() {
                         {day}
                       </div>
                     ) : (
-                      <div style={{ fontSize: 15, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
+                      <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
                     )}
                     {ev &&
                       (ev.link ? (
-                        <Link href={ev.link} style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, display: "block", lineHeight: 1.3, textDecoration: "underline" }}>
+                        <Link href={ev.link} className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, display: "block", lineHeight: 1.3, textDecoration: "underline" }}>
                           {ev.label}
                         </Link>
                       ) : (
-                        <div style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
+                        <div className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
                           {ev.label}
                           {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
                         </div>
@@ -254,8 +313,8 @@ export default function CalendarPage() {
 
         {/* This month note */}
         <div style={{ background: "#fff", border: "1px solid #EAE4D6", borderRadius: 12, padding: "16px 20px", marginTop: 20 }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "#3F3237", marginBottom: 6 }}>This month</div>
-          <p style={{ fontSize: 13, color: "#3F3237", margin: 0, lineHeight: 1.5 }}>{month.note}</p>
+          <div className="cal-note-heading" style={{ fontWeight: 700, fontSize: 14, color: "#3F3237", marginBottom: 6 }}>This month</div>
+          <p className="cal-note-text" style={{ fontSize: 13, color: "#3F3237", margin: 0, lineHeight: 1.5 }}>{month.note}</p>
         </div>
 
         {/* Footer */}
