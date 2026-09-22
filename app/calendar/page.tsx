@@ -130,7 +130,7 @@ export default function CalendarPage() {
       styleEl.id = "dynamic-print-page";
       document.head.appendChild(styleEl);
     }
-    styleEl.textContent = `@page { size: ${size} portrait; margin: 10mm; }`;
+    styleEl.textContent = `@page { size: ${size} landscape; margin: 10mm; }`;
 
     const wrapper = document.getElementById("calendar-print-area");
     if (wrapper) wrapper.setAttribute("data-print-size", size);
@@ -230,7 +230,9 @@ export default function CalendarPage() {
             🖨 Print Large (A3)
           </button>
         </div>
-
+        <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
+          Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
+        </p>
         {/* Weekday header pills */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
