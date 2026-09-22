@@ -144,6 +144,7 @@ export default function CalendarPage() {
         @media print {
           .cal-no-print { display: none !important; }
           #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 0 !important; }
+          body { background: #fff !important; }
           .cal-grid { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
