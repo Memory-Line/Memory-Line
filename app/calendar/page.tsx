@@ -148,17 +148,15 @@ export default function CalendarPage() {
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
         @media print {
-          [data-print-size="A3"] .cal-eyebrow { font-size: 20px !important; }
-          [data-print-size="A3"] .cal-title { font-size: 76px !important; }
-          [data-print-size="A3"] .cal-subtitle { font-size: 20px !important; }
-          [data-print-size="A3"] .cal-year { font-size: 30px !important; padding: 14px 32px !important; }
-          [data-print-size="A3"] .cal-weekday { font-size: 20px !important; padding: 16px 0 !important; }
-          [data-print-size="A3"] .cal-day-cell { min-height: 170px !important; padding: 16px !important; }
-          [data-print-size="A3"] .cal-day-badge { font-size: 24px !important; width: 42px !important; height: 42px !important; margin-bottom: 8px !important; }
-          [data-print-size="A3"] .cal-day-plain { font-size: 26px !important; margin-bottom: 8px !important; }
-          [data-print-size="A3"] .cal-event-label { font-size: 18px !important; }
-          [data-print-size="A3"] .cal-note-heading { font-size: 22px !important; }
-          [data-print-size="A3"] .cal-note-text { font-size: 20px !important; }
+                    [data-print-size="A3"] .cal-eyebrow { font-size: 18px !important; }
+                    [data-print-size="A3"] .cal-title { font-size: 60px !important; }
+                    [data-print-size="A3"] .cal-subtitle { font-size: 19px !important; }
+                    [data-print-size="A3"] .cal-year { font-size: 26px !important; padding: 12px 28px !important; }
+                    [data-print-size="A3"] .cal-weekday { font-size: 19px !important; padding: 14px 0 !important; }
+                    [data-print-size="A3"] .cal-day-cell { min-height: 133px !important; padding: 15px !important; }
+                    [data-print-size="A3"] .cal-day-badge { font-size: 19px !important; width: 38px !important; height: 38px !important; margin-bottom: 6px !important; }
+                    [data-print-size="A3"] .cal-day-plain { font-size: 22px !important; margin-bottom: 6px !important; }
+                    [data-print-size="A3"] .cal-event-label { font-size: 16px !important; }
         }
       `}</style>
       <div style={{ maxWidth: 980, margin: "0 auto" }}>
