@@ -313,12 +313,6 @@ export default function CalendarPage() {
           })}
         </div>
 
-        {/* This month note */}
-        <div style={{ background: "#fff", border: "1px solid #EAE4D6", borderRadius: 12, padding: "16px 20px", marginTop: 20 }}>
-          <div className="cal-note-heading" style={{ fontWeight: 700, fontSize: 14, color: "#3F3237", marginBottom: 6 }}>This month</div>
-          <p className="cal-note-text" style={{ fontSize: 13, color: "#3F3237", margin: 0, lineHeight: 1.5 }}>{month.note}</p>
-        </div>
-
         {/* Footer */}
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
           <span>Date sources: UK bank holidays, 2027 observances</span>
