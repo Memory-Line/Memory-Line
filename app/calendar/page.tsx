@@ -139,7 +139,7 @@ export default function CalendarPage() {
   }
 
   return (
-    <div id="calendar-print-area" data-print-size="A4" style={{ background: "#F5F0E4", minHeight: "100vh", padding: "40px 20px" }}>
+    <div id="calendar-print-area" data-print-size="A4" style={{ background: "#F5F0E4", minHeight: "auto", padding: "40px 20px" }}>
       <style>{`
         @media print {
           .cal-no-print { display: none !important; }
