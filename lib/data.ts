@@ -6,16 +6,21 @@ export type Category = {
 };
 
 export const CATEGORIES: Category[] = [
-  { key: "Reminiscence", slug: "reminiscence", color: "#C97B5A", tint: "#EFDCCB" },
-  { key: "Sing-Along", slug: "sing-along", color: "#A78BB5", tint: "#E7DEEC" },
   { key: "Physical & Exercise", slug: "physical-exercise", color: "#4A7FB5", tint: "#DCE7F2" },
-  { key: "Arts & Crafts", slug: "arts-crafts", color: "#D4A94B", tint: "#F1E4C4" },
-  { key: "Word Games", slug: "word-games", color: "#5B9AA0", tint: "#D9E7E6" },
-  { key: "Trivia & Quizzes", slug: "trivia-quizzes", color: "#7B93AB", tint: "#E1E6ED" },
-  { key: "Card & Board Games", slug: "card-board-games", color: "#C98686", tint: "#F1DEDE" },
+  { key: "Crosswords", slug: "crosswords", color: "#A6822C", tint: "#F1E4C4" },
+  { key: "Word Searches", slug: "word-searches", color: "#5B9AA0", tint: "#D9E7E6" },
+  { key: "Guess the Word", slug: "guess-the-word", color: "#8B6FB0", tint: "#E5DEEF" },
+  { key: "Trivia", slug: "trivia", color: "#3E7CAA", tint: "#D7E4EF" },
+  { key: "Bingo", slug: "bingo", color: "#B05F6C", tint: "#F1DEDE" },
+  { key: "Snakes and Ladders", slug: "snakes-and-ladders", color: "#7A9B5E", tint: "#E5EDDD" },
+  { key: "Remembrance Cards", slug: "remembrance-cards", color: "#6B7D99", tint: "#E1E5EC" },
+  { key: "Colouring Pages", slug: "colouring-pages", color: "#C98B2E", tint: "#F5EBD2" },
   { key: "Conversation Starters", slug: "conversation-starters", color: "#8CA88A", tint: "#E1EBE0" },
-  { key: "Christmas", slug: "christmas", color: "#B5453D", tint: "#F3DAD8" },
-  { key: "Four Seasons", slug: "four-seasons", color: "#7A9B5E", tint: "#E5EDDD" },
+  { key: "Matching Pairs", slug: "matching-pairs", color: "#C97B5A", tint: "#EFDCCB" },
+  { key: "Spot the Difference", slug: "spot-the-difference", color: "#6E56A0", tint: "#E0D7EE" },
+  { key: "Sing-Alongs", slug: "sing-alongs", color: "#A78BB5", tint: "#E7DEEC" },
+  { key: "Communication Cards", slug: "communication-cards", color: "#B5453D", tint: "#F3DAD8" },
+  { key: "BSL Tools", slug: "bsl-tools", color: "#5A8A44", tint: "#DCEAD5" },
 ];
 
 export function categoryBySlug(slug: string) {
@@ -30,68 +35,14 @@ export type Template = {
   category: string;
 };
 
+// Sample/demo activities shown alongside real admin-uploaded templates.
+// Only Physical & Exercise has sample content for now — every other
+// category starts empty until real activities are uploaded.
 const RAW: Record<string, [string, string, string][]> = {
-  Reminiscence: [
-    ["Photograph Memory Box", "A guided activity using old photographs to stimulate memories and conversation", "30 min"],
-    ["Childhood Favorite Foods Memory Circle", "Facilitated discussion about favorite childhood foods and meal memories — includes cultural sensitivity notes", "25 min"],
-    ["Decades Music Timeline", "Interactive music-based reminiscence activity with hits from the 1940s–1980s — includes facilitator notes for different music genres and cultural backgrounds", "Quick (15 min)"],
-    ["Family Tree Storytelling", "Guided conversation prompts for sharing family history and relationships — supports various family structures", "35 min"],
-    ["Postcard Journey Around the World", "Reminiscence using travel postcards and travel memories — includes prompts for international residents and carers", "20 min"],
-    ["Profession & Achievements Memory Sharing", "Celebrate work history and life achievements with guided conversation starters", "40 min"],
-    ["School Days & Friendship Circle", "Reminiscence of school memories, friendships, and formative years — includes adaptations for different education systems", "Quick (15 min)"],
-    ["Wedding & Love Story Sharing", "Guided prompts for sharing wedding memories and love stories across cultures", "30 min"],
-  ],
-  "Sing-Along": [
-    ["Sing-Along Classics", "A printable lyric sheet set for a seated sing-along session of well-loved classics", "30 min"],
-    ["Seated Dance Routine", "A gentle, fully seated dance routine set to popular music", "20 min"],
-    ["Rhythm Circle Plan", "Facilitator plan for a hand-percussion rhythm circle", "25 min"],
-    ["Hand-Clap Song Set", "A set of traditional hand-clap songs adapted for group participation", "15 min"],
-    ["Gentle Stretch & Music Guide", "A seated stretch routine paired with calming background music", "20 min"],
-  ],
   "Physical & Exercise": [
     ["Seated Chair Yoga Routine", "A gentle chair-based yoga sequence suited to limited mobility", "20 min"],
     ["Balance & Coordination Basics", "A short seated exercise routine focused on balance and coordination", "15 min"],
     ["Morning Stretch Routine", "A simple full-body stretch sequence to start the day", "15 min"],
-  ],
-  "Arts & Crafts": [
-    ["Pressed Flower Card Making", "Step-by-step guide for making pressed-flower greetings cards", "40 min"],
-    ["Watercolour Prompt Cards", "A set of simple watercolour prompts suited to all skill levels", "30 min"],
-    ["Paper Flower Garden", "Guide for making paper flowers as a small-group activity", "35 min"],
-    ["Golden Retriever Colouring Sheet", "A dementia-friendly colouring page featuring a golden retriever", "20 min"],
-    ["Clay Modelling Basics", "An accessible clay modelling session with adaptive tool suggestions", "30 min"],
-  ],
-  "Word Games": [
-    ["Classic Crossword", "A themed crossword puzzle with a matching answer sheet", "25 min"],
-    ["Wordsearch Puzzle", "A themed wordsearch puzzle suited to small groups or 1:1", "20 min"],
-    ["Word Scramble Challenge", "A themed set of scrambled words with an answer key", "15 min"],
-    ["Finish the Saying", "A classic saying or proverb with the ending left blank to complete", "15 min"],
-  ],
-  "Trivia & Quizzes": [
-    ["School Days Trivia", "A themed trivia sheet about school days and classroom memories", "25 min"],
-    ["True or False Quiz", "A simple true-or-false quiz suited to varying cognitive levels", "20 min"],
-    ["Who Am I? Guessing Game", "A guessing game based on a well-known figure, with an answer key", "20 min"],
-  ],
-  "Card & Board Games": [
-    ["Bingo Card Set", "A themed bingo card set for group play", "30 min"],
-    ["Matching Pairs Game", "A memory-matching pairs game suited to small groups", "20 min"],
-    ["Number Card Activity", "A number-based card activity with an accompanying answer sheet", "20 min"],
-  ],
-  "Conversation Starters": [
-    ["Fruits Conversation Prompts", "A themed set of conversation prompts about fruits and gardens", "20 min"],
-    ["Spot the Difference", "A picture-based spot-the-difference activity", "15 min"],
-    ["Odd One Out", "A simple picture-based odd-one-out game", "15 min"],
-  ],
-  Christmas: [
-    ["Christmas Trivia", "A Christmas-themed trivia sheet with a facilitator answer sheet", "25 min"],
-    ["Christmas Bingo", "A Christmas-themed bingo set for group play", "30 min"],
-    ["Christmas Sing-Along", "A festive sing-along lyric sheet for the Christmas season", "30 min"],
-    ["Christmas Colouring Page", "A Christmas-themed colouring page", "20 min"],
-  ],
-  "Four Seasons": [
-    ["Spring Woodland Animals Pack", "A seasonal activity pack exploring woodland animals seen in springtime", "30 min"],
-    ["Summer Garden Activity Pack", "A seasonal activity pack themed around summer gardens", "30 min"],
-    ["Autumn Leaves Activity Pack", "A seasonal activity pack themed around autumn and falling leaves", "25 min"],
-    ["Winter Wildlife Activity Pack", "A seasonal activity pack themed around winter wildlife", "25 min"],
   ],
 };
 
