@@ -89,7 +89,7 @@ export default function AdminUploadPage() {
       <h1 className="font-serif text-2xl mb-1">Upload Activities</h1>
       <p className="text-sm text-inkSoft mb-6">
         Select a category, then choose one or more PDF files. Titles are generated
-        automatically from each filename. Sing-Along uploads get a YouTube search
+        automatically from each filename. Sing-Alongs uploads get a YouTube search
         link attached automatically.
       </p>
 
