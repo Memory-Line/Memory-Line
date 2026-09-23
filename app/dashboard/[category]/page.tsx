@@ -71,7 +71,7 @@ export default async function CategoryPage({ params }: { params: { category: str
                     </a>
                   )}
                   {t.answerFileUrl && (
-                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E1E6ED", color: "#3E5876" }}>
+                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
                       Answers
                     </a>
                   )}
