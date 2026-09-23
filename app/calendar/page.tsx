@@ -276,7 +276,7 @@ export default function CalendarPage() {
           </p>
         )}
         {/* Weekday header pills */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
             <div
               key={w}
@@ -299,8 +299,13 @@ export default function CalendarPage() {
         {/* Day grid: every event — built-in occasion or staff-added — renders as a
             uniform colour tab (icon + label + lock/pencil marker), the same style
             used in the "+N more" popover rows. Day boxes are always plain white
-            and a fixed height, so no day can ever grow into or shrink its neighbours. */}
-        <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+            and a fixed height, so no day can ever grow into or shrink its neighbours.
+            The columns use minmax(0, 1fr) rather than plain 1fr: a plain 1fr track's
+            minimum width is set by its widest un-wrapped content (a long event label),
+            which was silently stealing width from the other six columns. minmax(0, ...)
+            removes that content-driven minimum so every column stays exactly equal,
+            and the tab's own text-overflow: ellipsis takes over instead. */}
+        <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
           {cells.map((day, i) => {
             const dayEvents = day ? eventsByDay[day] ?? [] : [];
             const maxVisible = 2;
