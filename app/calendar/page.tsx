@@ -186,7 +186,8 @@ export default function CalendarPage() {
                                         [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
                                         [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
                                         [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { height: 148px !important; padding: 13px !important; }
+                                        [data-print-size="A3"] .cal-day-cell { height: 148px !important; }
+                                        [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; }
                                         [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
                                         [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 5px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
@@ -305,18 +306,16 @@ export default function CalendarPage() {
                 style={{
                   height: 108,
                   borderRadius: 10,
-                  padding: 8,
                   background: "#fff",
                   border: "1px solid #EAE4D6",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 4,
-                  overflow: "hidden",
                   position: "relative",
                 }}
               >
                 {day && (
                   <>
+                    {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
+                        the box; the popover below is a sibling so it isn't clipped too. */}
+                    <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 4, overflow: "hidden" }}>
                     <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
 
                     {visible.map((ev, idx) => {
@@ -396,6 +395,7 @@ export default function CalendarPage() {
                       >
                         +
                       </button>
+                    </div>
                     </div>
 
                     {isOpen && (
