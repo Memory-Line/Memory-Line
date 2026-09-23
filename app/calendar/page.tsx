@@ -452,6 +452,11 @@ export default function CalendarPage() {
             <Link href="/login" style={{ color: "#B5714A", fontWeight: 600 }}>Sign in</Link> to add your own events to this calendar.
           </p>
         )}
+        {signedIn && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
+            Click a day's number to see its events — events you've added can be edited or deleted from there.
+          </p>
+        )}
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
