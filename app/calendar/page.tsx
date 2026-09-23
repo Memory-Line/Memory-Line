@@ -384,6 +384,11 @@ export default function CalendarPage() {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         background: bg,
+                        // A tab's colour can coincidentally match the day box's own weekday
+                        // tint (they're drawn from the same palette) and disappear into it,
+                        // so give every tab its own edge to stay visible on any background.
+                        border: "1px solid rgba(255,255,255,0.8)",
+                        boxShadow: "0 1px 2px rgba(63,50,55,0.10)",
                         textDecoration: "none",
                       };
                       return ev.link ? (
