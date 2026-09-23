@@ -63,11 +63,16 @@ export default async function CategoryPage({ params }: { params: { category: str
                 <div className="flex gap-2 shrink-0">
                   <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
                     <Download size={14} />
-                    Download PDF
+                    Standard
                   </a>
+                  {t.largePrintFileUrl && (
+                    <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
+                      Large Print
+                    </a>
+                  )}
                   {t.answerFileUrl && (
                     <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E1E6ED", color: "#3E5876" }}>
-                      Download Answers
+                      Answers
                     </a>
                   )}
                   {t.videoUrl && (
