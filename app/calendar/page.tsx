@@ -194,8 +194,6 @@ export default function CalendarPage() {
                                         [data-print-size="A3"] .cal-day-cell { height: auto !important; min-height: 148px !important; }
                                         [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; height: auto !important; overflow: visible !important; }
                                         [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
-                                        [data-print-size="A3"] .cal-day-badge { width: 32px !important; height: 32px !important; font-size: 16px !important; }
-                                        [data-print-size="A3"] .cal-official-label { font-size: 14px !important; }
                                         [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
         }
@@ -298,16 +296,15 @@ export default function CalendarPage() {
           ))}
         </div>
 
-        {/* Day grid: built-in occasions keep their original tinted-box look unchanged;
-            staff-added events render as separate weekday-pill-style tabs. */}
+        {/* Day grid: every event — built-in occasion or staff-added — renders as a
+            uniform colour tab (icon + label + lock/pencil marker), the same style
+            used in the "+N more" popover rows. Day boxes are always plain white
+            and a fixed height, so no day can ever grow into or shrink its neighbours. */}
         <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
           {cells.map((day, i) => {
             const dayEvents = day ? eventsByDay[day] ?? [] : [];
-            const builtIn = dayEvents.filter((e) => !e.custom);
-            const custom = dayEvents.filter((e) => e.custom);
-            const hasBuiltIn = builtIn.length > 0;
-            const maxVisibleCustom = hasBuiltIn ? 1 : 2;
-            const hiddenCount = Math.max(0, custom.length - maxVisibleCustom);
+            const maxVisible = 2;
+            const hiddenCount = Math.max(0, dayEvents.length - maxVisible);
             const isOpen = day !== null && openDay === day;
 
             return (
@@ -317,8 +314,8 @@ export default function CalendarPage() {
                 style={{
                   height: 108,
                   borderRadius: 10,
-                  background: hasBuiltIn ? WEEKDAY_COLORS[i % 7] : "#fff",
-                  border: hasBuiltIn ? "none" : "1px solid #EAE4D6",
+                  background: "#fff",
+                  border: "1px solid #EAE4D6",
                   position: "relative",
                 }}
               >
@@ -327,60 +324,16 @@ export default function CalendarPage() {
                     {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
                         the box; the popover below is a sibling so it isn't clipped too. */}
                     <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 4, overflow: "hidden" }}>
-                    {hasBuiltIn ? (
-                      <>
-                        <div
-                          className="cal-day-badge"
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: "50%",
-                            background: "#fff",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 12,
-                            fontWeight: 700,
-                            color: "#3F3237",
-                            marginBottom: 2,
-                            flexShrink: 0,
-                          }}
-                        >
-                          {day}
-                        </div>
-                        {builtIn.map((ev, idx) => (
-                          <div
-                            key={idx}
-                            className="cal-official-label"
-                            style={{
-                              fontSize: 10.5,
-                              color: "#3F3237",
-                              fontWeight: 600,
-                              lineHeight: 1.25,
-                              display: "-webkit-box",
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: "vertical",
-                              overflow: "hidden",
-                            }}
-                          >
-                            {ev.label}
-                            {ev.bankHoliday && (
-                              <span style={{ fontSize: 7, verticalAlign: "middle", opacity: 0.6 }}> ●</span>
-                            )}
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
-                    )}
+                    <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
 
-                    {custom.map((ev, idx) => {
-                      // On screen, only the first maxVisibleCustom tabs show — the rest are
+                    {dayEvents.map((ev, idx) => {
+                      // On screen, only the first maxVisible tabs show — the rest are
                       // reached through "+N more". A printed page can't be clicked, so every
                       // tab is always in the markup and the overflow ones are revealed by the
                       // print stylesheet instead, so nothing is silently left off the page.
-                      const isOverflow = idx >= maxVisibleCustom;
+                      const isOverflow = idx >= maxVisible;
                       const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
+                      const icon = ev.icon ?? (ev.bankHoliday ? "⭐" : "📌");
                       const tabStyle = {
                         textAlign: "left" as const,
                         fontWeight: 700,
@@ -391,25 +344,30 @@ export default function CalendarPage() {
                         lineHeight: 1.2,
                         display: isOverflow ? "none" : "flex",
                         alignItems: "center",
+                        gap: 5,
                         whiteSpace: "nowrap" as const,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         background: bg,
-                        // A tab's colour can coincidentally match the day box's own weekday
-                        // tint (they're drawn from the same palette) and disappear into it,
-                        // so give every tab its own edge to stay visible on any background.
                         border: "1px solid rgba(255,255,255,0.8)",
                         boxShadow: "0 1px 2px rgba(63,50,55,0.10)",
                         textDecoration: "none",
                       };
                       const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
+                      const inner = (
+                        <>
+                          <span style={{ flexShrink: 0 }}>{icon}</span>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 9, opacity: 0.6, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
+                        </>
+                      );
                       return ev.link ? (
                         <Link key={idx} href={ev.link} className={className} style={tabStyle}>
-                          {ev.label}
+                          {inner}
                         </Link>
                       ) : (
                         <div key={idx} className={className} style={tabStyle}>
-                          {ev.label}
+                          {inner}
                         </div>
                       );
                     })}
@@ -425,9 +383,9 @@ export default function CalendarPage() {
                             borderRadius: 8,
                             padding: "3px 8px",
                             cursor: "pointer",
-                            border: hasBuiltIn ? "none" : "1px solid #F0D9C8",
-                            color: hasBuiltIn ? "#3F3237" : "#B5714A",
-                            background: hasBuiltIn ? "rgba(255,255,255,0.55)" : "#FCEFE7",
+                            border: "1px solid #F0D9C8",
+                            color: "#B5714A",
+                            background: "#FCEFE7",
                           }}
                         >
                           +{hiddenCount} more
@@ -447,9 +405,9 @@ export default function CalendarPage() {
                           justifyContent: "center",
                           cursor: "pointer",
                           flexShrink: 0,
-                          background: hasBuiltIn ? "rgba(255,255,255,0.55)" : "#FCEFE7",
-                          color: hasBuiltIn ? "#3F3237" : "#B5714A",
-                          border: hasBuiltIn ? "1px dashed rgba(63,50,55,0.4)" : "1px dashed #B5714A",
+                          background: "#FCEFE7",
+                          color: "#B5714A",
+                          border: "1px dashed #B5714A",
                         }}
                       >
                         +
