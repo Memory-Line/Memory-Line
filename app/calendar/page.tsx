@@ -266,6 +266,12 @@ export default function CalendarPage() {
           >
             🖨 Print Large (A3)
           </button>
+          <button
+            title="Add an event (coming soon)"
+            style={{ padding: "10px 18px", borderRadius: 10, border: "1px dashed #B5714A", background: "#FCEFE7", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
+          >
+            + Add event
+          </button>
         </div>
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
@@ -304,11 +310,16 @@ export default function CalendarPage() {
             minimum width is set by its widest un-wrapped content (a long event label),
             which was silently stealing width from the other six columns. minmax(0, ...)
             removes that content-driven minimum so every column stays exactly equal,
-            and the tab's own text-overflow: ellipsis takes over instead. */}
+            and the tab's own text-overflow: ellipsis takes over instead.
+            There's no "add" button inside each box any more (moved to the toolbar
+            above, next to Print) — that freed up a whole row, so up to 4 events fit
+            at close to their original size instead of needing to shrink hard. A day
+            with more than 4 shows only 3 plus "+N more", rather than 4 plus "+N more",
+            so the overflow pill is never squeezed for room. */}
         <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
           {cells.map((day, i) => {
             const dayEvents = day ? eventsByDay[day] ?? [] : [];
-            const maxVisible = 2;
+            const maxVisible = dayEvents.length > 4 ? 3 : 4;
             const hiddenCount = Math.max(0, dayEvents.length - maxVisible);
             const isOpen = day !== null && openDay === day;
 
@@ -328,8 +339,8 @@ export default function CalendarPage() {
                   <>
                     {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
                         the box; the popover below is a sibling so it isn't clipped too. */}
-                    <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 4, overflow: "hidden" }}>
-                    <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
+                    <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 2, overflow: "hidden" }}>
+                    <div className="cal-day-plain" style={{ fontSize: 14, fontWeight: 700, color: "#3F3237", lineHeight: 1.1, flexShrink: 0 }}>{day}</div>
 
                     {dayEvents.map((ev, idx) => {
                       // On screen, only the first maxVisible tabs show — the rest are
@@ -340,30 +351,29 @@ export default function CalendarPage() {
                       const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
                       const icon = ev.icon ?? (ev.bankHoliday ? "⭐" : "📌");
                       const tabStyle = {
-                        textAlign: "left" as const,
                         fontWeight: 700,
-                        fontSize: 11,
+                        fontSize: 10,
                         color: text,
-                        padding: "5px 8px",
-                        borderRadius: 8,
-                        lineHeight: 1.2,
+                        padding: "2.5px 6px",
+                        borderRadius: 6,
+                        lineHeight: 1.15,
                         display: isOverflow ? "none" : "flex",
                         alignItems: "center",
-                        gap: 5,
+                        gap: 4,
                         whiteSpace: "nowrap" as const,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         background: bg,
-                        border: "1px solid rgba(255,255,255,0.8)",
-                        boxShadow: "0 1px 2px rgba(63,50,55,0.10)",
+                        boxShadow: "0 1px 1px rgba(63,50,55,0.08)",
                         textDecoration: "none",
+                        flexShrink: 0,
                       };
                       const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
                       const inner = (
                         <>
-                          <span style={{ flexShrink: 0 }}>{icon}</span>
+                          <span style={{ flexShrink: 0, fontSize: 10 }}>{icon}</span>
                           <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</span>
-                          <span style={{ marginLeft: "auto", fontSize: 9, opacity: 0.6, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 8, opacity: 0.6, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
                         </>
                       );
                       return ev.link ? (
@@ -377,47 +387,27 @@ export default function CalendarPage() {
                       );
                     })}
 
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: hiddenCount > 0 ? "space-between" : "flex-end", marginTop: "auto" }}>
-                      {hiddenCount > 0 && (
-                        <button
-                          className="cal-no-print"
-                          onClick={() => setOpenDay(isOpen ? null : day)}
-                          style={{
-                            fontSize: 9.5,
-                            fontWeight: 700,
-                            borderRadius: 8,
-                            padding: "3px 8px",
-                            cursor: "pointer",
-                            border: "1px solid #F0D9C8",
-                            color: "#B5714A",
-                            background: "#FCEFE7",
-                          }}
-                        >
-                          +{hiddenCount} more
-                        </button>
-                      )}
+                    {hiddenCount > 0 && (
                       <button
                         className="cal-no-print"
-                        title="Add an event (coming soon)"
+                        onClick={() => setOpenDay(isOpen ? null : day)}
                         style={{
-                          width: 18,
-                          height: 18,
-                          borderRadius: "50%",
-                          fontSize: 12,
+                          fontSize: 9,
                           fontWeight: 700,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
+                          borderRadius: 7,
+                          padding: "2px 7px",
                           cursor: "pointer",
-                          flexShrink: 0,
-                          background: "#FCEFE7",
+                          border: "1px solid #F0D9C8",
                           color: "#B5714A",
-                          border: "1px dashed #B5714A",
+                          background: "#FCEFE7",
+                          alignSelf: "flex-start",
+                          marginTop: 1,
+                          flexShrink: 0,
                         }}
                       >
-                        +
+                        +{hiddenCount} more
                       </button>
-                    </div>
+                    )}
                     </div>
 
                     {isOpen && (
@@ -470,23 +460,6 @@ export default function CalendarPage() {
                             </div>
                           );
                         })}
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 6,
-                            fontSize: 11.5,
-                            fontWeight: 700,
-                            color: "#B5714A",
-                            border: "1px dashed #B5714A",
-                            borderRadius: 8,
-                            padding: "6px 9px",
-                            marginTop: 4,
-                          }}
-                        >
-                          <span>+</span>
-                          <span>Add another event</span>
-                        </div>
                       </div>
                     )}
                   </>
