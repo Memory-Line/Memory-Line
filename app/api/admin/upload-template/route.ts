@@ -15,19 +15,21 @@ async function requireAdmin() {
   return session;
 }
 
-// Strips the leading number, then strips a leading "Answers" or
+// Strips the leading number, then strips an "Answers" / "Answer Key" /
 // "Large Print" marker if present, so a variant file's name reduces to
-// the same base title as the worksheet it belongs to.
-// e.g. "001-Answers-Daisy-Bell.pdf" and "001-Large Print-Daisy-Bell.pdf"
-// both reduce to "Daisy Bell", matching "001-Daisy-Bell.pdf".
+// the same base title as the worksheet it belongs to. The marker can fall
+// anywhere in the name — most people don't prefix it the way the original
+// version of this function required: "001-Daisy-Bell.pdf", "Daisy Bell
+// Answers.pdf", "Daisy Bell (Large Print).pdf" and "Large-Print-Daisy-Bell.pdf"
+// all reduce to the same "Daisy Bell", so whichever way round someone names
+// the file, it still matches the standard worksheet.
 function baseTitleFromFilename(name: string): string {
   const withoutExt = name.replace(/\.[^/.]+$/, "");
   const withoutLeadingNumber = withoutExt.replace(/^\d+[-_.\s]*/, "");
-  const withoutMarker = withoutLeadingNumber.replace(
-    /^(answers?|large[-_\s]?print)[-_.\s]*/i,
-    ""
-  );
-  const spaced = withoutMarker.replace(/[-_]+/g, " ").trim();
+  const withoutMarker = withoutLeadingNumber
+    .replace(/[[(]?\s*(answers?(?:\s*(?:key|sheet))?|large[-_\s]?print)\s*[\])]?/gi, " ")
+    .replace(/^[-_.\s]+|[-_.\s]+$/g, "");
+  const spaced = withoutMarker.replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
   return spaced
     .split(" ")
     .map((word) => (word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word))
@@ -60,10 +62,19 @@ export async function POST(req: Request) {
   // template rather than creating a new one.
   if (isAnswer || isLargePrint) {
     const baseTitle = baseTitleFromFilename(file.name);
-    const existing = await prisma.template.findFirst({
-      where: { category, title: baseTitle },
-      orderBy: { createdAt: "desc" },
-    });
+    // Exact match first; fall back to a case-insensitive match in the same
+    // category so a small capitalisation difference between the standard
+    // file's name and the answer/large-print file's name doesn't stop the
+    // two from being linked.
+    const existing =
+      (await prisma.template.findFirst({
+        where: { category, title: baseTitle },
+        orderBy: { createdAt: "desc" },
+      })) ??
+      (await prisma.template.findFirst({
+        where: { category, title: { equals: baseTitle, mode: "insensitive" } },
+        orderBy: { createdAt: "desc" },
+      }));
 
     if (!existing) {
       return NextResponse.json(
