@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null };
+type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null; icon?: string; custom?: boolean };
 
 const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   { name: "January", note: "Twelfth Night is shown on 5 January; some traditions observe it on 6 January. Lunar New Year falls on 6 February in 2027.", events: [
@@ -93,6 +93,16 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   ]},
 ];
 
+// PREVIEW-ONLY DEMO DATA — shows how staff-added events will look once the
+// real add-event feature is built. Remove this block before that feature ships.
+const DEMO_CUSTOM_EVENTS: Record<number, CalEvent[]> = {
+  0: [
+    { day: 4, label: "Sing-Along Afternoon", link: null, icon: "🎵", custom: true },
+    { day: 4, label: "Mrs Patel's Birthday", link: null, icon: "🎂", custom: true },
+    { day: 10, label: "Hairdresser visit", link: null, icon: "💇", custom: true },
+  ],
+};
+
 const YEAR = 2027;
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -107,6 +117,20 @@ const WEEKDAY_COLORS = [
   "#F2D6DA", // Sunday - pink
 ];
 
+// Same palette, with a readable text colour for each — used for the rounded
+// event tabs inside each day box (cycled per event, not tied to weekday).
+const TAB_COLORS = [
+  { bg: "#F1D2BE", text: "#6B3F24" },
+  { bg: "#DFD5EC", text: "#4A3B63" },
+  { bg: "#CFE3F2", text: "#1F4E66" },
+  { bg: "#F2E2B8", text: "#6B5723" },
+  { bg: "#C9E6DD", text: "#295044" },
+  { bg: "#D8E7CB", text: "#3B5A2A" },
+  { bg: "#F2D6DA", text: "#7A3A44" },
+];
+
+const MAX_VISIBLE_TABS = 2;
+
 function getMonthGrid(monthIndex: number) {
   const first = new Date(YEAR, monthIndex, 1);
   const startWeekday = (first.getDay() + 6) % 7;
@@ -119,9 +143,17 @@ function getMonthGrid(monthIndex: number) {
 
 export default function CalendarPage() {
   const [monthIndex, setMonthIndex] = useState(0);
+  const [openDay, setOpenDay] = useState<number | null>(null);
   const month = MONTHS[monthIndex];
   const cells = getMonthGrid(monthIndex);
-  const eventsByDay = Object.fromEntries(month.events.map((e) => [e.day, e]));
+
+  const eventsByDay: Record<number, CalEvent[]> = {};
+  for (const e of month.events) {
+    (eventsByDay[e.day] ??= []).push(e);
+  }
+  for (const e of DEMO_CUSTOM_EVENTS[monthIndex] ?? []) {
+    (eventsByDay[e.day] ??= []).push(e);
+  }
 
   function handlePrint(size: "A4" | "A3") {
     let styleEl = document.getElementById("dynamic-print-page");
@@ -154,10 +186,9 @@ export default function CalendarPage() {
                                         [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
                                         [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
                                         [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { min-height: 128px !important; padding: 13px !important; }
-                                        [data-print-size="A3"] .cal-day-badge { font-size: 20px !important; width: 40px !important; height: 40px !important; margin-bottom: 6px !important; }
-                                        [data-print-size="A3"] .cal-day-plain { font-size: 24px !important; margin-bottom: 6px !important; }
-                                        [data-print-size="A3"] .cal-event-label { font-size: 16px !important; }
+                                        [data-print-size="A3"] .cal-day-cell { height: 148px !important; padding: 13px !important; }
+                                        [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
+                                        [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 5px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
         }
       `}</style>
@@ -233,6 +264,11 @@ export default function CalendarPage() {
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
+        {monthIndex === 0 && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#B5714A", fontWeight: 600, margin: "0 0 16px", background: "#FCEFE7", border: "1px solid #F0D9C8", borderRadius: 10, padding: "8px 14px", maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}>
+            Preview only: the extra tabs on 4 &amp; 10 January are sample data so you can see how added events will look. Adding your own events isn&apos;t live yet.
+          </p>
+        )}
         {/* Weekday header pills */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
@@ -254,58 +290,185 @@ export default function CalendarPage() {
           ))}
         </div>
 
-        {/* Day grid: only event days are coloured */}
+        {/* Day grid: each day can hold several rounded event tabs, capped so every box stays the same height */}
         <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
           {cells.map((day, i) => {
-            const ev = day ? eventsByDay[day] : undefined;
-            const columnColor = WEEKDAY_COLORS[i % 7];
+            const dayEvents = day ? eventsByDay[day] ?? [] : [];
+            const visible = dayEvents.slice(0, MAX_VISIBLE_TABS);
+            const hiddenCount = dayEvents.length - visible.length;
+            const isOpen = day !== null && openDay === day;
+
             return (
               <div
                 key={i}
                 className="cal-day-cell"
                 style={{
-                  minHeight: 92,
+                  height: 108,
                   borderRadius: 10,
-                  padding: 10,
-                  background: ev ? columnColor : "#fff",
-                  border: ev ? "none" : "1px solid #EAE4D6",
+                  padding: 8,
+                  background: "#fff",
+                  border: "1px solid #EAE4D6",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 4,
+                  overflow: "hidden",
+                  position: "relative",
                 }}
               >
                 {day && (
                   <>
-                    {ev ? (
-                      <div
-                        className="cal-day-badge"
+                    <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
+
+                    {visible.map((ev, idx) => {
+                      const colorIdx = idx % TAB_COLORS.length;
+                      const { bg, text } = TAB_COLORS[colorIdx];
+                      const icon = ev.icon ?? (ev.bankHoliday ? "🏴" : "📌");
+                      const tabContent = (
+                        <>
+                          <span style={{ fontSize: 10 }}>{icon}</span>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 8, opacity: 0.55, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
+                        </>
+                      );
+                      const tabStyle = {
+                        background: bg,
+                        color: text,
+                        borderRadius: 8,
+                        padding: "4px 7px",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        lineHeight: 1.2,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        whiteSpace: "nowrap" as const,
+                        overflow: "hidden",
+                        textDecoration: "none",
+                      };
+                      return ev.link ? (
+                        <Link key={idx} href={ev.link} className="cal-event-tab" style={tabStyle}>
+                          {tabContent}
+                        </Link>
+                      ) : (
+                        <div key={idx} className="cal-event-tab" style={tabStyle}>
+                          {tabContent}
+                        </div>
+                      );
+                    })}
+
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: hiddenCount > 0 ? "space-between" : "flex-end", marginTop: "auto" }}>
+                      {hiddenCount > 0 && (
+                        <button
+                          className="cal-no-print"
+                          onClick={() => setOpenDay(isOpen ? null : day)}
+                          style={{
+                            fontSize: 9.5,
+                            fontWeight: 700,
+                            color: "#B5714A",
+                            background: "#FCEFE7",
+                            border: "1px solid #F0D9C8",
+                            borderRadius: 8,
+                            padding: "3px 8px",
+                            cursor: "pointer",
+                          }}
+                        >
+                          +{hiddenCount} more
+                        </button>
+                      )}
+                      <button
+                        className="cal-no-print"
+                        title="Add an event (coming soon)"
                         style={{
-                          width: 26,
-                          height: 26,
+                          width: 18,
+                          height: 18,
                           borderRadius: "50%",
-                          background: "#fff",
+                          background: "#FCEFE7",
+                          color: "#B5714A",
+                          border: "1px dashed #B5714A",
+                          fontSize: 12,
+                          fontWeight: 700,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "#3F3237",
-                          marginBottom: 4,
+                          cursor: "pointer",
+                          flexShrink: 0,
                         }}
                       >
-                        {day}
-                      </div>
-                    ) : (
-                      <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
-                    )}
-                    {ev &&
-                      (ev.link ? (
-                        <Link href={ev.link} className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, display: "block", lineHeight: 1.3, textDecoration: "underline" }}>
-                          {ev.label}
-                        </Link>
-                      ) : (
-                        <div className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
-                          {ev.label}
-                          {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
+                        +
+                      </button>
+                    </div>
+
+                    {isOpen && (
+                      <div
+                        className="cal-no-print"
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          width: 230,
+                          background: "#fff",
+                          border: "1px solid #EAE4D6",
+                          borderRadius: 14,
+                          padding: "14px 16px",
+                          boxShadow: "0 8px 20px rgba(63,50,55,0.15)",
+                          zIndex: 20,
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8A7A6B", margin: 0 }}>
+                            {month.name} {day} — all events
+                          </p>
+                          <button
+                            onClick={() => setOpenDay(null)}
+                            style={{ border: "none", background: "none", color: "#8A7A6B", fontSize: 14, cursor: "pointer", lineHeight: 1 }}
+                          >
+                            ×
+                          </button>
                         </div>
-                      ))}
+                        {dayEvents.map((ev, idx) => {
+                          const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
+                          const icon = ev.icon ?? (ev.bankHoliday ? "🏴" : "📌");
+                          return (
+                            <div
+                              key={idx}
+                              style={{
+                                background: bg,
+                                color: text,
+                                borderRadius: 8,
+                                padding: "6px 9px",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                marginBottom: 6,
+                              }}
+                            >
+                              <span>{icon}</span>
+                              <span>{ev.label}</span>
+                              <span style={{ marginLeft: "auto", fontSize: 9, opacity: 0.55 }}>{ev.custom ? "✎" : "🔒"}</span>
+                            </div>
+                          );
+                        })}
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            color: "#B5714A",
+                            border: "1px dashed #B5714A",
+                            borderRadius: 8,
+                            padding: "6px 9px",
+                            marginTop: 4,
+                          }}
+                        >
+                          <span>+</span>
+                          <span>Add another event</span>
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
