@@ -486,14 +486,15 @@ export default function CalendarPage() {
             day popover. All the tabs on a given day share that day's own weekday
             colour (TAB_COLORS indexed by column, i % 7) rather than cycling through
             the palette by position, so every Monday tab is the same terracotta as
-            the Monday header, etc. Day boxes are always plain white and a fixed
-            height, so no day can ever grow into or shrink its neighbours. The
-            columns use minmax(0, 1fr) rather than plain 1fr: a plain 1fr track's
-            minimum width is set by its widest un-wrapped content (a long event
-            label), which was silently stealing width from the other six columns.
-            minmax(0, ...) removes that content-driven minimum so every column stays
-            exactly equal, and the tab's own text-overflow: ellipsis takes over
-            instead.
+            the Monday header, etc. Day boxes have a minimum height rather than a
+            fixed one, and event tabs wrap onto a second line instead of being cut
+            off with "…" — so a long title like "Boxing Day bank holiday
+            (substitute)" always reads in full. Because it's a CSS grid, a taller
+            day only grows the other days in its own week (the row), never the
+            whole calendar. The columns use minmax(0, 1fr) rather than plain 1fr: a
+            plain 1fr track's minimum width is set by its widest content, which was
+            silently stealing width from the other six columns; minmax(0, ...)
+            removes that so every column stays exactly equal width.
             There's no "add" button inside each box (it lives in the toolbar above,
             next to Print) — up to 4 events fit at close to their original size
             instead of needing to shrink hard. A day with more than 4 shows only 3
@@ -516,7 +517,7 @@ export default function CalendarPage() {
                 key={i}
                 className="cal-day-cell"
                 style={{
-                  height: 108,
+                  minHeight: 108,
                   borderRadius: 10,
                   background: "#fff",
                   border: "1px solid #EAE4D6",
@@ -525,9 +526,10 @@ export default function CalendarPage() {
               >
                 {day && (
                   <>
-                    {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
-                        the box; the popover below is a sibling so it isn't clipped too. */}
-                    <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 2, overflow: "hidden" }}>
+                    {/* Content can grow this wrapper (and the day box around it) taller when
+                        a title wraps onto a second line — overflow stays visible so nothing
+                        is clipped. The popover below is a sibling so it's never affected. */}
+                    <div className="cal-day-cell-inner" style={{ minHeight: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 2, overflow: "visible" }}>
                     {dayEvents.length > 0 ? (
                       // A <button> with no visible chrome (no border/background) reads and
                       // prints exactly like the plain day number below — it's only
@@ -549,6 +551,9 @@ export default function CalendarPage() {
                       // tab is always in the markup and the overflow ones are revealed by the
                       // print stylesheet instead, so nothing is silently left off the page.
                       const isOverflow = idx >= maxVisible;
+                      // Titles are never cut short with "…" — they wrap onto a second
+                      // line instead, so the tab (and the day box around it, which has
+                      // a minimum rather than fixed height) grows just enough to fit.
                       const tabStyle = {
                         fontWeight: 700,
                         fontSize: 10,
@@ -557,11 +562,10 @@ export default function CalendarPage() {
                         borderRadius: 6,
                         lineHeight: 1.15,
                         display: isOverflow ? "none" : "flex",
-                        alignItems: "center",
+                        alignItems: "flex-start",
                         gap: 4,
-                        whiteSpace: "nowrap" as const,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
+                        whiteSpace: "normal" as const,
+                        overflowWrap: "break-word" as const,
                         background: bg,
                         boxShadow: "0 1px 1px rgba(63,50,55,0.08)",
                         textDecoration: "none",
@@ -569,7 +573,7 @@ export default function CalendarPage() {
                       };
                       const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
                       const inner = (
-                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <span style={{ overflowWrap: "break-word", whiteSpace: "normal" }}>
                           {ev.label}
                           {ev.time ? ` · ${ev.time}` : ""}
                         </span>
@@ -651,7 +655,10 @@ export default function CalendarPage() {
                               marginBottom: 6,
                             }}
                           >
-                            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                            {/* flex: 1 + minWidth: 0 lets a long title wrap and shrink to
+                                fit, instead of a flex row's default sizing pushing it (or
+                                the Edit/Delete links beside it) past the popover's edge. */}
+                            <span style={{ flex: 1, minWidth: 0 }}>
                               {ev.label}
                               {ev.time ? ` · ${ev.time}` : ""}
                             </span>
