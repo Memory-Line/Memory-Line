@@ -338,27 +338,37 @@ export default function CalendarPage() {
           .cal-no-print { display: none !important; }
           #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 0 !important; }
           body { background: #fff !important; }
-          .cal-grid { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          /* On screen, a day with more events than fit shows a "+N more" button that opens
-             a popover — neither works on a printed page. So every event tab is always in
-             the markup (see cal-event-tab-overflow below) and the box grows to fit them all
-             when printed, instead of silently leaving events off the page. */
-          .cal-day-cell { height: auto !important; min-height: 108px !important; }
-          .cal-day-cell-inner { height: auto !important; overflow: visible !important; }
+          /* The whole calendar (header + weekday row + day grid + footer) has to fit on a
+             single printed page, however many events a month has. So in print,
+             .cal-content-wrap becomes a fixed-height flex column sized to the page's usable
+             area (page size minus the @page margin set in handlePrint below); the header,
+             weekday row and footer keep their natural size (flex-shrink: 0) and .cal-grid
+             takes whatever height is left (flex: 1). Inside the grid, every row is an equal
+             1fr share of that remaining height (grid-auto-rows: 1fr), so day boxes are
+             always as big as the page allows — bigger for a light month, a little smaller
+             for a packed 6-row one — but the calendar itself can never spill onto a second
+             page. Every event tab is always in the markup (see cal-event-tab-overflow below)
+             and wraps to fill its box rather than being cut off with "…"; overflow: hidden
+             on the day box is only a backstop for the rare day whose content is still taller
+             than its row, so one unusually busy day can't push the whole page over. */
+          .cal-content-wrap { display: flex !important; flex-direction: column !important; height: 187mm !important; max-height: 187mm !important; }
+          .cal-header-row, .cal-weekday-row, .cal-footer { flex: 0 0 auto !important; }
+          .cal-grid { flex: 1 1 auto !important; min-height: 0 !important; display: grid !important; grid-auto-rows: 1fr !important; page-break-inside: avoid; overflow: hidden !important; }
+          .cal-day-cell { height: 100% !important; min-height: 0 !important; }
+          .cal-day-cell-inner { height: 100% !important; overflow: hidden !important; }
           .cal-event-tab-overflow { display: flex !important; }
         }
         @media print {
-                              [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
-                                        [data-print-size="A3"] .cal-title { font-size: 46px !important; }
-                                        [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
-                                        [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
-                                        [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { height: auto !important; min-height: 148px !important; }
-                                        [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; height: auto !important; overflow: visible !important; }
-                                        [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
-                                        [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
-          [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
+          [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
+          [data-print-size="A3"] .cal-title { font-size: 46px !important; }
+          [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
+          [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
+          [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
+          [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; }
+          [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
+          [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
+          [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; height: 274mm !important; max-height: 274mm !important; }
         }
       `}</style>
             <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
@@ -366,7 +376,7 @@ export default function CalendarPage() {
         {/* Header row: icon left, title centre, year pill right — grid keeps the centre column
             mathematically centred even when the left (logo + name) and right (year pill) content
             widths differ. */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", marginBottom: 4 }}>
+        <div className="cal-header-row" style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", marginBottom: 4 }}>
           <Link href="/dashboard" style={{ display: "flex", alignItems: "center", justifySelf: "start" }}>
             <Image src="/activity-central-icon.png" alt="Activity Central - back to Dashboard" width={60} height={60} />
             <span style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#3F3237", marginLeft: 10 }}>Activity Central</span>
@@ -461,7 +471,7 @@ export default function CalendarPage() {
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
         {/* Weekday header pills */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
+        <div className="cal-weekday-row" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
             <div
               key={w}
@@ -711,7 +721,7 @@ export default function CalendarPage() {
         </div>
 
         {/* Footer */}
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
+        <div className="cal-footer" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
           <span>Date sources: UK bank holidays, 2027 observances</span>
           <span>UK | {String(monthIndex + 1).padStart(2, "0")} / 12</span>
         </div>
