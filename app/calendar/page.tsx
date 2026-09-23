@@ -369,19 +369,21 @@ export default function CalendarPage() {
                     )}
 
                     {visibleCustom.map((ev, idx) => {
-                      const tabBg = hasBuiltIn ? "#fff" : TAB_COLORS[idx % TAB_COLORS.length].bg;
+                      const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
                       const tabStyle = {
-                        textAlign: "center" as const,
+                        textAlign: "left" as const,
                         fontWeight: 700,
-                        fontSize: 10,
-                        color: "#3F3237",
-                        padding: "5px 6px",
+                        fontSize: 11,
+                        color: text,
+                        padding: "5px 8px",
                         borderRadius: 8,
-                        lineHeight: 1.15,
+                        lineHeight: 1.2,
+                        display: "flex",
+                        alignItems: "center",
                         whiteSpace: "nowrap" as const,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
-                        background: tabBg,
+                        background: bg,
                         textDecoration: "none",
                       };
                       return ev.link ? (
