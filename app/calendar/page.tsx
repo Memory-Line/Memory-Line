@@ -1,12 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 
-type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null; icon?: string; custom?: boolean };
+type BuiltInEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null };
 
-const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
+type CustomEvent = {
+  id: string;
+  year: number;
+  month: number; // 0-11
+  day: number;
+  title: string;
+  time: string | null;
+};
+
+// A single shape used for rendering, whichever source an event came from.
+type DisplayEvent = {
+  key: string;
+  day: number;
+  label: string;
+  time?: string | null;
+  link: string | null;
+  custom: boolean;
+  id?: string;
+};
+
+const MONTHS: { name: string; events: BuiltInEvent[]; note: string }[] = [
   { name: "January", note: "Twelfth Night is shown on 5 January; some traditions observe it on 6 January. Lunar New Year falls on 6 February in 2027.", events: [
     { day: 1, label: "New Year's Day", bankHoliday: true, link: null },
     { day: 4, label: "Bank holiday (Scotland)", bankHoliday: true, link: null },
@@ -93,16 +114,6 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   ]},
 ];
 
-// PREVIEW-ONLY DEMO DATA — shows how staff-added events will look once the
-// real add-event feature is built. Remove this block before that feature ships.
-const DEMO_CUSTOM_EVENTS: Record<number, CalEvent[]> = {
-  0: [
-    { day: 4, label: "Sing-Along Afternoon", link: null, icon: "🎵", custom: true },
-    { day: 4, label: "Mrs Patel's Birthday", link: null, icon: "🎂", custom: true },
-    { day: 10, label: "Hairdresser visit", link: null, icon: "💇", custom: true },
-  ],
-};
-
 const YEAR = 2027;
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -117,8 +128,10 @@ const WEEKDAY_COLORS = [
   "#F2D6DA", // Sunday - pink
 ];
 
-// Same palette, with a readable text colour for each — used for the rounded
-// event tabs inside each day box (cycled per event, not tied to weekday).
+// Same palette, with a readable text colour for each. Indexed by weekday
+// (0 = Monday … 6 = Sunday) so every event tab on a given day always matches
+// that day's own column colour, instead of cycling through the palette by
+// the event's position in the list.
 const TAB_COLORS = [
   { bg: "#F1D2BE", text: "#6B3F24" },
   { bg: "#DFD5EC", text: "#4A3B63" },
@@ -139,18 +152,168 @@ function getMonthGrid(monthIndex: number) {
   return cells;
 }
 
+const inputStyle: CSSProperties = {
+  width: "100%",
+  padding: "9px 11px",
+  borderRadius: 8,
+  border: "1px solid #EAE4D6",
+  fontSize: 13.5,
+  color: "#3F3237",
+  fontFamily: "inherit",
+  marginBottom: 14,
+  background: "#FBF9F4",
+};
+
+const labelStyle: CSSProperties = {
+  fontSize: 12,
+  fontWeight: 700,
+  color: "#3F3237",
+  marginBottom: 5,
+  display: "block",
+};
+
 export default function CalendarPage() {
+  const { status } = useSession();
+  const signedIn = status === "authenticated";
+
   const [monthIndex, setMonthIndex] = useState(0);
   const [openDay, setOpenDay] = useState<number | null>(null);
+  const [customEvents, setCustomEvents] = useState<CustomEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+  const [modal, setModal] = useState<null | { mode: "add" } | { mode: "edit"; event: CustomEvent }>(null);
+  const [formTitle, setFormTitle] = useState("");
+  const [formDay, setFormDay] = useState("");
+  const [formTime, setFormTime] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const month = MONTHS[monthIndex];
   const cells = getMonthGrid(monthIndex);
+  const daysInMonth = new Date(YEAR, monthIndex + 1, 0).getDate();
 
-  const eventsByDay: Record<number, CalEvent[]> = {};
+  useEffect(() => {
+    if (!signedIn) {
+      setCustomEvents([]);
+      return;
+    }
+    let cancelled = false;
+    setLoadingEvents(true);
+    fetch(`/api/calendar-events?year=${YEAR}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setCustomEvents(data.events ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setCustomEvents([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingEvents(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn]);
+
+  const eventsByDay: Record<number, DisplayEvent[]> = {};
   for (const e of month.events) {
-    (eventsByDay[e.day] ??= []).push(e);
+    (eventsByDay[e.day] ??= []).push({
+      key: `built-in-${monthIndex}-${e.day}-${e.label}`,
+      day: e.day,
+      label: e.label,
+      link: e.link,
+      custom: false,
+    });
   }
-  for (const e of DEMO_CUSTOM_EVENTS[monthIndex] ?? []) {
-    (eventsByDay[e.day] ??= []).push(e);
+  for (const e of customEvents) {
+    if (e.month !== monthIndex) continue;
+    (eventsByDay[e.day] ??= []).push({
+      key: e.id,
+      day: e.day,
+      label: e.title,
+      time: e.time,
+      link: null,
+      custom: true,
+      id: e.id,
+    });
+  }
+
+  function openAddModal(day?: number) {
+    setModal({ mode: "add" });
+    setFormTitle("");
+    setFormDay(day ? String(day) : "");
+    setFormTime("");
+    setFormError(null);
+  }
+
+  function openEditModal(event: CustomEvent) {
+    setModal({ mode: "edit", event });
+    setFormTitle(event.title);
+    setFormDay(String(event.day));
+    setFormTime(event.time ?? "");
+    setFormError(null);
+  }
+
+  function closeModal() {
+    setModal(null);
+    setFormError(null);
+  }
+
+  async function submitForm() {
+    const title = formTitle.trim();
+    const day = Number(formDay);
+
+    if (!title) {
+      setFormError("Give the event a title.");
+      return;
+    }
+    if (!Number.isInteger(day) || day < 1 || day > daysInMonth) {
+      setFormError(`Day must be between 1 and ${daysInMonth} for ${month.name}.`);
+      return;
+    }
+
+    setSaving(true);
+    setFormError(null);
+    try {
+      if (modal?.mode === "edit") {
+        const res = await fetch(`/api/calendar-events/${modal.event.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, day, time: formTime.trim() || null }),
+        });
+        if (!res.ok) throw new Error();
+        const { event } = await res.json();
+        setCustomEvents((prev) => prev.map((e) => (e.id === event.id ? event : e)));
+      } else {
+        const res = await fetch("/api/calendar-events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ year: YEAR, month: monthIndex, day, title, time: formTime.trim() || null }),
+        });
+        if (!res.ok) throw new Error();
+        const { event } = await res.json();
+        setCustomEvents((prev) => [...prev, event]);
+      }
+      closeModal();
+    } catch {
+      setFormError("Something went wrong saving that event. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteEvent(id: string) {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/calendar-events/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      setCustomEvents((prev) => prev.filter((e) => e.id !== id));
+    } catch {
+      // Leave the event in place if the delete failed — the "Delete" link stays available to retry.
+    } finally {
+      setSaving(false);
+      setConfirmDeleteId(null);
+    }
   }
 
   function handlePrint(size: "A4" | "A3") {
@@ -253,34 +416,45 @@ export default function CalendarPage() {
         </div>
 
         {/* Print controls */}
-        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 24px" }}>
+        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
           <button
             onClick={() => handlePrint("A4")}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", cursor: "pointer", fontWeight: 600 }}
           >
-            🖨 Print (A4)
+            Print (A4)
           </button>
           <button
             onClick={() => handlePrint("A3")}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
           >
-            🖨 Print Large (A3)
+            Print Large (A3)
           </button>
           <button
-            title="Add an event (coming soon)"
-            style={{ padding: "10px 18px", borderRadius: 10, border: "1px dashed #B5714A", background: "#FCEFE7", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
+            onClick={() => signedIn && openAddModal()}
+            disabled={!signedIn}
+            title={signedIn ? "Add an event" : "Sign in to add events"}
+            style={{
+              padding: "10px 18px",
+              borderRadius: 10,
+              border: "1px dashed #B5714A",
+              background: "#FCEFE7",
+              color: "#B5714A",
+              cursor: signedIn ? "pointer" : "not-allowed",
+              fontWeight: 600,
+              opacity: signedIn ? 1 : 0.55,
+            }}
           >
             + Add event
           </button>
         </div>
+        {!signedIn && status !== "loading" && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
+            <Link href="/login" style={{ color: "#B5714A", fontWeight: 600 }}>Sign in</Link> to add your own events to this calendar.
+          </p>
+        )}
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
-        {monthIndex === 0 && (
-          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#B5714A", fontWeight: 600, margin: "0 0 16px", background: "#FCEFE7", border: "1px solid #F0D9C8", borderRadius: 10, padding: "8px 14px", maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}>
-            Preview only: the extra tabs on 4 &amp; 10 January are sample data so you can see how added events will look. Adding your own events isn&apos;t live yet.
-          </p>
-        )}
         {/* Weekday header pills */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
@@ -303,25 +477,34 @@ export default function CalendarPage() {
         </div>
 
         {/* Day grid: every event — built-in occasion or staff-added — renders as a
-            uniform colour tab (icon + label + lock/pencil marker), the same style
-            used in the "+N more" popover rows. Day boxes are always plain white
-            and a fixed height, so no day can ever grow into or shrink its neighbours.
-            The columns use minmax(0, 1fr) rather than plain 1fr: a plain 1fr track's
-            minimum width is set by its widest un-wrapped content (a long event label),
-            which was silently stealing width from the other six columns. minmax(0, ...)
-            removes that content-driven minimum so every column stays exactly equal,
-            and the tab's own text-overflow: ellipsis takes over instead.
-            There's no "add" button inside each box any more (moved to the toolbar
-            above, next to Print) — that freed up a whole row, so up to 4 events fit
-            at close to their original size instead of needing to shrink hard. A day
-            with more than 4 shows only 3 plus "+N more", rather than 4 plus "+N more",
-            so the overflow pill is never squeezed for room. */}
+            uniform colour tab (label text only, no icons), the same style used in the
+            day popover. All the tabs on a given day share that day's own weekday
+            colour (TAB_COLORS indexed by column, i % 7) rather than cycling through
+            the palette by position, so every Monday tab is the same terracotta as
+            the Monday header, etc. Day boxes are always plain white and a fixed
+            height, so no day can ever grow into or shrink its neighbours. The
+            columns use minmax(0, 1fr) rather than plain 1fr: a plain 1fr track's
+            minimum width is set by its widest un-wrapped content (a long event
+            label), which was silently stealing width from the other six columns.
+            minmax(0, ...) removes that content-driven minimum so every column stays
+            exactly equal, and the tab's own text-overflow: ellipsis takes over
+            instead.
+            There's no "add" button inside each box (it lives in the toolbar above,
+            next to Print) — up to 4 events fit at close to their original size
+            instead of needing to shrink hard. A day with more than 4 shows only 3
+            plus "+N more", rather than 4 plus "+N more", so the overflow pill is
+            never squeezed for room.
+            The day number itself is clickable whenever the day has any events —
+            not just on overflow — so staff always have a way to reach Edit/Delete
+            on their own events, even on a day with just one or two. */}
         <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
           {cells.map((day, i) => {
             const dayEvents = day ? eventsByDay[day] ?? [] : [];
             const maxVisible = dayEvents.length > 4 ? 3 : 4;
             const hiddenCount = Math.max(0, dayEvents.length - maxVisible);
             const isOpen = day !== null && openDay === day;
+            const colIndex = i % 7;
+            const { bg, text } = TAB_COLORS[colIndex];
 
             return (
               <div
@@ -340,7 +523,20 @@ export default function CalendarPage() {
                     {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
                         the box; the popover below is a sibling so it isn't clipped too. */}
                     <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 2, overflow: "hidden" }}>
-                    <div className="cal-day-plain" style={{ fontSize: 14, fontWeight: 700, color: "#3F3237", lineHeight: 1.1, flexShrink: 0 }}>{day}</div>
+                    {dayEvents.length > 0 ? (
+                      // A <button> with no visible chrome (no border/background) reads and
+                      // prints exactly like the plain day number below — it's only
+                      // interactive on screen, so it doesn't need cal-no-print.
+                      <button
+                        className="cal-day-plain"
+                        onClick={() => setOpenDay(isOpen ? null : day)}
+                        style={{ fontSize: 14, fontWeight: 700, color: "#3F3237", lineHeight: 1.1, flexShrink: 0, background: "none", border: "none", padding: 0, textAlign: "left", cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        {day}
+                      </button>
+                    ) : (
+                      <div className="cal-day-plain" style={{ fontSize: 14, fontWeight: 700, color: "#3F3237", lineHeight: 1.1, flexShrink: 0 }}>{day}</div>
+                    )}
 
                     {dayEvents.map((ev, idx) => {
                       // On screen, only the first maxVisible tabs show — the rest are
@@ -348,8 +544,6 @@ export default function CalendarPage() {
                       // tab is always in the markup and the overflow ones are revealed by the
                       // print stylesheet instead, so nothing is silently left off the page.
                       const isOverflow = idx >= maxVisible;
-                      const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
-                      const icon = ev.icon ?? (ev.bankHoliday ? "⭐" : "📌");
                       const tabStyle = {
                         fontWeight: 700,
                         fontSize: 10,
@@ -370,18 +564,17 @@ export default function CalendarPage() {
                       };
                       const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
                       const inner = (
-                        <>
-                          <span style={{ flexShrink: 0, fontSize: 10 }}>{icon}</span>
-                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</span>
-                          <span style={{ marginLeft: "auto", fontSize: 8, opacity: 0.6, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
-                        </>
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {ev.label}
+                          {ev.time ? ` · ${ev.time}` : ""}
+                        </span>
                       );
                       return ev.link ? (
-                        <Link key={idx} href={ev.link} className={className} style={tabStyle}>
+                        <Link key={ev.key} href={ev.link} className={className} style={tabStyle}>
                           {inner}
                         </Link>
                       ) : (
-                        <div key={idx} className={className} style={tabStyle}>
+                        <div key={ev.key} className={className} style={tabStyle}>
                           {inner}
                         </div>
                       );
@@ -417,7 +610,7 @@ export default function CalendarPage() {
                           position: "absolute",
                           top: "calc(100% + 4px)",
                           left: 0,
-                          width: 230,
+                          width: 250,
                           background: "#fff",
                           border: "1px solid #EAE4D6",
                           borderRadius: 14,
@@ -437,29 +630,65 @@ export default function CalendarPage() {
                             ×
                           </button>
                         </div>
-                        {dayEvents.map((ev, idx) => {
-                          const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
-                          return (
-                            <div
-                              key={idx}
-                              style={{
-                                background: bg,
-                                color: text,
-                                borderRadius: 8,
-                                padding: "6px 9px",
-                                fontSize: 11.5,
-                                fontWeight: 700,
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 6,
-                                marginBottom: 6,
-                              }}
-                            >
-                              <span>{ev.label}</span>
-                              <span style={{ marginLeft: "auto", fontSize: 9, opacity: 0.55 }}>{ev.custom ? "✎" : "🔒"}</span>
-                            </div>
-                          );
-                        })}
+                        {dayEvents.map((ev) => (
+                          <div
+                            key={ev.key}
+                            style={{
+                              background: bg,
+                              color: text,
+                              borderRadius: 8,
+                              padding: "6px 9px",
+                              fontSize: 11.5,
+                              fontWeight: 700,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 6,
+                              marginBottom: 6,
+                            }}
+                          >
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
+                              {ev.label}
+                              {ev.time ? ` · ${ev.time}` : ""}
+                            </span>
+                            {ev.custom && ev.id ? (
+                              confirmDeleteId === ev.id ? (
+                                <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700 }}>
+                                  <span
+                                    onClick={() => !saving && deleteEvent(ev.id!)}
+                                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                                  >
+                                    Confirm delete
+                                  </span>
+                                  <span
+                                    onClick={() => setConfirmDeleteId(null)}
+                                    style={{ cursor: "pointer", opacity: 0.75 }}
+                                  >
+                                    Cancel
+                                  </span>
+                                </span>
+                              ) : (
+                                <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700, opacity: 0.85 }}>
+                                  <span
+                                    onClick={() => openEditModal(customEvents.find((c) => c.id === ev.id)!)}
+                                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                                  >
+                                    Edit
+                                  </span>
+                                  <span
+                                    onClick={() => setConfirmDeleteId(ev.id!)}
+                                    style={{ cursor: "pointer", textDecoration: "underline" }}
+                                  >
+                                    Delete
+                                  </span>
+                                </span>
+                              )
+                            ) : (
+                              <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                                Locked
+                              </span>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </>
@@ -475,6 +704,94 @@ export default function CalendarPage() {
           <span>UK | {String(monthIndex + 1).padStart(2, "0")} / 12</span>
         </div>
       </div>
+
+      {modal && (
+        <div
+          className="cal-no-print"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(63,50,55,0.35)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 50,
+            padding: 20,
+          }}
+          onClick={closeModal}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 360,
+              maxWidth: "100%",
+              background: "#fff",
+              borderRadius: 16,
+              border: "1px solid #EAE4D6",
+              boxShadow: "0 12px 30px rgba(63,50,55,0.18)",
+              padding: "22px 22px 20px",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: 19, color: "#3F3237", margin: 0 }}>
+                {modal.mode === "edit" ? "Edit event" : "Add an event"}
+              </h2>
+              <button onClick={closeModal} style={{ border: "none", background: "none", color: "#8A7A6B", fontSize: 16, cursor: "pointer" }}>×</button>
+            </div>
+            <p style={{ fontSize: 12, color: "#8A7A6B", margin: "0 0 18px" }}>{month.name} {YEAR} · visible to all staff</p>
+
+            <label style={labelStyle}>Event title</label>
+            <input
+              style={inputStyle}
+              value={formTitle}
+              onChange={(e) => setFormTitle(e.target.value)}
+              placeholder="e.g. Sing-Along Afternoon"
+            />
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Day</label>
+                <input
+                  style={inputStyle}
+                  value={formDay}
+                  onChange={(e) => setFormDay(e.target.value.replace(/[^0-9]/g, ""))}
+                  placeholder={`1–${daysInMonth}`}
+                  inputMode="numeric"
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={labelStyle}>Time (optional)</label>
+                <input
+                  style={inputStyle}
+                  value={formTime}
+                  onChange={(e) => setFormTime(e.target.value)}
+                  placeholder="e.g. 2:00 PM"
+                />
+              </div>
+            </div>
+
+            {formError && (
+              <p style={{ color: "#B5714A", fontSize: 12, fontWeight: 600, margin: "-6px 0 12px" }}>{formError}</p>
+            )}
+
+            <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+              <button
+                onClick={closeModal}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", color: "#8A7A6B", fontWeight: 700, fontSize: 13.5, cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitForm}
+                disabled={saving}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: saving ? "default" : "pointer", opacity: saving ? 0.7 : 1 }}
+              >
+                {saving ? "Saving…" : modal.mode === "edit" ? "Save changes" : "Save event"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
