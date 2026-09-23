@@ -177,6 +177,13 @@ export default function CalendarPage() {
           body { background: #fff !important; }
           .cal-grid { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          /* On screen, a day with more events than fit shows a "+N more" button that opens
+             a popover — neither works on a printed page. So every event tab is always in
+             the markup (see cal-event-tab-overflow below) and the box grows to fit them all
+             when printed, instead of silently leaving events off the page. */
+          .cal-day-cell { height: auto !important; min-height: 108px !important; }
+          .cal-day-cell-inner { height: auto !important; overflow: visible !important; }
+          .cal-event-tab-overflow { display: flex !important; }
         }
         @media print {
                               [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
@@ -184,8 +191,8 @@ export default function CalendarPage() {
                                         [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
                                         [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
                                         [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { height: 148px !important; }
-                                        [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; }
+                                        [data-print-size="A3"] .cal-day-cell { height: auto !important; min-height: 148px !important; }
+                                        [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; height: auto !important; overflow: visible !important; }
                                         [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
                                         [data-print-size="A3"] .cal-day-badge { width: 32px !important; height: 32px !important; font-size: 16px !important; }
                                         [data-print-size="A3"] .cal-official-label { font-size: 14px !important; }
@@ -300,8 +307,7 @@ export default function CalendarPage() {
             const custom = dayEvents.filter((e) => e.custom);
             const hasBuiltIn = builtIn.length > 0;
             const maxVisibleCustom = hasBuiltIn ? 1 : 2;
-            const visibleCustom = custom.slice(0, maxVisibleCustom);
-            const hiddenCount = custom.length - visibleCustom.length;
+            const hiddenCount = Math.max(0, custom.length - maxVisibleCustom);
             const isOpen = day !== null && openDay === day;
 
             return (
@@ -368,7 +374,12 @@ export default function CalendarPage() {
                       <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237" }}>{day}</div>
                     )}
 
-                    {visibleCustom.map((ev, idx) => {
+                    {custom.map((ev, idx) => {
+                      // On screen, only the first maxVisibleCustom tabs show — the rest are
+                      // reached through "+N more". A printed page can't be clicked, so every
+                      // tab is always in the markup and the overflow ones are revealed by the
+                      // print stylesheet instead, so nothing is silently left off the page.
+                      const isOverflow = idx >= maxVisibleCustom;
                       const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
                       const tabStyle = {
                         textAlign: "left" as const,
@@ -378,7 +389,7 @@ export default function CalendarPage() {
                         padding: "5px 8px",
                         borderRadius: 8,
                         lineHeight: 1.2,
-                        display: "flex",
+                        display: isOverflow ? "none" : "flex",
                         alignItems: "center",
                         whiteSpace: "nowrap" as const,
                         overflow: "hidden",
@@ -391,12 +402,13 @@ export default function CalendarPage() {
                         boxShadow: "0 1px 2px rgba(63,50,55,0.10)",
                         textDecoration: "none",
                       };
+                      const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
                       return ev.link ? (
-                        <Link key={idx} href={ev.link} className="cal-event-tab" style={tabStyle}>
+                        <Link key={idx} href={ev.link} className={className} style={tabStyle}>
                           {ev.label}
                         </Link>
                       ) : (
-                        <div key={idx} className="cal-event-tab" style={tabStyle}>
+                        <div key={idx} className={className} style={tabStyle}>
                           {ev.label}
                         </div>
                       );
