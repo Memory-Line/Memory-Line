@@ -4,21 +4,26 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, SERVICES, TEMPLATES } from "@/lib/data";
 import {
-  Camera, Music, Footprints, Grid3x3, Type, HelpCircle, Gamepad2,
-  MessageCircle, Gift, Leaf,
+  Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
 } from "lucide-react";
 
 const ICONS: Record<string, any> = {
-  Reminiscence: Camera,
-  "Sing-Along": Music,
   "Physical & Exercise": Footprints,
-  "Arts & Crafts": Grid3x3,
-  "Word Games": Type,
-  "Trivia & Quizzes": HelpCircle,
-  "Card & Board Games": Gamepad2,
+  Crosswords: Grid3x3,
+  "Word Searches": Search,
+  "Guess the Word": HelpCircle,
+  Trivia: Brain,
+  Bingo: Hash,
+  "Snakes and Ladders": Dices,
+  "Remembrance Cards": Heart,
+  "Colouring Pages": Palette,
   "Conversation Starters": MessageCircle,
-  Christmas: Gift,
-  "Four Seasons": Leaf,
+  "Matching Pairs": Copy,
+  "Spot the Difference": Eye,
+  "Sing-Alongs": Music,
+  "Communication Cards": Languages,
+  "BSL Tools": Hand,
 };
 
 export default async function DashboardHome() {
@@ -41,12 +46,8 @@ export default async function DashboardHome() {
 
   // "Popular" is a static illustrative sample for the prototype stage —
   // swap for a real download-count aggregation once there's usage data.
-  const popular = [
-    TEMPLATES["Reminiscence"][0],
-    TEMPLATES["Trivia & Quizzes"][0],
-    TEMPLATES["Sing-Along"][0],
-    TEMPLATES["Christmas"][0],
-  ];
+  // Only Physical & Exercise has sample activities right now.
+  const popular = (TEMPLATES["Physical & Exercise"] ?? []).slice(0, 4);
 
   return (
     <div>
@@ -79,7 +80,7 @@ export default async function DashboardHome() {
             )}
             {recentDownloads.map((d) => {
               const cat = CATEGORIES.find((c) => c.key === d.category);
-              const Icon = ICONS[d.category] ?? Camera;
+              const Icon = ICONS[d.category] ?? Footprints;
               return (
                 <div key={d.id} className="flex items-center gap-3 rounded-lg p-2 bg-bg">
                   <div
@@ -103,7 +104,7 @@ export default async function DashboardHome() {
           <div className="grid grid-cols-2 gap-2">
             {popular.map((t) => {
               const cat = CATEGORIES.find((c) => c.key === t.category);
-              const Icon = ICONS[t.category] ?? Camera;
+              const Icon = ICONS[t.category] ?? Footprints;
               return (
                 <div key={t.id} className="rounded-lg p-2.5" style={{ background: cat?.tint }}>
                   <Icon size={14} color={cat?.color} />

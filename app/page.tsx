@@ -1,30 +1,35 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Camera, Music, Footprints, Grid3x3, Type, HelpCircle, Gamepad2,
-  MessageCircle, Gift, Leaf, Check,
+  Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check,
 } from "lucide-react";
 import { CATEGORIES, ALL_TEMPLATES, templateById } from "@/lib/data";
 import FreeDownloadButton from "@/components/FreeDownloadButton";
 
 const ICONS: Record<string, any> = {
-  Reminiscence: Camera,
-  "Sing-Along": Music,
   "Physical & Exercise": Footprints,
-  "Arts & Crafts": Grid3x3,
-  "Word Games": Type,
-  "Trivia & Quizzes": HelpCircle,
-  "Card & Board Games": Gamepad2,
+  Crosswords: Grid3x3,
+  "Word Searches": Search,
+  "Guess the Word": HelpCircle,
+  Trivia: Brain,
+  Bingo: Hash,
+  "Snakes and Ladders": Dices,
+  "Remembrance Cards": Heart,
+  "Colouring Pages": Palette,
   "Conversation Starters": MessageCircle,
-  Christmas: Gift,
-  "Four Seasons": Leaf,
+  "Matching Pairs": Copy,
+  "Spot the Difference": Eye,
+  "Sing-Alongs": Music,
+  "Communication Cards": Languages,
+  "BSL Tools": Hand,
 };
 
 export default function LandingPage() {
   const freeSamples = [
-    templateById("Reminiscence-0"),
-    templateById("Sing-Along-0"),
-    templateById("Trivia & Quizzes-0"),
+    templateById("Physical & Exercise-0"),
+    templateById("Physical & Exercise-1"),
+    templateById("Physical & Exercise-2"),
   ].filter(Boolean) as typeof ALL_TEMPLATES;
 
   return (
@@ -56,9 +61,9 @@ export default function LandingPage() {
           A ready-made library of dementia engagement activities
         </h1>
         <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
-          1000+ downloadable activities across reminiscence, sing-along, word games, trivia,
-          arts &amp; crafts, and more — built for carers who need something meaningful ready
-          to run in minutes, not hours.
+          1000+ downloadable activities across physical &amp; exercise, word puzzles, trivia
+          and games, colouring, communication tools, and more — built for carers who need
+          something meaningful ready to run in minutes, not hours.
         </p>
         <div className="flex items-center justify-center gap-3">
           <Link

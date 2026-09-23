@@ -5,38 +5,49 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  LayoutDashboard, Camera, Music, Footprints, Grid3x3, Type, HelpCircle,
-  Gamepad2, MessageCircle, Gift, Leaf, Briefcase, Calendar, Shield,
+  LayoutDashboard, Footprints, Grid3x3, Search, HelpCircle, Brain, Hash,
+  Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
+  Briefcase, Calendar, Shield,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
 const ICONS: Record<string, any> = {
-  Reminiscence: Camera,
-  "Sing-Along": Music,
   "Physical & Exercise": Footprints,
-  "Arts & Crafts": Grid3x3,
-  "Word Games": Type,
-  "Trivia & Quizzes": HelpCircle,
-  "Card & Board Games": Gamepad2,
+  Crosswords: Grid3x3,
+  "Word Searches": Search,
+  "Guess the Word": HelpCircle,
+  Trivia: Brain,
+  Bingo: Hash,
+  "Snakes and Ladders": Dices,
+  "Remembrance Cards": Heart,
+  "Colouring Pages": Palette,
   "Conversation Starters": MessageCircle,
-  Christmas: Gift,
-  "Four Seasons": Leaf,
+  "Matching Pairs": Copy,
+  "Spot the Difference": Eye,
+  "Sing-Alongs": Music,
+  "Communication Cards": Languages,
+  "BSL Tools": Hand,
 };
 
 // One colour per nav item, used only on hover
 const HOVER_COLORS: Record<string, string> = {
   Dashboard: "#6E8F73",
   Calendar: "#3E6E96",
-  Reminiscence: "#3E6E96",
-  "Sing-Along": "#2F7A63",
   "Physical & Exercise": "#B5714A",
-  "Arts & Crafts": "#6E56A0",
-  "Word Games": "#A6822C",
-  "Trivia & Quizzes": "#3E7CAA",
-  "Card & Board Games": "#B05F6C",
+  Crosswords: "#A6822C",
+  "Word Searches": "#3E8A8F",
+  "Guess the Word": "#8B6FB0",
+  Trivia: "#3E7CAA",
+  Bingo: "#B05F6C",
+  "Snakes and Ladders": "#5A8A44",
+  "Remembrance Cards": "#4A5E7A",
+  "Colouring Pages": "#A6741F",
   "Conversation Starters": "#5A8A44",
-  Christmas: "#A23B3B",
-  "Four Seasons": "#5A8A44",
+  "Matching Pairs": "#B5714A",
+  "Spot the Difference": "#6E56A0",
+  "Sing-Alongs": "#2F7A63",
+  "Communication Cards": "#A23B3B",
+  "BSL Tools": "#3E6E4A",
   Services: "#8A6E52",
   Admin: "#8A3B3B",
 };
