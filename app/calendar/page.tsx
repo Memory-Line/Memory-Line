@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
-type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null };
+type CalEvent = { day: number; label: string; bankHoliday?: boolean; link: string | null; icon?: string; custom?: boolean };
 
 const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   { name: "January", note: "Twelfth Night is shown on 5 January; some traditions observe it on 6 January. Lunar New Year falls on 6 February in 2027.", events: [
@@ -93,6 +93,16 @@ const MONTHS: { name: string; events: CalEvent[]; note: string }[] = [
   ]},
 ];
 
+// PREVIEW-ONLY DEMO DATA — shows how staff-added events will look once the
+// real add-event feature is built. Remove this block before that feature ships.
+const DEMO_CUSTOM_EVENTS: Record<number, CalEvent[]> = {
+  0: [
+    { day: 4, label: "Sing-Along Afternoon", link: null, icon: "🎵", custom: true },
+    { day: 4, label: "Mrs Patel's Birthday", link: null, icon: "🎂", custom: true },
+    { day: 10, label: "Hairdresser visit", link: null, icon: "💇", custom: true },
+  ],
+};
+
 const YEAR = 2027;
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -107,6 +117,18 @@ const WEEKDAY_COLORS = [
   "#F2D6DA", // Sunday - pink
 ];
 
+// Same palette, with a readable text colour for each — used for the rounded
+// event tabs inside each day box (cycled per event, not tied to weekday).
+const TAB_COLORS = [
+  { bg: "#F1D2BE", text: "#6B3F24" },
+  { bg: "#DFD5EC", text: "#4A3B63" },
+  { bg: "#CFE3F2", text: "#1F4E66" },
+  { bg: "#F2E2B8", text: "#6B5723" },
+  { bg: "#C9E6DD", text: "#295044" },
+  { bg: "#D8E7CB", text: "#3B5A2A" },
+  { bg: "#F2D6DA", text: "#7A3A44" },
+];
+
 function getMonthGrid(monthIndex: number) {
   const first = new Date(YEAR, monthIndex, 1);
   const startWeekday = (first.getDay() + 6) % 7;
@@ -119,9 +141,17 @@ function getMonthGrid(monthIndex: number) {
 
 export default function CalendarPage() {
   const [monthIndex, setMonthIndex] = useState(0);
+  const [openDay, setOpenDay] = useState<number | null>(null);
   const month = MONTHS[monthIndex];
   const cells = getMonthGrid(monthIndex);
-  const eventsByDay = Object.fromEntries(month.events.map((e) => [e.day, e]));
+
+  const eventsByDay: Record<number, CalEvent[]> = {};
+  for (const e of month.events) {
+    (eventsByDay[e.day] ??= []).push(e);
+  }
+  for (const e of DEMO_CUSTOM_EVENTS[monthIndex] ?? []) {
+    (eventsByDay[e.day] ??= []).push(e);
+  }
 
   function handlePrint(size: "A4" | "A3") {
     let styleEl = document.getElementById("dynamic-print-page");
@@ -147,6 +177,13 @@ export default function CalendarPage() {
           body { background: #fff !important; }
           .cal-grid { page-break-inside: avoid; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          /* On screen, a day with more events than fit shows a "+N more" button that opens
+             a popover — neither works on a printed page. So every event tab is always in
+             the markup (see cal-event-tab-overflow below) and the box grows to fit them all
+             when printed, instead of silently leaving events off the page. */
+          .cal-day-cell { height: auto !important; min-height: 108px !important; }
+          .cal-day-cell-inner { height: auto !important; overflow: visible !important; }
+          .cal-event-tab-overflow { display: flex !important; }
         }
         @media print {
                               [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
@@ -154,10 +191,10 @@ export default function CalendarPage() {
                                         [data-print-size="A3"] .cal-subtitle { font-size: 15px !important; }
                                         [data-print-size="A3"] .cal-year { font-size: 22px !important; padding: 9px 22px !important; }
                                         [data-print-size="A3"] .cal-weekday { font-size: 16px !important; padding: 9px 0 !important; }
-                                        [data-print-size="A3"] .cal-day-cell { min-height: 128px !important; padding: 13px !important; }
-                                        [data-print-size="A3"] .cal-day-badge { font-size: 20px !important; width: 40px !important; height: 40px !important; margin-bottom: 6px !important; }
-                                        [data-print-size="A3"] .cal-day-plain { font-size: 24px !important; margin-bottom: 6px !important; }
-                                        [data-print-size="A3"] .cal-event-label { font-size: 16px !important; }
+                                        [data-print-size="A3"] .cal-day-cell { height: auto !important; min-height: 148px !important; }
+                                        [data-print-size="A3"] .cal-day-cell-inner { padding: 13px !important; height: auto !important; overflow: visible !important; }
+                                        [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
+                                        [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; }
         }
       `}</style>
@@ -229,12 +266,23 @@ export default function CalendarPage() {
           >
             🖨 Print Large (A3)
           </button>
+          <button
+            title="Add an event (coming soon)"
+            style={{ padding: "10px 18px", borderRadius: 10, border: "1px dashed #B5714A", background: "#FCEFE7", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
+          >
+            + Add event
+          </button>
         </div>
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
+        {monthIndex === 0 && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#B5714A", fontWeight: 600, margin: "0 0 16px", background: "#FCEFE7", border: "1px solid #F0D9C8", borderRadius: 10, padding: "8px 14px", maxWidth: 640, marginLeft: "auto", marginRight: "auto" }}>
+            Preview only: the extra tabs on 4 &amp; 10 January are sample data so you can see how added events will look. Adding your own events isn&apos;t live yet.
+          </p>
+        )}
         {/* Weekday header pills */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 4 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
             <div
               key={w}
@@ -254,58 +302,166 @@ export default function CalendarPage() {
           ))}
         </div>
 
-        {/* Day grid: only event days are coloured */}
-        <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+        {/* Day grid: every event — built-in occasion or staff-added — renders as a
+            uniform colour tab (icon + label + lock/pencil marker), the same style
+            used in the "+N more" popover rows. Day boxes are always plain white
+            and a fixed height, so no day can ever grow into or shrink its neighbours.
+            The columns use minmax(0, 1fr) rather than plain 1fr: a plain 1fr track's
+            minimum width is set by its widest un-wrapped content (a long event label),
+            which was silently stealing width from the other six columns. minmax(0, ...)
+            removes that content-driven minimum so every column stays exactly equal,
+            and the tab's own text-overflow: ellipsis takes over instead.
+            There's no "add" button inside each box any more (moved to the toolbar
+            above, next to Print) — that freed up a whole row, so up to 4 events fit
+            at close to their original size instead of needing to shrink hard. A day
+            with more than 4 shows only 3 plus "+N more", rather than 4 plus "+N more",
+            so the overflow pill is never squeezed for room. */}
+        <div className="cal-grid" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
           {cells.map((day, i) => {
-            const ev = day ? eventsByDay[day] : undefined;
-            const columnColor = WEEKDAY_COLORS[i % 7];
+            const dayEvents = day ? eventsByDay[day] ?? [] : [];
+            const maxVisible = dayEvents.length > 4 ? 3 : 4;
+            const hiddenCount = Math.max(0, dayEvents.length - maxVisible);
+            const isOpen = day !== null && openDay === day;
+
             return (
               <div
                 key={i}
                 className="cal-day-cell"
                 style={{
-                  minHeight: 92,
+                  height: 108,
                   borderRadius: 10,
-                  padding: 10,
-                  background: ev ? columnColor : "#fff",
-                  border: ev ? "none" : "1px solid #EAE4D6",
+                  background: "#fff",
+                  border: "1px solid #EAE4D6",
+                  position: "relative",
                 }}
               >
                 {day && (
                   <>
-                    {ev ? (
-                      <div
-                        className="cal-day-badge"
-                        style={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          background: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: 13,
-                          fontWeight: 700,
-                          color: "#3F3237",
-                          marginBottom: 4,
-                        }}
-                      >
-                        {day}
-                      </div>
-                    ) : (
-                      <div className="cal-day-plain" style={{ fontSize: 15, fontWeight: 700, color: "#3F3237", marginBottom: 4 }}>{day}</div>
-                    )}
-                    {ev &&
-                      (ev.link ? (
-                        <Link href={ev.link} className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, display: "block", lineHeight: 1.3, textDecoration: "underline" }}>
-                          {ev.label}
+                    {/* Inner wrapper clips to the fixed cell height so extra tabs never grow
+                        the box; the popover below is a sibling so it isn't clipped too. */}
+                    <div className="cal-day-cell-inner" style={{ height: "100%", padding: 8, display: "flex", flexDirection: "column", gap: 2, overflow: "hidden" }}>
+                    <div className="cal-day-plain" style={{ fontSize: 14, fontWeight: 700, color: "#3F3237", lineHeight: 1.1, flexShrink: 0 }}>{day}</div>
+
+                    {dayEvents.map((ev, idx) => {
+                      // On screen, only the first maxVisible tabs show — the rest are
+                      // reached through "+N more". A printed page can't be clicked, so every
+                      // tab is always in the markup and the overflow ones are revealed by the
+                      // print stylesheet instead, so nothing is silently left off the page.
+                      const isOverflow = idx >= maxVisible;
+                      const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
+                      const icon = ev.icon ?? (ev.bankHoliday ? "⭐" : "📌");
+                      const tabStyle = {
+                        fontWeight: 700,
+                        fontSize: 10,
+                        color: text,
+                        padding: "2.5px 6px",
+                        borderRadius: 6,
+                        lineHeight: 1.15,
+                        display: isOverflow ? "none" : "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        whiteSpace: "nowrap" as const,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        background: bg,
+                        boxShadow: "0 1px 1px rgba(63,50,55,0.08)",
+                        textDecoration: "none",
+                        flexShrink: 0,
+                      };
+                      const className = isOverflow ? "cal-event-tab cal-event-tab-overflow" : "cal-event-tab";
+                      const inner = (
+                        <>
+                          <span style={{ flexShrink: 0, fontSize: 10 }}>{icon}</span>
+                          <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.label}</span>
+                          <span style={{ marginLeft: "auto", fontSize: 8, opacity: 0.6, flexShrink: 0 }}>{ev.custom ? "✎" : "🔒"}</span>
+                        </>
+                      );
+                      return ev.link ? (
+                        <Link key={idx} href={ev.link} className={className} style={tabStyle}>
+                          {inner}
                         </Link>
                       ) : (
-                        <div className="cal-event-label" style={{ fontSize: 11, color: "#3F3237", fontWeight: 600, lineHeight: 1.3 }}>
-                          {ev.label}
-                          {ev.bankHoliday && <span style={{ marginLeft: 3 }}>●</span>}
+                        <div key={idx} className={className} style={tabStyle}>
+                          {inner}
                         </div>
-                      ))}
+                      );
+                    })}
+
+                    {hiddenCount > 0 && (
+                      <button
+                        className="cal-no-print"
+                        onClick={() => setOpenDay(isOpen ? null : day)}
+                        style={{
+                          fontSize: 9,
+                          fontWeight: 700,
+                          borderRadius: 7,
+                          padding: "2px 7px",
+                          cursor: "pointer",
+                          border: "1px solid #F0D9C8",
+                          color: "#B5714A",
+                          background: "#FCEFE7",
+                          alignSelf: "flex-start",
+                          marginTop: 1,
+                          flexShrink: 0,
+                        }}
+                      >
+                        +{hiddenCount} more
+                      </button>
+                    )}
+                    </div>
+
+                    {isOpen && (
+                      <div
+                        className="cal-no-print"
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 4px)",
+                          left: 0,
+                          width: 230,
+                          background: "#fff",
+                          border: "1px solid #EAE4D6",
+                          borderRadius: 14,
+                          padding: "14px 16px",
+                          boxShadow: "0 8px 20px rgba(63,50,55,0.15)",
+                          zIndex: 20,
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                          <p style={{ fontSize: 12, fontWeight: 700, color: "#8A7A6B", margin: 0 }}>
+                            {month.name} {day} — all events
+                          </p>
+                          <button
+                            onClick={() => setOpenDay(null)}
+                            style={{ border: "none", background: "none", color: "#8A7A6B", fontSize: 14, cursor: "pointer", lineHeight: 1 }}
+                          >
+                            ×
+                          </button>
+                        </div>
+                        {dayEvents.map((ev, idx) => {
+                          const { bg, text } = TAB_COLORS[idx % TAB_COLORS.length];
+                          return (
+                            <div
+                              key={idx}
+                              style={{
+                                background: bg,
+                                color: text,
+                                borderRadius: 8,
+                                padding: "6px 9px",
+                                fontSize: 11.5,
+                                fontWeight: 700,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 6,
+                                marginBottom: 6,
+                              }}
+                            >
+                              <span>{ev.label}</span>
+                              <span style={{ marginLeft: "auto", fontSize: 9, opacity: 0.55 }}>{ev.custom ? "✎" : "🔒"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
