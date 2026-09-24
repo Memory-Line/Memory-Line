@@ -35,16 +35,10 @@ export type Template = {
   category: string;
 };
 
-// Sample/demo activities shown alongside real admin-uploaded templates.
-// Only Physical & Exercise has sample content for now — every other
-// category starts empty until real activities are uploaded.
-const RAW: Record<string, [string, string, string][]> = {
-  "Physical & Exercise": [
-    ["Seated Chair Yoga Routine", "A gentle chair-based yoga sequence suited to limited mobility", "20 min"],
-    ["Balance & Coordination Basics", "A short seated exercise routine focused on balance and coordination", "15 min"],
-    ["Morning Stretch Routine", "A simple full-body stretch sequence to start the day", "15 min"],
-  ],
-};
+// Sample/demo activities used to be defined here. They've been removed now
+// that every category has real uploads (Template rows in the database);
+// this stays empty so the old sample download routes keep compiling.
+const RAW: Record<string, [string, string, string][]> = {};
 
 export const TEMPLATES: Record<string, Template[]> = Object.fromEntries(
   Object.entries(RAW).map(([category, rows]) => [
