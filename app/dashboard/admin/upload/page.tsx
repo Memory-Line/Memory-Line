@@ -66,8 +66,25 @@ export default function AdminUploadPage() {
           body: formData,
         });
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.error ?? "Upload failed");
+          // Normally the API always returns JSON with an `error` field.
+          // If it doesn't (a platform-level error page rather than our
+          // own route code, e.g. a size or rate limit), fall back to the
+          // status code and a snippet of the raw body instead of a bare
+          // "Upload failed" with no way to diagnose it.
+          const cloned = res.clone();
+          let message = `Upload failed (${res.status})`;
+          try {
+            const data = await res.json();
+            if (data?.error) message = data.error;
+          } catch {
+            try {
+              const text = (await cloned.text()).trim();
+              if (text) message = `Upload failed (${res.status}): ${text.slice(0, 200)}`;
+            } catch {
+              // no body to read; keep the status-only message
+            }
+          }
+          throw new Error(message);
         }
         setStatuses((prev) =>
           prev.map((s, idx) => (idx === i ? { ...s, status: "done" } : s))
