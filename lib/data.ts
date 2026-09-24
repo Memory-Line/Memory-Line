@@ -27,38 +27,6 @@ export function categoryBySlug(slug: string) {
   return CATEGORIES.find((c) => c.slug === slug);
 }
 
-export type Template = {
-  id: string;
-  title: string;
-  desc: string;
-  duration: string;
-  category: string;
-};
-
-// Sample/demo activities used to be defined here. They've been removed now
-// that every category has real uploads (Template rows in the database);
-// this stays empty so the old sample download routes keep compiling.
-const RAW: Record<string, [string, string, string][]> = {};
-
-export const TEMPLATES: Record<string, Template[]> = Object.fromEntries(
-  Object.entries(RAW).map(([category, rows]) => [
-    category,
-    rows.map(([title, desc, duration], i) => ({
-      id: `${category}-${i}`,
-      title,
-      desc,
-      duration,
-      category,
-    })),
-  ])
-);
-
-export const ALL_TEMPLATES: Template[] = Object.values(TEMPLATES).flat();
-
-export function templateById(id: string) {
-  return ALL_TEMPLATES.find((t) => t.id === id);
-}
-
 export type ServiceProvider = {
   name: string;
   tag: string;

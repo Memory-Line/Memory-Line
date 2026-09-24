@@ -9,7 +9,8 @@ function leadingNumber(fileName: string): number {
 }
 
 // Rows of uploaded activities with their Standard / Large Print / Answers
-// / video links, in number order (1, 2 … 200). Shared by the regular
+// / video links, in number order (1, 2 … 200). PDF links go through
+// /api/download so each download is recorded. Shared by the regular
 // category pages, the calendar occasion pages and the language pages.
 export default function TemplateList({ templates }: { templates: Template[] }) {
   const sorted = [...templates].sort(
@@ -24,17 +25,17 @@ export default function TemplateList({ templates }: { templates: Template[] }) {
             <p className="text-[11px] text-inkSoft mt-0.5">{t.fileName}</p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+            <a href={`/api/download/${t.id}?file=standard`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
               <Download size={14} />
               Standard
             </a>
             {t.largePrintFileUrl && (
-              <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
+              <a href={`/api/download/${t.id}?file=large-print`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
                 Large Print
               </a>
             )}
             {t.answerFileUrl && (
-              <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
+              <a href={`/api/download/${t.id}?file=answers`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
                 Answers
               </a>
             )}
