@@ -4,6 +4,7 @@ import { put } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug } from "@/lib/occasions";
+import { videoUrlFor } from "@/lib/videoLinksByFile";
 
 // Only the account whose email matches ADMIN_EMAIL can use this route.
 // Everyone else (including paying customers) gets a 403.
@@ -163,6 +164,7 @@ export async function POST(req: Request) {
         fileUrl: blob.url,
         fileName: file.name,
         occasion,
+        videoUrl: videoUrlFor(category, file.name),
       },
     });
 
