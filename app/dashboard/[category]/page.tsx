@@ -1,8 +1,9 @@
 import { notFound } from "next/navigation";
-import { Clock, Download } from "lucide-react";
+import { Clock } from "lucide-react";
 import { categoryBySlug, TEMPLATES } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import DownloadButton from "@/components/DownloadButton";
+import TemplateList from "@/components/TemplateList";
 
 export function generateStaticParams() {
   return [
@@ -31,7 +32,8 @@ export default async function CategoryPage({ params }: { params: { category: str
   if (!category) notFound();
 
   const realUploads = await prisma.template.findMany({
-    where: { category: category.key },
+    // Occasion-themed uploads live on their calendar event's page instead.
+    where: { category: category.key, occasion: null },
     orderBy: { createdAt: "desc" },
   });
 
@@ -53,36 +55,8 @@ export default async function CategoryPage({ params }: { params: { category: str
       {realUploads.length > 0 && (
         <>
           <p className="text-xs font-semibold text-sageDeep mb-2 uppercase tracking-wide">From your library</p>
-          <div className="space-y-3 mb-6">
-            {realUploads.map((t) => (
-              <div key={t.id} className="flex items-center justify-between rounded-xl p-4 bg-card border border-line">
-                <div>
-                  <p className="text-[15px] font-bold">{t.title}</p>
-                  <p className="text-[11px] text-inkSoft mt-0.5">{t.fileName}</p>
-                </div>
-                <div className="flex gap-2 shrink-0">
-                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
-                    <Download size={14} />
-                    Standard
-                  </a>
-                  {t.largePrintFileUrl && (
-                    <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
-                      Large Print
-                    </a>
-                  )}
-                  {t.answerFileUrl && (
-                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
-                      Answers
-                    </a>
-                  )}
-                  {t.videoUrl && (
-                    <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
-                      Watch on YouTube
-                    </a>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div className="mb-6">
+            <TemplateList templates={realUploads} />
           </div>
         </>
       )}

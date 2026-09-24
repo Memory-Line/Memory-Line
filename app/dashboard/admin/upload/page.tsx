@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/data";
+import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 
 function titleFromFilename(name: string): string {
   const withoutExt = name.replace(/\.[^/.]+$/, "");
@@ -21,11 +22,32 @@ type FileStatus = {
 
 export default function AdminUploadPage() {
   const [category, setCategory] = useState(CATEGORIES[0].key);
+  // "" = the regular category library; otherwise a calendar occasion slug.
+  const [occasion, setOccasion] = useState("");
   const [isAnswer, setIsAnswer] = useState(false);
   const [isLargePrint, setIsLargePrint] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
   const [statuses, setStatuses] = useState<FileStatus[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  // The occasion pages link here with ?occasion=…&category=… so the
+  // upload lands in the right place without re-picking both.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const o = params.get("occasion");
+    const c = params.get("category");
+    if (o && OCCASIONS.some((x) => x.slug === o)) setOccasion(o);
+    if (c && CATEGORIES.some((x) => x.key === c)) setCategory(c);
+  }, []);
+
+  const categoryOptions = occasion ? THEMEABLE_CATEGORIES : CATEGORIES;
+
+  function handleOccasionChange(value: string) {
+    setOccasion(value);
+    if (value && !THEMEABLE_CATEGORIES.some((c) => c.key === category)) {
+      setCategory(THEMEABLE_CATEGORIES[0].key);
+    }
+  }
 
   function handleAnswerToggle(checked: boolean) {
     setIsAnswer(checked);
@@ -59,6 +81,7 @@ export default function AdminUploadPage() {
       formData.append("title", titleFromFilename(file.name));
       formData.append("isAnswer", String(isAnswer));
       formData.append("isLargePrint", String(isLargePrint));
+      formData.append("occasion", occasion);
 
       try {
         const res = await fetch("/api/admin/upload-template", {
@@ -110,13 +133,30 @@ export default function AdminUploadPage() {
         link attached automatically.
       </p>
 
+      <label className="block text-xs font-semibold text-inkSoft mb-1">Occasion</label>
+      <select
+        value={occasion}
+        onChange={(e) => handleOccasionChange(e.target.value)}
+        className="w-full rounded-lg border border-line px-3 py-2 text-sm mb-1"
+      >
+        <option value="">None — regular activity library</option>
+        {OCCASIONS.map((o) => (
+          <option key={o.slug} value={o.slug}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <p className="text-xs text-inkSoft mb-4">
+        Occasion uploads only appear on that calendar event's page, not in the regular library.
+      </p>
+
       <label className="block text-xs font-semibold text-inkSoft mb-1">Category</label>
       <select
         value={category}
         onChange={(e) => setCategory(e.target.value)}
         className="w-full rounded-lg border border-line px-3 py-2 text-sm mb-4"
       >
-        {CATEGORIES.map((c) => (
+        {categoryOptions.map((c) => (
           <option key={c.slug} value={c.key}>
             {c.key}
           </option>

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { put } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { occasionBySlug } from "@/lib/occasions";
 
 // Only the account whose email matches ADMIN_EMAIL can use this route.
 // Everyone else (including paying customers) gets a 403.
@@ -69,9 +70,14 @@ export async function POST(req: Request) {
     const title = formData.get("title") as string | null;
     const isAnswer = formData.get("isAnswer") === "true";
     let isLargePrint = formData.get("isLargePrint") === "true";
+    // Empty means the regular library; otherwise a calendar occasion slug.
+    const occasion = (formData.get("occasion") as string | null) || null;
 
     if (!file || !category || !title) {
       return NextResponse.json({ error: "Missing file, category, or title" }, { status: 400 });
+    }
+    if (occasion && !occasionBySlug(occasion)) {
+      return NextResponse.json({ error: `Unknown occasion "${occasion}"` }, { status: 400 });
     }
     // A "Large Print" file uploaded without the checkbox ticked would
     // otherwise become a separate activity instead of attaching to its
@@ -80,7 +86,8 @@ export async function POST(req: Request) {
       isLargePrint = true;
     }
 
-    const blob = await put(`activities/${category}/${file.name}`, file, {
+    const folder = occasion ? `occasions/${occasion}/${category}` : category;
+    const blob = await put(`activities/${folder}/${file.name}`, file, {
       access: "public",
       addRandomSuffix: true,
     });
@@ -97,7 +104,7 @@ export async function POST(req: Request) {
       // worksheet with the same title.
       const candidates = (
         await prisma.template.findMany({
-          where: { category },
+          where: { category, occasion },
           orderBy: { createdAt: "desc" },
         })
       ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName));
@@ -112,7 +119,7 @@ export async function POST(req: Request) {
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching worksheet found for "${file.name}" in category "${category}" (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
+            error: `No matching worksheet found for "${file.name}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -129,7 +136,7 @@ export async function POST(req: Request) {
       // worksheet (checkbox left unticked), remove that stray entry now
       // that it's attached where it belongs.
       await prisma.template.deleteMany({
-        where: { category, fileName: file.name, id: { not: existing.id } },
+        where: { category, occasion, fileName: file.name, id: { not: existing.id } },
       });
 
       return NextResponse.json({ ok: true, template: updated, matched: true });
@@ -141,6 +148,7 @@ export async function POST(req: Request) {
         category,
         fileUrl: blob.url,
         fileName: file.name,
+        occasion,
       },
     });
 
