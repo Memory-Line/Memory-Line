@@ -38,7 +38,14 @@ export default async function DashboardHome() {
 
   const activityCount = await prisma.template.count({ where: { occasion: null } });
 
-  const firstName = (session!.user.name ?? session!.user.email ?? "there").split(" ")[0];
+  // Care homes are greeted by the home's full name ("Westcliff Lodge"),
+  // personal accounts by first name.
+  const account = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { accountType: true },
+  });
+  const fullName = session!.user.name ?? session!.user.email ?? "there";
+  const firstName = account?.accountType === "care-home" ? fullName : fullName.split(" ")[0];
   const freeAccess = session!.user.subscriptionStatus === "free";
   const renewsAt = session!.user.subscriptionRenewsAt
     ? new Date(session!.user.subscriptionRenewsAt).toLocaleDateString("en-GB", {

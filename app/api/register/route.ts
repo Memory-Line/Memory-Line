@@ -7,6 +7,7 @@ const schema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  accountType: z.enum(["personal", "care-home"]).default("personal"),
 });
 
 export async function POST(req: Request) {
@@ -20,7 +21,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, accountType } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
   const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -31,7 +32,7 @@ export async function POST(req: Request) {
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { name, email: normalizedEmail, passwordHash },
+    data: { name, accountType, email: normalizedEmail, passwordHash },
   });
 
   return NextResponse.json({ id: user.id, email: user.email }, { status: 201 });

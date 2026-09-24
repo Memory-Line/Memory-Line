@@ -412,7 +412,7 @@ function RenumberSection() {
 // Gives an existing account (they sign up first) full access without
 // paying, e.g. a care home trialling the site, or takes it away again.
 // Admin access is separate: only the ADMIN_EMAIL account ever has it.
-type Account = { email: string; name: string | null; subscriptionStatus: string };
+type Account = { email: string; name: string | null; accountType: string; subscriptionStatus: string };
 
 const ACCESS_LABELS: Record<string, string> = {
   free: "free access",
@@ -479,8 +479,9 @@ function FreeAccessSection() {
           </option>
           {accounts?.map((a) => (
             <option key={a.email} value={a.email}>
-              {a.email}
-              {a.name ? ` — ${a.name}` : ""} · {ACCESS_LABELS[a.subscriptionStatus] ?? "no access"}
+              {`${a.email}${a.name ? ` — ${a.name}` : ""}${
+                a.accountType === "care-home" ? " (care home)" : ""
+              } · ${ACCESS_LABELS[a.subscriptionStatus] ?? "no access"}`}
             </option>
           ))}
         </select>

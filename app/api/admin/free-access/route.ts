@@ -17,7 +17,7 @@ export async function GET() {
   }
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   const users = await prisma.user.findMany({
-    select: { email: true, name: true, subscriptionStatus: true },
+    select: { email: true, name: true, accountType: true, subscriptionStatus: true },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json({
