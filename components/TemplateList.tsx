@@ -30,7 +30,7 @@ export default function TemplateList({ templates }: { templates: Template[] }) {
             )}
             {t.videoUrl && (
               <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
-                Watch on YouTube
+                {/youtube.com|youtu.be/.test(t.videoUrl) ? "Watch on YouTube" : "Watch sign video"}
               </a>
             )}
           </div>
