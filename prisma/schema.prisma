@@ -65,5 +65,8 @@ model Template {
   // Calendar occasion slug (lib/occasions.ts) for themed packs; null for
   // the regular category library.
   occasion      String?
+  // Language slug (lib/languages.ts) for Communication Cards; null for
+  // every other category.
+  language      String?
   createdAt     DateTime @default(now())
 }

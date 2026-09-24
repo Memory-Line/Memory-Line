@@ -3,6 +3,11 @@
 import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
+import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
+
+// Files picked as part of a folder count as large print when any folder
+// in their path says so (e.g. "A3 Large Print/").
+const LARGE_PRINT_FOLDER = /large[-_\s]?print/i;
 
 function titleFromFilename(name: string): string {
   const withoutExt = name.replace(/\.[^/.]+$/, "");
@@ -24,6 +29,8 @@ export default function AdminUploadPage() {
   const [category, setCategory] = useState(CATEGORIES[0].key);
   // "" = the regular category library; otherwise a calendar occasion slug.
   const [occasion, setOccasion] = useState("");
+  // Communication Cards only; files inside a language folder override it.
+  const [language, setLanguage] = useState(LANGUAGES[0].slug);
   const [isAnswer, setIsAnswer] = useState(false);
   const [isLargePrint, setIsLargePrint] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -41,6 +48,7 @@ export default function AdminUploadPage() {
   }, []);
 
   const categoryOptions = occasion ? THEMEABLE_CATEGORIES : CATEGORIES;
+  const isLanguageCategory = category === LANGUAGE_CATEGORY && !occasion;
 
   function handleOccasionChange(value: string) {
     setOccasion(value);
@@ -63,14 +71,28 @@ export default function AdminUploadPage() {
     if (!files || files.length === 0) return;
     setUploading(true);
 
-    const initial: FileStatus[] = Array.from(files).map((f) => ({
-      name: f.name,
-      status: "pending",
-    }));
-    setStatuses(initial);
+    // A picked folder gives each file its path inside that folder, e.g.
+    // "Languages/02-polish/A3 Large Print/001-….pdf". The path tells us the
+    // language and whether it's large print, so a whole pack can go up in
+    // one go. Worksheets go first so the large print files have something
+    // to attach to.
+    const jobs = Array.from(files)
+      .filter((f) => /\.pdf$/i.test(f.name))
+      .map((file) => {
+        const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+        return {
+          file,
+          path,
+          largePrint: isLargePrint || LARGE_PRINT_FOLDER.test(path),
+          language: isLanguageCategory ? languageFromPath(path) ?? language : "",
+        };
+      })
+      .sort((a, b) => Number(a.largePrint) - Number(b.largePrint) || a.path.localeCompare(b.path));
 
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
+    setStatuses(jobs.map((j) => ({ name: j.path, status: "pending" })));
+
+    const uploadOne = async (i: number) => {
+      const { file, largePrint, language: jobLanguage } = jobs[i];
       setStatuses((prev) =>
         prev.map((s, idx) => (idx === i ? { ...s, status: "uploading" } : s))
       );
@@ -80,8 +102,9 @@ export default function AdminUploadPage() {
       formData.append("category", category);
       formData.append("title", titleFromFilename(file.name));
       formData.append("isAnswer", String(isAnswer));
-      formData.append("isLargePrint", String(isLargePrint));
+      formData.append("isLargePrint", String(largePrint));
       formData.append("occasion", occasion);
+      formData.append("language", jobLanguage);
 
       try {
         const res = await fetch("/api/admin/upload-template", {
@@ -119,10 +142,31 @@ export default function AdminUploadPage() {
           )
         );
       }
-    }
+    };
+
+    // A few at a time: much faster for big packs, without flooding the server.
+    const runAll = async (indexes: number[]) => {
+      let next = 0;
+      const worker = async () => {
+        while (next < indexes.length) await uploadOne(indexes[next++]);
+      };
+      await Promise.all(Array.from({ length: Math.min(4, indexes.length) }, worker));
+    };
+    const all = jobs.map((_, i) => i);
+    await runAll(all.filter((i) => !jobs[i].largePrint));
+    await runAll(all.filter((i) => jobs[i].largePrint));
 
     setUploading(false);
   }
+
+  const doneCount = statuses.filter((s) => s.status === "done").length;
+  const errorCount = statuses.filter((s) => s.status === "error").length;
+  // Listing thousands of rows would make the page crawl; for big uploads
+  // show the totals plus anything that failed or is in progress.
+  const shownStatuses =
+    statuses.length > 300
+      ? statuses.filter((s) => s.status === "error" || s.status === "uploading")
+      : statuses;
 
   return (
     <div className="max-w-2xl">
@@ -163,6 +207,27 @@ export default function AdminUploadPage() {
         ))}
       </select>
 
+      {isLanguageCategory && (
+        <>
+          <label className="block text-xs font-semibold text-inkSoft mb-1">Language</label>
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm mb-1"
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l.slug} value={l.slug}>
+                {l.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-inkSoft mb-4">
+            When you upload a folder, files inside a language folder (e.g. "02-polish") use
+            that language instead.
+          </p>
+        </>
+      )}
+
       <label className="flex items-center gap-2 text-sm mb-2">
         <input
           type="checkbox"
@@ -187,8 +252,22 @@ export default function AdminUploadPage() {
         accept=".pdf"
         multiple
         onChange={(e) => setFiles(e.target.files)}
-        className="w-full text-sm mb-4"
+        className="w-full text-sm mb-3"
       />
+
+      <label className="block text-xs font-semibold text-inkSoft mb-1">…or a whole folder</label>
+      <input
+        type="file"
+        multiple
+        // Not in React's typings, but supported by every current browser.
+        {...{ webkitdirectory: "" }}
+        onChange={(e) => setFiles(e.target.files)}
+        className="w-full text-sm mb-1"
+      />
+      <p className="text-xs text-inkSoft mb-4">
+        Everything inside is uploaded. Files in a folder with "Large Print" in its name are
+        attached as large print after the standard files have gone up.
+      </p>
 
       <button
         onClick={handleUpload}
@@ -199,8 +278,15 @@ export default function AdminUploadPage() {
       </button>
 
       {statuses.length > 0 && (
-        <div className="mt-6 space-y-1.5">
-          {statuses.map((s) => (
+        <p className="mt-6 text-sm font-semibold">
+          {doneCount} of {statuses.length} uploaded
+          {errorCount > 0 && <span className="text-red-600"> · {errorCount} failed</span>}
+        </p>
+      )}
+
+      {shownStatuses.length > 0 && (
+        <div className="mt-3 space-y-1.5">
+          {shownStatuses.map((s) => (
             <div
               key={s.name}
               className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm"

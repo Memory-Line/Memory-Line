@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug } from "@/lib/occasions";
 import { videoUrlFor } from "@/lib/videoLinksByFile";
+import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 
 // Only the account whose email matches ADMIN_EMAIL can use this route.
 // Everyone else (including paying customers) gets a 403.
@@ -81,6 +82,9 @@ export async function POST(req: Request) {
     let isLargePrint = formData.get("isLargePrint") === "true";
     // Empty means the regular library; otherwise a calendar occasion slug.
     const occasion = (formData.get("occasion") as string | null) || null;
+    // Communication Cards come in several languages; nothing else does.
+    const language =
+      category === LANGUAGE_CATEGORY ? (formData.get("language") as string | null) || null : null;
 
     if (!file || !category || !title) {
       return NextResponse.json({ error: "Missing file, category, or title" }, { status: 400 });
@@ -88,6 +92,13 @@ export async function POST(req: Request) {
     if (occasion && !occasionBySlug(occasion)) {
       return NextResponse.json({ error: `Unknown occasion "${occasion}"` }, { status: 400 });
     }
+    if (category === LANGUAGE_CATEGORY && !(language && languageBySlug(language))) {
+      return NextResponse.json(
+        { error: `Pick a language for ${LANGUAGE_CATEGORY} (got "${language ?? ""}")` },
+        { status: 400 }
+      );
+    }
+    const scope = { category, occasion, language };
     // A "Large Print" file uploaded without the checkbox ticked would
     // otherwise become a separate activity instead of attaching to its
     // worksheet. The marker is unambiguous, so treat it as large print.
@@ -95,7 +106,11 @@ export async function POST(req: Request) {
       isLargePrint = true;
     }
 
-    const folder = occasion ? `occasions/${occasion}/${category}` : category;
+    const folder = occasion
+      ? `occasions/${occasion}/${category}`
+      : language
+      ? `${category}/${language}`
+      : category;
     const blob = await put(`activities/${folder}/${file.name}`, file, {
       access: "public",
       addRandomSuffix: true,
@@ -112,13 +127,17 @@ export async function POST(req: Request) {
       // If the rest of the name differs, fall back to the one worksheet with
       // that number (only when exactly one has it). Only when one side has
       // no number to compare, fall back to the newest worksheet with the
-      // same title.
-      const candidates = (
+      // same title. Entries with this exact file name are only used as a
+      // last resort: usually they're a stray copy of this variant uploaded
+      // as a worksheet, but some packs (Communication Cards) name the large
+      // print file exactly like its worksheet.
+      const all = (
         await prisma.template.findMany({
-          where: { category, occasion },
+          where: scope,
           orderBy: { createdAt: "desc" },
         })
-      ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName) && t.fileName !== file.name);
+      ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName));
+      const candidates = all.filter((t) => t.fileName !== file.name);
       const sameNumber = variant.number
         ? candidates.filter((t) => matchKey(t.fileName).number === variant.number)
         : [];
@@ -129,12 +148,13 @@ export async function POST(req: Request) {
           (t) =>
             (variant.number === null || matchKey(t.fileName).number === null) &&
             t.title.toLowerCase() === baseTitle.toLowerCase()
-        );
+        ) ??
+        all.find((t) => t.fileName === file.name);
 
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching worksheet found for "${file.name}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
+            error: `No matching worksheet found for "${file.name}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}${language ? ` (${language})` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -151,10 +171,24 @@ export async function POST(req: Request) {
       // worksheet (checkbox left unticked), remove that stray entry now
       // that it's attached where it belongs.
       await prisma.template.deleteMany({
-        where: { category, occasion, fileName: file.name, id: { not: existing.id } },
+        where: { ...scope, fileName: file.name, id: { not: existing.id } },
       });
 
       return NextResponse.json({ ok: true, template: updated, matched: true });
+    }
+
+    // Re-uploading a worksheet (e.g. retrying a folder upload that stopped
+    // part way) replaces its file rather than adding a duplicate.
+    const previous = await prisma.template.findFirst({
+      where: { ...scope, fileName: file.name },
+      orderBy: { createdAt: "desc" },
+    });
+    if (previous) {
+      const replaced = await prisma.template.update({
+        where: { id: previous.id },
+        data: { fileUrl: blob.url, videoUrl: videoUrlFor(category, file.name) ?? previous.videoUrl },
+      });
+      return NextResponse.json({ ok: true, template: replaced, matched: false, replaced: true });
     }
 
     const template = await prisma.template.create({
@@ -164,6 +198,7 @@ export async function POST(req: Request) {
         fileUrl: blob.url,
         fileName: file.name,
         occasion,
+        language,
         videoUrl: videoUrlFor(category, file.name),
       },
     });

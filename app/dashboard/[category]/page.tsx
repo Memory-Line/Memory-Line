@@ -20,7 +20,6 @@ export function generateStaticParams() {
     { category: "matching-pairs" },
     { category: "spot-the-difference" },
     { category: "sing-alongs" },
-    { category: "communication-cards" },
     { category: "bsl-tools" },
   ];
 }
@@ -45,12 +44,6 @@ export default async function CategoryPage({ params }: { params: { category: str
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         {realUploads.length + sampleTemplates.length} downloadable activities — choose from memory boxes, conversation prompts, photo collections, and more
       </p>
-
-      {category.slug === "communication-cards" && (
-        <p className="text-xs text-inkSoft mb-5 rounded-lg px-3 py-2 bg-cardTint">
-          Available in 25 languages — a language picker for this category is coming soon.
-        </p>
-      )}
 
       {realUploads.length > 0 && (
         <>
