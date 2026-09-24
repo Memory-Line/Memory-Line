@@ -4,8 +4,31 @@ import {
   Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check,
 } from "lucide-react";
-import { CATEGORIES, ALL_TEMPLATES, templateById } from "@/lib/data";
-import FreeDownloadButton from "@/components/FreeDownloadButton";
+import { CATEGORIES } from "@/lib/data";
+import { prisma } from "@/lib/prisma";
+
+// The free samples come from the database, so render on each request.
+export const dynamic = "force-dynamic";
+
+// One free sample per category, offered on the homepage before sign-up:
+// the first activity (lowest number) in each of these categories.
+const FREE_SAMPLE_CATEGORIES = [
+  "Word Searches",
+  "Remembrance Cards",
+  "BSL Tools",
+  "Conversation Starters",
+  "Trivia",
+];
+
+// "001-008-cottage-kitchen-conversation-starters-a4.pdf" gives the title
+// "008 Cottage Kitchen Conversation Starters A4"; drop the stray number
+// and paper size for display.
+function sampleTitle(title: string): string {
+  return title.replace(/^\d+\s+/, "").replace(/\s+A\d$/i, "");
+}
+
+const SAMPLE_LINK =
+  "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
 
 const ICONS: Record<string, any> = {
   "Physical & Exercise": Footprints,
@@ -25,12 +48,17 @@ const ICONS: Record<string, any> = {
   "BSL Tools": Hand,
 };
 
-export default function LandingPage() {
-  const freeSamples = [
-    templateById("Physical & Exercise-0"),
-    templateById("Physical & Exercise-1"),
-    templateById("Physical & Exercise-2"),
-  ].filter(Boolean) as typeof ALL_TEMPLATES;
+export default async function LandingPage() {
+  const freeSamples = (
+    await Promise.all(
+      FREE_SAMPLE_CATEGORIES.map((category) =>
+        prisma.template.findFirst({
+          where: { category, occasion: null, language: null },
+          orderBy: { fileName: "asc" },
+        })
+      )
+    )
+  ).filter((t): t is NonNullable<typeof t> => t !== null);
 
   return (
     <main>
@@ -106,23 +134,49 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Free preview (hidden while there are no free samples to offer) */}
+      {/* Free samples (hidden if none of their categories has uploads yet) */}
       {freeSamples.length > 0 && (
       <section className="max-w-5xl mx-auto px-8 pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">Try a few, free — no signup needed</h2>
         <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
-        <div className="grid grid-cols-3 gap-4">
-          {freeSamples.map((t) => (
-            <div key={t.id} className="rounded-2xl p-5 border border-line bg-card flex flex-col justify-between">
-              <div>
-                <p className="font-serif text-base mb-1">{t.title}</p>
-                <p className="text-xs text-inkSoft">{t.desc}</p>
+        <div className="flex flex-wrap justify-center gap-4">
+          {freeSamples.map((t) => {
+            const cat = CATEGORIES.find((c) => c.key === t.category);
+            const Icon = ICONS[t.category];
+            return (
+              <div
+                key={t.id}
+                className="w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border border-line bg-card flex flex-col justify-between"
+              >
+                <div>
+                  <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
+                    {Icon && <Icon size={14} />} {t.category}
+                  </p>
+                  <p className="font-serif text-base">{sampleTitle(t.title)}</p>
+                </div>
+                <div className="mt-4 grid gap-2">
+                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+                    Download free sample
+                  </a>
+                  {t.largePrintFileUrl && (
+                    <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FCEFE7", color: "#B5714A" }}>
+                      Large Print
+                    </a>
+                  )}
+                  {t.answerFileUrl && (
+                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
+                      Answers
+                    </a>
+                  )}
+                  {t.videoUrl && (
+                    <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#F3DAD8", color: "#B5453D" }}>
+                      {/youtube\.com|youtu\.be/.test(t.videoUrl) ? "Watch on YouTube" : "Watch sign video"}
+                    </a>
+                  )}
+                </div>
               </div>
-              <div className="mt-4">
-                <FreeDownloadButton templateId={t.id} />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
       )}

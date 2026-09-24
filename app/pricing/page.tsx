@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import Image from "next/image";
-import { ALL_TEMPLATES } from "@/lib/data";
 
 export default function PricingPage() {
   const { data: session, status } = useSession();

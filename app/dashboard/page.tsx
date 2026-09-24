@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES, SERVICES, TEMPLATES } from "@/lib/data";
+import { CATEGORIES, SERVICES } from "@/lib/data";
 import {
   Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
@@ -46,14 +46,35 @@ export default async function DashboardHome() {
       })
     : null;
 
-  // "Popular" is a static illustrative sample for the prototype stage —
-  // swap for a real download-count aggregation once there's usage data.
-  // Only Physical & Exercise has sample activities right now.
-  const popular = (TEMPLATES["Physical & Exercise"] ?? []).slice(0, 4);
+  // The four most-downloaded activities this calendar month, across all
+  // users (hidden until there have been downloads this month). Downloads
+  // of the old sample activities, which no longer exist, are skipped.
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const topDownloads = await prisma.download.groupBy({
+    by: ["templateId", "templateName", "category"],
+    where: { downloadedAt: { gte: monthStart } },
+    _count: { _all: true },
+    orderBy: { _count: { templateId: "desc" } },
+    take: 10,
+  });
+  const stillThere = new Set(
+    (
+      await prisma.template.findMany({
+        where: { id: { in: topDownloads.map((d) => d.templateId) } },
+        select: { id: true },
+      })
+    ).map((t) => t.id)
+  );
+  const popular = topDownloads
+    .filter((d) => stillThere.has(d.templateId))
+    .slice(0, 4)
+    .map((d) => ({ id: d.templateId, title: d.templateName, category: d.category }));
 
   return (
     <div>
-      <h1 className="font-serif text-3xl">Welcome back, {firstName}</h1>
+      <h1 className="font-serif text-3xl">Welcome Back, {firstName}</h1>
       <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
 
       <div className="flex items-center justify-between rounded-xl px-5 py-3 mt-5 bg-card border border-line">
