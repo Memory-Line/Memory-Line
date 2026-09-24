@@ -22,7 +22,7 @@ model User {
   // Stripe
   stripeCustomerId     String?   @unique
   stripeSubscriptionId String?   @unique
-  subscriptionStatus   String    @default("inactive") // inactive | active | past_due | canceled
+  subscriptionStatus   String    @default("inactive") // inactive | active | past_due | canceled | free (given by admin, no Stripe)
   subscriptionRenewsAt DateTime?
 
   downloads            Download[]

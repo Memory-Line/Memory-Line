@@ -1,0 +1,51 @@
+import { NextResponse } from "next/server";
+import { requireAdmin } from "@/lib/admin";
+import { prisma } from "@/lib/prisma";
+
+// Gives an existing account full access without a Stripe subscription
+// (status "free"), or takes that access away again. Paid subscriptions
+// are never changed here; Stripe manages those.
+export async function POST(req: Request) {
+  try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
+    const { email, grant } = await req.json();
+    if (typeof email !== "string" || !email.trim()) {
+      return NextResponse.json({ error: "Enter an email address" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: email.trim(), mode: "insensitive" } },
+    });
+    if (!user) {
+      return NextResponse.json(
+        { error: `No account found for ${email.trim()}. They need to sign up first.` },
+        { status: 404 }
+      );
+    }
+
+    const paid = ["active", "trialing", "past_due"].includes(user.subscriptionStatus);
+    if (paid) {
+      return NextResponse.json(
+        { error: `${user.email} has a paid subscription (${user.subscriptionStatus}); it's managed in Stripe.` },
+        { status: 400 }
+      );
+    }
+
+    if (grant) {
+      await prisma.user.update({ where: { id: user.id }, data: { subscriptionStatus: "free" } });
+      return NextResponse.json({ ok: true, message: `✓ ${user.email} now has free access.` });
+    }
+    if (user.subscriptionStatus !== "free") {
+      return NextResponse.json({ ok: true, message: `${user.email} didn't have free access.` });
+    }
+    await prisma.user.update({ where: { id: user.id }, data: { subscriptionStatus: "inactive" } });
+    return NextResponse.json({ ok: true, message: `✓ Free access removed from ${user.email}.` });
+  } catch (err: any) {
+    console.error("free-access failed:", err);
+    const message = typeof err?.message === "string" ? err.message : "Unexpected server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}

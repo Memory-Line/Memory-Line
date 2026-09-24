@@ -39,6 +39,7 @@ export default async function DashboardHome() {
   const activityCount = await prisma.template.count({ where: { occasion: null } });
 
   const firstName = (session!.user.name ?? session!.user.email ?? "there").split(" ")[0];
+  const freeAccess = session!.user.subscriptionStatus === "free";
   const renewsAt = session!.user.subscriptionRenewsAt
     ? new Date(session!.user.subscriptionRenewsAt).toLocaleDateString("en-GB", {
         day: "numeric",
@@ -79,19 +80,25 @@ export default async function DashboardHome() {
 
       <div className="flex items-center justify-between rounded-xl px-5 py-3 mt-5 bg-card border border-line">
         <div>
-          <p className="text-sm font-bold text-sageDeep">✓ Subscription Active</p>
+          <p className="text-sm font-bold text-sageDeep">
+            {freeAccess ? "✓ Free access" : "✓ Subscription Active"}
+          </p>
           <p className="text-xs text-inkSoft mt-0.5">
-            {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {activityCount.toLocaleString("en-GB")} activities available
+            {freeAccess ? "Given by Activity Central" : renewsAt ? `Renews ${renewsAt}` : "Active"} — all{" "}
+            {activityCount.toLocaleString("en-GB")} activities available
           </p>
         </div>
-        <form action="/api/stripe/portal" method="POST">
-          <button
-            formAction="/api/stripe/portal"
-            className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-cardTint hover:bg-line transition-colors"
-          >
-            Manage subscription
-          </button>
-        </form>
+        {/* Free accounts have no Stripe subscription to manage. */}
+        {!freeAccess && (
+          <form action="/api/stripe/portal" method="POST">
+            <button
+              formAction="/api/stripe/portal"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold bg-cardTint hover:bg-line transition-colors"
+            >
+              Manage subscription
+            </button>
+          </form>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4 mt-5">
