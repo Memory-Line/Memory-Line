@@ -43,12 +43,20 @@ const LARGE_PRINT_MARKER = /large[-_\s]?print/i;
 // series like "001-Bingo-Card.pdf" … "200-Bingo-Card.pdf" (which all share
 // the title "Bingo Card") still pair each variant with its own worksheet:
 // "137-Bingo-Card-Large-Print.pdf" → "137|bingo card" matches only
-// "137-Bingo-Card.pdf". Leading zeros are ignored ("7" = "007").
+// "137-Bingo-Card.pdf". Leading zeros are ignored ("7" = "007"), and so
+// are paper size / orientation words, since large print versions are often
+// named for their format ("001-garden-bench-colouring-page-a3-landscape.pdf"
+// is the large print of "001-garden-bench-colouring-page.pdf").
 function matchKey(name: string): { number: string | null; key: string } {
   const withoutExt = name.replace(/\.[^/.]+$/, "");
   const num = withoutExt.match(/^(\d+)[-_.\s]*/);
   const number = num ? String(parseInt(num[1], 10)) : null;
-  return { number, key: `${number ?? ""}|${baseTitleFromFilename(name).toLowerCase()}` };
+  const words = baseTitleFromFilename(name)
+    .toLowerCase()
+    .split(" ")
+    .filter((w) => !/^(a[0-9]|landscape|portrait)$/.test(w))
+    .join(" ");
+  return { number, key: `${number ?? ""}|${words}` };
 }
 
 export async function POST(req: Request) {
@@ -100,16 +108,22 @@ export async function POST(req: Request) {
       // Match on the worksheet's file name, number included, so each
       // numbered variant goes to its own worksheet (case-insensitive, and
       // skipping stray variant files that were uploaded as worksheets).
-      // Only when one side has no number to compare, fall back to the newest
-      // worksheet with the same title.
+      // If the rest of the name differs, fall back to the one worksheet with
+      // that number (only when exactly one has it). Only when one side has
+      // no number to compare, fall back to the newest worksheet with the
+      // same title.
       const candidates = (
         await prisma.template.findMany({
           where: { category, occasion },
           orderBy: { createdAt: "desc" },
         })
-      ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName));
+      ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName) && t.fileName !== file.name);
+      const sameNumber = variant.number
+        ? candidates.filter((t) => matchKey(t.fileName).number === variant.number)
+        : [];
       const existing =
         candidates.find((t) => matchKey(t.fileName).key === variant.key) ??
+        (sameNumber.length === 1 ? sameNumber[0] : undefined) ??
         candidates.find(
           (t) =>
             (variant.number === null || matchKey(t.fileName).number === null) &&
