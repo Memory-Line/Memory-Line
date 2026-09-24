@@ -1,22 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { requireAdmin } from "@/lib/admin";
 import { put } from "@vercel/blob";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug } from "@/lib/occasions";
 import { videoUrlFor } from "@/lib/videoLinksByFile";
 import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
-
-// Only the account whose email matches ADMIN_EMAIL can use this route.
-// Everyone else (including paying customers) gets a 403.
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
-  if (!session?.user?.email || !adminEmail || session.user.email.toLowerCase() !== adminEmail) {
-    return null;
-  }
-  return session;
-}
 
 // Strips the leading number, then strips an "Answers" / "Answer Key" /
 // "Large Print" marker if present, so a variant file's name reduces to
