@@ -29,88 +29,88 @@ type DisplayEvent = {
 
 const MONTHS: { name: string; events: BuiltInEvent[]; note: string }[] = [
   { name: "January", note: "Twelfth Night is shown on 5 January; some traditions observe it on 6 January. Lunar New Year falls on 6 February in 2027.", events: [
-    { day: 1, label: "New Year's Day", bankHoliday: true, link: null },
-    { day: 4, label: "Bank holiday (Scotland)", bankHoliday: true, link: null },
-    { day: 5, label: "Twelfth Night", link: null },
-    { day: 25, label: "Burns Night", link: null },
+    { day: 1, label: "New Year's Day", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 4, label: "Bank holiday (Scotland)", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 5, label: "Twelfth Night", link: "/dashboard/occasions" },
+    { day: 25, label: "Burns Night", link: "/dashboard/occasions" },
   ]},
   { name: "February", note: "Chinese / Lunar New Year: 6 February. Pancake Day: 9 February. Activity theme: friendship, familiar love songs and pancake traditions.", events: [
-    { day: 6, label: "Chinese / Lunar New Year", link: null },
-    { day: 9, label: "Pancake Day (Shrove Tuesday)", link: null },
-    { day: 10, label: "Ash Wednesday", link: null },
-    { day: 14, label: "Valentine's Day", link: null },
+    { day: 6, label: "Chinese / Lunar New Year", link: "/dashboard/occasions" },
+    { day: 9, label: "Pancake Day (Shrove Tuesday)", link: "/dashboard/occasions" },
+    { day: 10, label: "Ash Wednesday", link: "/dashboard/occasions" },
+    { day: 14, label: "Valentine's Day", link: "/dashboard/occasions" },
   ]},
   { name: "March", note: "Easter falls in March in 2027. Easter Monday is a bank holiday in England, Wales and Northern Ireland.", events: [
-    { day: 1, label: "St David's Day", link: null },
-    { day: 7, label: "Mother's Day (Mothering Sunday)", link: null },
-    { day: 8, label: "International Women's Day", link: null },
-    { day: 17, label: "St Patrick's Day", link: null },
-    { day: 20, label: "First day of spring", link: null },
-    { day: 21, label: "Palm Sunday", link: null },
-    { day: 26, label: "Good Friday", bankHoliday: true, link: null },
-    { day: 28, label: "Easter Sunday", link: null },
-    { day: 29, label: "Easter Monday", bankHoliday: true, link: null },
+    { day: 1, label: "St David's Day", link: "/dashboard/occasions" },
+    { day: 7, label: "Mother's Day (Mothering Sunday)", link: "/dashboard/occasions" },
+    { day: 8, label: "International Women's Day", link: "/dashboard/occasions" },
+    { day: 17, label: "St Patrick's Day", link: "/dashboard/occasions" },
+    { day: 20, label: "First day of spring", link: "/dashboard/occasions" },
+    { day: 21, label: "Palm Sunday", link: "/dashboard/occasions" },
+    { day: 26, label: "Good Friday", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 28, label: "Easter Sunday", link: "/dashboard/occasions" },
+    { day: 29, label: "Easter Monday", bankHoliday: true, link: "/dashboard/occasions" },
   ]},
   { name: "April", note: "Easter was on 28 March this year; Easter Monday was on 29 March. Activity theme: spring gardens, flowers and St George's Day traditions.", events: [
-    { day: 1, label: "April Fool's Day", link: null },
-    { day: 23, label: "St George's Day", link: null },
+    { day: 1, label: "April Fool's Day", link: "/dashboard/occasions" },
+    { day: 23, label: "St George's Day", link: "/dashboard/occasions" },
   ]},
   { name: "May", note: "Chelsea Flower Show: 18-22 May. Mental Health Awareness Week: 2027 dates to be confirmed.", events: [
-    { day: 1, label: "May Day", link: null },
-    { day: 3, label: "Early May bank holiday", bankHoliday: true, link: null },
-    { day: 8, label: "VE Day", link: null },
-    { day: 12, label: "International Nurses Day", link: null },
-    { day: 18, label: "Chelsea Flower Show begins", link: null },
-    { day: 22, label: "Chelsea Flower Show ends", link: null },
-    { day: 31, label: "Spring bank holiday", bankHoliday: true, link: null },
+    { day: 1, label: "May Day", link: "/dashboard/occasions" },
+    { day: 3, label: "Early May bank holiday", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 8, label: "VE Day", link: "/dashboard/occasions" },
+    { day: 12, label: "International Nurses Day", link: "/dashboard/occasions" },
+    { day: 18, label: "Chelsea Flower Show begins", link: "/dashboard/occasions" },
+    { day: 22, label: "Chelsea Flower Show ends", link: "/dashboard/occasions" },
+    { day: 31, label: "Spring bank holiday", bankHoliday: true, link: "/dashboard/occasions" },
   ]},
   { name: "June", note: "Wimbledon: 28 June - 11 July. Trooping the Colour / King's Official Birthday: 2027 date to be confirmed.", events: [
-    { day: 6, label: "D-Day anniversary", link: null },
-    { day: 20, label: "Father's Day", link: null },
-    { day: 21, label: "First day of summer", link: null },
-    { day: 28, label: "Wimbledon begins", link: null },
+    { day: 6, label: "D-Day anniversary", link: "/dashboard/occasions" },
+    { day: 20, label: "Father's Day", link: "/dashboard/occasions" },
+    { day: 21, label: "First day of summer", link: "/dashboard/occasions" },
+    { day: 28, label: "Wimbledon begins", link: "/dashboard/occasions" },
   ]},
   { name: "July", note: "Wimbledon continues until 11 July. Summer / seaside celebrations: choose any day. Activity theme: seaside memories and summer music.", events: [
-    { day: 4, label: "American Independence Day", link: null },
-    { day: 7, label: "World Chocolate Day", link: null },
-    { day: 11, label: "Wimbledon ends", link: null },
-    { day: 12, label: "Battle of the Boyne (NI)", link: null },
+    { day: 4, label: "American Independence Day", link: "/dashboard/occasions" },
+    { day: 7, label: "World Chocolate Day", link: "/dashboard/occasions" },
+    { day: 11, label: "Wimbledon ends", link: "/dashboard/occasions" },
+    { day: 12, label: "Battle of the Boyne (NI)", link: "/dashboard/occasions" },
   ]},
   { name: "August", note: "Notting Hill Carnival: 29-30 August. Bank holiday in England, Wales and NI on 30 August. Afternoon Tea Week: date to be confirmed.", events: [
-    { day: 1, label: "Yorkshire Day", link: null },
-    { day: 2, label: "Summer bank holiday (Scotland)", bankHoliday: true, link: null },
-    { day: 8, label: "International Cat Day", link: null },
-    { day: 15, label: "VJ Day", link: null },
-    { day: 29, label: "Notting Hill Carnival begins", link: null },
-    { day: 30, label: "Summer bank holiday", bankHoliday: true, link: null },
+    { day: 1, label: "Yorkshire Day", link: "/dashboard/occasions" },
+    { day: 2, label: "Summer bank holiday (Scotland)", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 8, label: "International Cat Day", link: "/dashboard/occasions" },
+    { day: 15, label: "VJ Day", link: "/dashboard/occasions" },
+    { day: 29, label: "Notting Hill Carnival begins", link: "/dashboard/occasions" },
+    { day: 30, label: "Summer bank holiday", bankHoliday: true, link: "/dashboard/occasions" },
   ]},
   { name: "September", note: "Harvest Festival season: choose a date to suit your home or local community. Macmillan Coffee Morning: date to be confirmed.", events: [
-    { day: 15, label: "Battle of Britain Day", link: null },
-    { day: 21, label: "World Alzheimer's Day", link: null },
-    { day: 22, label: "First day of autumn", link: null },
+    { day: 15, label: "Battle of Britain Day", link: "/dashboard/occasions" },
+    { day: 21, label: "World Alzheimer's Day", link: "/dashboard/occasions" },
+    { day: 22, label: "First day of autumn", link: "/dashboard/occasions" },
   ]},
   { name: "October", note: "Harvest Festival: local dates vary through September and October. Activity theme: autumn colours, harvest traditions and friendly Halloween crafts.", events: [
-    { day: 1, label: "International Day of Older Persons", link: null },
-    { day: 10, label: "World Mental Health Day", link: null },
-    { day: 31, label: "Halloween", link: null },
+    { day: 1, label: "International Day of Older Persons", link: "/dashboard/occasions" },
+    { day: 10, label: "World Mental Health Day", link: "/dashboard/occasions" },
+    { day: 31, label: "Halloween", link: "/dashboard/occasions" },
   ]},
   { name: "November", note: "Advent begins on Sunday 28 November and continues into December. St Andrew's Day is a bank holiday in Scotland.", events: [
-    { day: 1, label: "All Saints' Day", link: null },
-    { day: 5, label: "Bonfire Night (Guy Fawkes Night)", link: null },
-    { day: 11, label: "Armistice Day", link: null },
-    { day: 14, label: "Remembrance Sunday", link: null },
-    { day: 28, label: "Advent begins", link: null },
-    { day: 30, label: "St Andrew's Day", bankHoliday: true, link: null },
+    { day: 1, label: "All Saints' Day", link: "/dashboard/occasions" },
+    { day: 5, label: "Bonfire Night (Guy Fawkes Night)", link: "/dashboard/occasions" },
+    { day: 11, label: "Armistice Day", link: "/dashboard/occasions" },
+    { day: 14, label: "Remembrance Sunday", link: "/dashboard/occasions" },
+    { day: 28, label: "Advent begins", link: "/dashboard/occasions" },
+    { day: 30, label: "St Andrew's Day", bankHoliday: true, link: "/dashboard/occasions" },
   ]},
   { name: "December", note: "Advent continues. Hanukkah: sunset 24 December 2027 to nightfall 1 January 2028. Christmas Jumper Day: date to be confirmed.", events: [
-    { day: 6, label: "St Nicholas Day", link: null },
-    { day: 20, label: "First day of winter", link: null },
-    { day: 24, label: "Christmas Eve / Hanukkah begins at sunset", link: null },
-    { day: 25, label: "Christmas Day", bankHoliday: true, link: null },
-    { day: 26, label: "Boxing Day", bankHoliday: true, link: null },
-    { day: 27, label: "Christmas bank holiday (substitute)", bankHoliday: true, link: null },
-    { day: 28, label: "Boxing Day bank holiday (substitute)", bankHoliday: true, link: null },
-    { day: 31, label: "New Year's Eve", link: null },
+    { day: 6, label: "St Nicholas Day", link: "/dashboard/occasions" },
+    { day: 20, label: "First day of winter", link: "/dashboard/occasions" },
+    { day: 24, label: "Christmas Eve / Hanukkah begins at sunset", link: "/dashboard/occasions" },
+    { day: 25, label: "Christmas Day", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 26, label: "Boxing Day", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 27, label: "Christmas bank holiday (substitute)", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 28, label: "Boxing Day bank holiday (substitute)", bankHoliday: true, link: "/dashboard/occasions" },
+    { day: 31, label: "New Year's Eve", link: "/dashboard/occasions" },
   ]},
 ];
 
@@ -649,68 +649,86 @@ export default function CalendarPage() {
                             ×
                           </button>
                         </div>
-                        {dayEvents.map((ev) => (
-                          <div
-                            key={ev.key}
-                            style={{
-                              background: bg,
-                              color: text,
-                              borderRadius: 8,
-                              padding: "6px 9px",
-                              fontSize: 11.5,
-                              fontWeight: 700,
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 6,
-                              marginBottom: 6,
-                            }}
-                          >
-                            {/* flex: 1 + minWidth: 0 lets a long title wrap and shrink to
-                                fit, instead of a flex row's default sizing pushing it (or
-                                the Edit/Delete links beside it) past the popover's edge. */}
-                            <span style={{ flex: 1, minWidth: 0 }}>
-                              {ev.label}
-                              {ev.time ? ` · ${ev.time}` : ""}
-                            </span>
-                            {ev.custom && ev.id ? (
-                              confirmDeleteId === ev.id ? (
-                                <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700 }}>
-                                  <span
-                                    onClick={() => !saving && deleteEvent(ev.id!)}
-                                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                                  >
-                                    Confirm delete
+                        {dayEvents.map((ev) => {
+                          // flex: 1 + minWidth: 0 lets a long title wrap and shrink to
+                          // fit, instead of a flex row's default sizing pushing it (or
+                          // the Edit/Delete links beside it) past the popover's edge.
+                          const rowStyle: CSSProperties = {
+                            background: bg,
+                            color: text,
+                            borderRadius: 8,
+                            padding: "6px 9px",
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 6,
+                            marginBottom: 6,
+                            textDecoration: "none",
+                          };
+                          const rowContent = (
+                            <>
+                              <span style={{ flex: 1, minWidth: 0 }}>
+                                {ev.label}
+                                {ev.time ? ` · ${ev.time}` : ""}
+                              </span>
+                              {ev.custom && ev.id ? (
+                                confirmDeleteId === ev.id ? (
+                                  <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700 }}>
+                                    <span
+                                      onClick={() => !saving && deleteEvent(ev.id!)}
+                                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                                    >
+                                      Confirm delete
+                                    </span>
+                                    <span
+                                      onClick={() => setConfirmDeleteId(null)}
+                                      style={{ cursor: "pointer", opacity: 0.75 }}
+                                    >
+                                      Cancel
+                                    </span>
                                   </span>
-                                  <span
-                                    onClick={() => setConfirmDeleteId(null)}
-                                    style={{ cursor: "pointer", opacity: 0.75 }}
-                                  >
-                                    Cancel
+                                ) : (
+                                  <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700, opacity: 0.85 }}>
+                                    <span
+                                      onClick={() => openEditModal(customEvents.find((c) => c.id === ev.id)!)}
+                                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                                    >
+                                      Edit
+                                    </span>
+                                    <span
+                                      onClick={() => setConfirmDeleteId(ev.id!)}
+                                      style={{ cursor: "pointer", textDecoration: "underline" }}
+                                    >
+                                      Delete
+                                    </span>
                                   </span>
+                                )
+                              ) : ev.link ? (
+                                // Built-in occasions can't be edited or deleted, but they
+                                // are clickable through to the themed-category browser —
+                                // "Browse" (rather than "Locked") reflects that it still
+                                // does something on click.
+                                <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.75, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                                  Browse →
                                 </span>
                               ) : (
-                                <span style={{ marginLeft: "auto", display: "flex", gap: 8, fontSize: 9.5, fontWeight: 700, opacity: 0.85 }}>
-                                  <span
-                                    onClick={() => openEditModal(customEvents.find((c) => c.id === ev.id)!)}
-                                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                                  >
-                                    Edit
-                                  </span>
-                                  <span
-                                    onClick={() => setConfirmDeleteId(ev.id!)}
-                                    style={{ cursor: "pointer", textDecoration: "underline" }}
-                                  >
-                                    Delete
-                                  </span>
+                                <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
+                                  Locked
                                 </span>
-                              )
-                            ) : (
-                              <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                                Locked
-                              </span>
-                            )}
-                          </div>
-                        ))}
+                              )}
+                            </>
+                          );
+                          return ev.link ? (
+                            <Link key={ev.key} href={ev.link} style={{ ...rowStyle, cursor: "pointer" }}>
+                              {rowContent}
+                            </Link>
+                          ) : (
+                            <div key={ev.key} style={rowStyle}>
+                              {rowContent}
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </>
