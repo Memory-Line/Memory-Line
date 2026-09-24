@@ -37,6 +37,20 @@ function baseTitleFromFilename(name: string): string {
     .join(" ");
 }
 
+const LARGE_PRINT_MARKER = /large[-_\s]?print/i;
+
+// Like baseTitleFromFilename, but keeps the leading number, so numbered
+// series like "001-Bingo-Card.pdf" … "200-Bingo-Card.pdf" (which all share
+// the title "Bingo Card") still pair each variant with its own worksheet:
+// "137-Bingo-Card-Large-Print.pdf" → "137|bingo card" matches only
+// "137-Bingo-Card.pdf". Leading zeros are ignored ("7" = "007").
+function matchKey(name: string): { number: string | null; key: string } {
+  const withoutExt = name.replace(/\.[^/.]+$/, "");
+  const num = withoutExt.match(/^(\d+)[-_.\s]*/);
+  const number = num ? String(parseInt(num[1], 10)) : null;
+  return { number, key: `${number ?? ""}|${baseTitleFromFilename(name).toLowerCase()}` };
+}
+
 export async function POST(req: Request) {
   // Wrap the whole handler: an uncaught exception here (a Blob store
   // limit, a dropped DB connection, anything unexpected) would otherwise
@@ -55,7 +69,7 @@ export async function POST(req: Request) {
     const category = formData.get("category") as string | null;
     const title = formData.get("title") as string | null;
     const isAnswer = formData.get("isAnswer") === "true";
-    const isLargePrint = formData.get("isLargePrint") === "true";
+    let isLargePrint = formData.get("isLargePrint") === "true";
     // Empty means the regular library; otherwise a calendar occasion slug.
     const occasion = (formData.get("occasion") as string | null) || null;
 
@@ -64,6 +78,12 @@ export async function POST(req: Request) {
     }
     if (occasion && !occasionBySlug(occasion)) {
       return NextResponse.json({ error: `Unknown occasion "${occasion}"` }, { status: 400 });
+    }
+    // A "Large Print" file uploaded without the checkbox ticked would
+    // otherwise become a separate activity instead of attaching to its
+    // worksheet. The marker is unambiguous, so treat it as large print.
+    if (!isAnswer && LARGE_PRINT_MARKER.test(file.name)) {
+      isLargePrint = true;
     }
 
     const folder = occasion ? `occasions/${occasion}/${category}` : category;
@@ -76,24 +96,30 @@ export async function POST(req: Request) {
     // template rather than creating a new one.
     if (isAnswer || isLargePrint) {
       const baseTitle = baseTitleFromFilename(file.name);
-      // Exact match first; fall back to a case-insensitive match in the same
-      // category so a small capitalisation difference between the standard
-      // file's name and the answer/large-print file's name doesn't stop the
-      // two from being linked.
+      const variant = matchKey(file.name);
+      // Match on the worksheet's file name, number included, so each
+      // numbered variant goes to its own worksheet (case-insensitive, and
+      // skipping stray variant files that were uploaded as worksheets).
+      // Only when one side has no number to compare, fall back to the newest
+      // worksheet with the same title.
+      const candidates = (
+        await prisma.template.findMany({
+          where: { category, occasion },
+          orderBy: { createdAt: "desc" },
+        })
+      ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName));
       const existing =
-        (await prisma.template.findFirst({
-          where: { category, occasion, title: baseTitle },
-          orderBy: { createdAt: "desc" },
-        })) ??
-        (await prisma.template.findFirst({
-          where: { category, occasion, title: { equals: baseTitle, mode: "insensitive" } },
-          orderBy: { createdAt: "desc" },
-        }));
+        candidates.find((t) => matchKey(t.fileName).key === variant.key) ??
+        candidates.find(
+          (t) =>
+            (variant.number === null || matchKey(t.fileName).number === null) &&
+            t.title.toLowerCase() === baseTitle.toLowerCase()
+        );
 
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching base template found for "${file.name}" (looked for title "${baseTitle}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}). Upload the standard worksheet first.`,
+            error: `No matching worksheet found for "${file.name}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -104,6 +130,13 @@ export async function POST(req: Request) {
         data: isAnswer
           ? { answerFileUrl: blob.url }
           : { largePrintFileUrl: blob.url },
+      });
+
+      // If this same file was previously uploaded by mistake as its own
+      // worksheet (checkbox left unticked), remove that stray entry now
+      // that it's attached where it belongs.
+      await prisma.template.deleteMany({
+        where: { category, occasion, fileName: file.name, id: { not: existing.id } },
       });
 
       return NextResponse.json({ ok: true, template: updated, matched: true });
