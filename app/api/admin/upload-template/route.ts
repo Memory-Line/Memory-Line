@@ -41,6 +41,19 @@ function baseTitleFromFilename(name: string): string {
 
 const LARGE_PRINT_MARKER = /large[-_\s]?print/i;
 
+// When a whole folder is uploaded, Chrome sends each file's path inside
+// that folder as its name ("Pack/A3 Large Print/001-tea.pdf"). Only the
+// last part is the file's real name.
+function baseName(name: string): string {
+  return name.split(/[\\/]/).pop() || name;
+}
+
+// Matches a stored file name with or without a folder path in front
+// (entries saved before folder paths were stripped still have one).
+function sameFile(fileName: string) {
+  return { OR: [{ fileName }, { fileName: { endsWith: `/${fileName}` } }] };
+}
+
 // Like baseTitleFromFilename, but keeps the leading number, so numbered
 // series like "001-Bingo-Card.pdf" … "200-Bingo-Card.pdf" (which all share
 // the title "Bingo Card") still pair each variant with its own worksheet:
@@ -99,6 +112,7 @@ export async function POST(req: Request) {
       );
     }
     const scope = { category, occasion, language };
+    const fileName = baseName(file.name);
     // A "Large Print" file uploaded without the checkbox ticked would
     // otherwise become a separate activity instead of attaching to its
     // worksheet. The marker is unambiguous, so treat it as large print.
@@ -111,7 +125,7 @@ export async function POST(req: Request) {
       : language
       ? `${category}/${language}`
       : category;
-    const blob = await put(`activities/${folder}/${file.name}`, file, {
+    const blob = await put(`activities/${folder}/${fileName}`, file, {
       access: "public",
       addRandomSuffix: true,
     });
@@ -119,8 +133,8 @@ export async function POST(req: Request) {
     // Answer sheets and large print files attach to an existing base
     // template rather than creating a new one.
     if (isAnswer || isLargePrint) {
-      const baseTitle = baseTitleFromFilename(file.name);
-      const variant = matchKey(file.name);
+      const baseTitle = baseTitleFromFilename(fileName);
+      const variant = matchKey(fileName);
       // Match on the worksheet's file name, number included, so each
       // numbered variant goes to its own worksheet (case-insensitive, and
       // skipping stray variant files that were uploaded as worksheets).
@@ -137,24 +151,24 @@ export async function POST(req: Request) {
           orderBy: { createdAt: "desc" },
         })
       ).filter((t) => !LARGE_PRINT_MARKER.test(t.fileName));
-      const candidates = all.filter((t) => t.fileName !== file.name);
+      const candidates = all.filter((t) => baseName(t.fileName) !== fileName);
       const sameNumber = variant.number
-        ? candidates.filter((t) => matchKey(t.fileName).number === variant.number)
+        ? candidates.filter((t) => matchKey(baseName(t.fileName)).number === variant.number)
         : [];
       const existing =
-        candidates.find((t) => matchKey(t.fileName).key === variant.key) ??
+        candidates.find((t) => matchKey(baseName(t.fileName)).key === variant.key) ??
         (sameNumber.length === 1 ? sameNumber[0] : undefined) ??
         candidates.find(
           (t) =>
-            (variant.number === null || matchKey(t.fileName).number === null) &&
+            (variant.number === null || matchKey(baseName(t.fileName)).number === null) &&
             t.title.toLowerCase() === baseTitle.toLowerCase()
         ) ??
-        all.find((t) => t.fileName === file.name);
+        all.find((t) => baseName(t.fileName) === fileName);
 
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching worksheet found for "${file.name}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}${language ? ` (${language})` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
+            error: `No matching worksheet found for "${fileName}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}${language ? ` (${language})` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -162,16 +176,18 @@ export async function POST(req: Request) {
 
       const updated = await prisma.template.update({
         where: { id: existing.id },
-        data: isAnswer
-          ? { answerFileUrl: blob.url }
-          : { largePrintFileUrl: blob.url },
+        data: {
+          ...(isAnswer ? { answerFileUrl: blob.url } : { largePrintFileUrl: blob.url }),
+          // Tidy a worksheet saved with a folder path in its name.
+          fileName: baseName(existing.fileName),
+        },
       });
 
       // If this same file was previously uploaded by mistake as its own
       // worksheet (checkbox left unticked), remove that stray entry now
       // that it's attached where it belongs.
       await prisma.template.deleteMany({
-        where: { ...scope, fileName: file.name, id: { not: existing.id } },
+        where: { ...scope, ...sameFile(fileName), id: { not: existing.id } },
       });
 
       return NextResponse.json({ ok: true, template: updated, matched: true });
@@ -180,13 +196,13 @@ export async function POST(req: Request) {
     // Re-uploading a worksheet (e.g. retrying a folder upload that stopped
     // part way) replaces its file rather than adding a duplicate.
     const previous = await prisma.template.findFirst({
-      where: { ...scope, fileName: file.name },
+      where: { ...scope, ...sameFile(fileName) },
       orderBy: { createdAt: "desc" },
     });
     if (previous) {
       const replaced = await prisma.template.update({
         where: { id: previous.id },
-        data: { fileUrl: blob.url, videoUrl: videoUrlFor(category, file.name) ?? previous.videoUrl },
+        data: { fileUrl: blob.url, fileName, videoUrl: videoUrlFor(category, fileName) ?? previous.videoUrl },
       });
       return NextResponse.json({ ok: true, template: replaced, matched: false, replaced: true });
     }
@@ -196,10 +212,10 @@ export async function POST(req: Request) {
         title,
         category,
         fileUrl: blob.url,
-        fileName: file.name,
+        fileName,
         occasion,
         language,
-        videoUrl: videoUrlFor(category, file.name),
+        videoUrl: videoUrlFor(category, fileName),
       },
     });
 
