@@ -74,7 +74,7 @@ export default async function DashboardHome() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl">Welcome back, {firstName}</h1>
+      <h1 className="font-serif text-3xl">Welcome Back, {firstName}</h1>
       <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
 
       <div className="flex items-center justify-between rounded-xl px-5 py-3 mt-5 bg-card border border-line">
