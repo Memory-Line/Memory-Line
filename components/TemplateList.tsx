@@ -1,13 +1,23 @@
 import { Download } from "lucide-react";
 import type { Template } from "@prisma/client";
 
+// The number a file name starts with ("001-…", "23. …"), ignoring any
+// folder path in front; files without one sort after numbered ones.
+function leadingNumber(fileName: string): number {
+  const m = (fileName.split(/[\/]/).pop() ?? fileName).match(/^(\d+)/);
+  return m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY;
+}
+
 // Rows of uploaded activities with their Standard / Large Print / Answers
-// / YouTube links. Shared by the regular category pages and the calendar
-// occasion pages.
+// / video links, in number order (1, 2 … 200). Shared by the regular
+// category pages, the calendar occasion pages and the language pages.
 export default function TemplateList({ templates }: { templates: Template[] }) {
+  const sorted = [...templates].sort(
+    (a, b) => leadingNumber(a.fileName) - leadingNumber(b.fileName) || a.title.localeCompare(b.title)
+  );
   return (
     <div className="space-y-3">
-      {templates.map((t) => (
+      {sorted.map((t) => (
         <div key={t.id} className="flex items-center justify-between rounded-xl p-4 bg-card border border-line">
           <div>
             <p className="text-[15px] font-bold">{t.title}</p>
