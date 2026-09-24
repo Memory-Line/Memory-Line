@@ -412,10 +412,35 @@ function RenumberSection() {
 // Gives an existing account (they sign up first) full access without
 // paying, e.g. a care home trialling the site, or takes it away again.
 // Admin access is separate: only the ADMIN_EMAIL account ever has it.
+type Account = { email: string; name: string | null; subscriptionStatus: string };
+
+const ACCESS_LABELS: Record<string, string> = {
+  free: "free access",
+  active: "paid",
+  trialing: "paid (trial)",
+  past_due: "paid (payment overdue)",
+};
+
 function FreeAccessSection() {
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  async function loadAccounts() {
+    try {
+      const res = await fetch("/api/admin/free-access");
+      const data = await res.json();
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
+      setAccounts(data.users);
+    } catch (err: any) {
+      setMessage(`✕ Couldn't load accounts: ${err.message}`);
+    }
+  }
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
 
   async function run(grant: boolean) {
     setBusy(true);
@@ -429,6 +454,7 @@ function FreeAccessSection() {
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
       setMessage(data.message);
+      await loadAccounts();
     } catch (err: any) {
       setMessage(`✕ ${err.message}`);
     }
@@ -443,13 +469,21 @@ function FreeAccessSection() {
         first. This never gives admin access.
       </p>
       <div className="flex gap-2">
-        <input
-          type="email"
+        <select
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="care.home@example.co.uk"
-          className="flex-1 rounded-lg border border-line px-3 py-2 text-sm"
-        />
+          className="flex-1 min-w-0 rounded-lg border border-line px-3 py-2 text-sm"
+        >
+          <option value="">
+            {accounts === null ? "Loading accounts…" : `Choose an account (${accounts.length})`}
+          </option>
+          {accounts?.map((a) => (
+            <option key={a.email} value={a.email}>
+              {a.email}
+              {a.name ? ` — ${a.name}` : ""} · {ACCESS_LABELS[a.subscriptionStatus] ?? "no access"}
+            </option>
+          ))}
+        </select>
         <button
           onClick={() => run(true)}
           disabled={busy || !email.trim()}
