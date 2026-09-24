@@ -6,6 +6,9 @@ import { prisma } from "@/lib/prisma";
 // (status "free"), or takes that access away again. Paid subscriptions
 // are never changed here; Stripe manages those.
 
+// Always read fresh: new sign-ups should appear straight away.
+export const dynamic = "force-dynamic";
+
 // Every account except the admin's own, newest first, for the admin
 // page's picker.
 export async function GET() {
