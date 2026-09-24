@@ -5,6 +5,24 @@ import { prisma } from "@/lib/prisma";
 // Gives an existing account full access without a Stripe subscription
 // (status "free"), or takes that access away again. Paid subscriptions
 // are never changed here; Stripe manages those.
+
+// Every account except the admin's own, newest first, for the admin
+// page's picker.
+export async function GET() {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  const users = await prisma.user.findMany({
+    select: { email: true, name: true, subscriptionStatus: true },
+    orderBy: { createdAt: "desc" },
+  });
+  return NextResponse.json({
+    ok: true,
+    users: users.filter((u) => u.email.toLowerCase() !== adminEmail),
+  });
+}
+
 export async function POST(req: Request) {
   try {
     if (!(await requireAdmin())) {
