@@ -36,6 +36,8 @@ export default async function DashboardHome() {
     take: 3,
   });
 
+  const activityCount = await prisma.template.count({ where: { occasion: null } });
+
   const firstName = (session!.user.name ?? session!.user.email ?? "there").split(" ")[0];
   const renewsAt = session!.user.subscriptionRenewsAt
     ? new Date(session!.user.subscriptionRenewsAt).toLocaleDateString("en-GB", {
@@ -58,7 +60,7 @@ export default async function DashboardHome() {
         <div>
           <p className="text-sm font-bold text-sageDeep">✓ Subscription Active</p>
           <p className="text-xs text-inkSoft mt-0.5">
-            {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {Object.values(TEMPLATES).flat().length} activities available
+            {renewsAt ? `Renews ${renewsAt}` : "Active"} — all {activityCount.toLocaleString("en-GB")} activities available
           </p>
         </div>
         <form action="/api/stripe/portal" method="POST">
@@ -99,6 +101,7 @@ export default async function DashboardHome() {
           </div>
         </div>
 
+        {popular.length > 0 && (
         <div className="rounded-xl p-4 bg-card border border-line">
           <p className="font-serif text-[15px] mb-2.5">Popular this month</p>
           <div className="grid grid-cols-2 gap-2">
@@ -114,6 +117,7 @@ export default async function DashboardHome() {
             })}
           </div>
         </div>
+        )}
       </div>
 
       <div className="rounded-xl p-4 mt-5 bg-card border border-line">

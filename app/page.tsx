@@ -106,7 +106,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Free preview */}
+      {/* Free preview (hidden while there are no free samples to offer) */}
+      {freeSamples.length > 0 && (
       <section className="max-w-5xl mx-auto px-8 pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">Try a few, free — no signup needed</h2>
         <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
@@ -124,6 +125,7 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Services teaser */}
       <section className="max-w-5xl mx-auto px-8 pb-20">

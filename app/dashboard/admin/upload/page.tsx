@@ -310,6 +310,100 @@ export default function AdminUploadPage() {
           ))}
         </div>
       )}
+
+      <RenumberSection />
+    </div>
+  );
+}
+
+type RenumberChange = { id: string; from: string; to: string };
+
+// Closes gaps in a category's numbering (e.g. 12, 14 … 20, 23 → 1 … 20),
+// keeping the current order. Shows the changes first; nothing is saved
+// until "Apply" is clicked.
+function RenumberSection() {
+  const [category, setCategory] = useState(CATEGORIES[0].key);
+  const [preview, setPreview] = useState<RenumberChange[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function run(apply: boolean) {
+    setBusy(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/renumber", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category, apply }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
+      if (apply) {
+        setPreview(null);
+        setMessage(`✓ Renumbered ${data.changes.length} of ${data.total} activities in ${category}.`);
+      } else {
+        setPreview(data.changes);
+        if (data.changes.length === 0) setMessage(`${category} is already numbered 1–${data.total} with no gaps.`);
+      }
+    } catch (err: any) {
+      setMessage(`✕ ${err.message}`);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-10 pt-6 border-t border-line">
+      <h2 className="font-serif text-xl mb-1">Renumber activities</h2>
+      <p className="text-sm text-inkSoft mb-4">
+        Closes gaps in a category's numbering (1, 2, 3 …) and keeps the current order. Only the
+        number at the start of each file name changes. Upload any large print or answer files
+        before renumbering, as they're matched to worksheets by number.
+      </p>
+      <div className="flex gap-2 mb-3">
+        <select
+          value={category}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPreview(null);
+            setMessage("");
+          }}
+          className="flex-1 rounded-lg border border-line px-3 py-2 text-sm"
+        >
+          {CATEGORIES.filter((c) => c.key !== LANGUAGE_CATEGORY).map((c) => (
+            <option key={c.slug} value={c.key}>
+              {c.key}
+            </option>
+          ))}
+        </select>
+        <button
+          onClick={() => run(false)}
+          disabled={busy}
+          className="rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint hover:bg-line transition-colors disabled:opacity-50"
+        >
+          Preview
+        </button>
+      </div>
+
+      {preview && preview.length > 0 && (
+        <>
+          <div className="space-y-1 mb-3 max-h-80 overflow-y-auto">
+            {preview.map((c) => (
+              <p key={c.id} className="text-xs rounded-lg border border-line px-3 py-1.5">
+                {c.from} → <span className="font-semibold">{c.to}</span>
+              </p>
+            ))}
+          </div>
+          <button
+            onClick={() => run(true)}
+            disabled={busy}
+            className="rounded-lg bg-sage text-white px-5 py-2.5 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-50"
+          >
+            Apply {preview.length} changes
+          </button>
+        </>
+      )}
+
+      {message && <p className="text-sm mt-3">{message}</p>}
     </div>
   );
 }
