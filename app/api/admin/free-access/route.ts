@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 
-// Gives an existing account full access without a Stripe subscription
-// (status "free"), or takes that access away again. Paid subscriptions
-// are never changed here; Stripe manages those.
+// Admin tools for other accounts: GET lists them, POST gives an account
+// full access without a Stripe subscription (status "free") or takes it
+// away again, and PUT sets its type and name. Paid subscriptions are
+// never changed here; Stripe manages those.
 
 // Always read fresh: new sign-ups should appear straight away.
 export const dynamic = "force-dynamic";
@@ -66,6 +67,44 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, message: `✓ Free access removed from ${user.email}.` });
   } catch (err: any) {
     console.error("free-access failed:", err);
+    const message = typeof err?.message === "string" ? err.message : "Unexpected server error";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+// Sets an account's type (care home or personal) and its name — for
+// accounts made before sign-up asked, or to correct a care home's name.
+export async function PUT(req: Request) {
+  try {
+    if (!(await requireAdmin())) {
+      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    }
+
+    const { email, accountType, name } = await req.json();
+    if (accountType !== "care-home" && accountType !== "personal") {
+      return NextResponse.json({ error: "Choose care home or personal" }, { status: 400 });
+    }
+    if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
+      return NextResponse.json({ error: "Enter a name (up to 100 characters)" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { email: { equals: String(email ?? "").trim(), mode: "insensitive" } },
+    });
+    if (!user) {
+      return NextResponse.json({ error: `No account found for ${email}` }, { status: 404 });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { accountType, name: name.trim() },
+    });
+    return NextResponse.json({
+      ok: true,
+      message: `✓ Saved: ${user.email} is ${accountType === "care-home" ? "the care home" : "a personal account for"} ${name.trim()}.`,
+    });
+  } catch (err: any) {
+    console.error("account update failed:", err);
     const message = typeof err?.message === "string" ? err.message : "Unexpected server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

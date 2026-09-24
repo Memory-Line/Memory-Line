@@ -409,8 +409,9 @@ function RenumberSection() {
   );
 }
 
-// Gives an existing account (they sign up first) full access without
-// paying, e.g. a care home trialling the site, or takes it away again.
+// Admin tools for accounts that have signed up: give or remove free
+// access (full access without paying, e.g. a care home trialling the
+// site), and set whether it's a care home or personal account.
 // Admin access is separate: only the ADMIN_EMAIL account ever has it.
 type Account = { email: string; name: string | null; accountType: string; subscriptionStatus: string };
 
@@ -424,8 +425,37 @@ const ACCESS_LABELS: Record<string, string> = {
 function FreeAccessSection() {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [email, setEmail] = useState("");
+  const [editType, setEditType] = useState<"care-home" | "personal">("personal");
+  const [editName, setEditName] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+
+  function selectAccount(value: string) {
+    setEmail(value);
+    setMessage("");
+    const account = accounts?.find((a) => a.email === value);
+    setEditType(account?.accountType === "care-home" ? "care-home" : "personal");
+    setEditName(account?.name ?? "");
+  }
+
+  async function saveDetails() {
+    setBusy(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/free-access", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, accountType: editType, name: editName }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
+      setMessage(data.message);
+      await loadAccounts();
+    } catch (err: any) {
+      setMessage(`✕ ${err.message}`);
+    }
+    setBusy(false);
+  }
 
   async function loadAccounts() {
     try {
@@ -463,15 +493,16 @@ function FreeAccessSection() {
 
   return (
     <div className="mt-10 pt-6 border-t border-line">
-      <h2 className="font-serif text-xl mb-1">Free access</h2>
+      <h2 className="font-serif text-xl mb-1">Accounts</h2>
       <p className="text-sm text-inkSoft mb-4">
-        Give an account full access to the library without paying. They need to sign up
-        first. This never gives admin access.
+        Choose an account that has signed up. You can give it full access to the library
+        without paying (this never gives admin access), and set whether it's a care home
+        or personal account.
       </p>
       <div className="flex gap-2">
         <select
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => selectAccount(e.target.value)}
           className="flex-1 min-w-0 rounded-lg border border-line px-3 py-2 text-sm"
         >
           <option value="">
@@ -500,6 +531,46 @@ function FreeAccessSection() {
           Remove
         </button>
       </div>
+
+      {email && (
+        <div className="mt-4 rounded-xl p-4 bg-card border border-line">
+          <p className="text-xs font-semibold text-inkSoft mb-2">Account details</p>
+          <div className="flex gap-4 mb-3 text-sm">
+            {(
+              [
+                ["care-home", "Care home"],
+                ["personal", "Personal"],
+              ] as const
+            ).map(([value, label]) => (
+              <label key={value} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="editAccountType"
+                  checked={editType === value}
+                  onChange={() => setEditType(value)}
+                />
+                {label}
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              placeholder={editType === "care-home" ? "Care home name, e.g. Westcliff Lodge" : "Their name"}
+              className="flex-1 min-w-0 rounded-lg border border-line px-3 py-2 text-sm"
+            />
+            <button
+              onClick={saveDetails}
+              disabled={busy || !editName.trim()}
+              className="rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint hover:bg-line transition-colors disabled:opacity-50"
+            >
+              Save details
+            </button>
+          </div>
+        </div>
+      )}
+
       {message && <p className="text-sm mt-3">{message}</p>}
     </div>
   );
