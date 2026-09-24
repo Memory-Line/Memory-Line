@@ -62,5 +62,8 @@ model Template {
   answerFileUrl String?
   largePrintFileUrl String?
   videoUrl      String?
+  // Calendar occasion slug (lib/occasions.ts) for themed packs; null for
+  // the regular category library.
+  occasion      String?
   createdAt     DateTime @default(now())
 }

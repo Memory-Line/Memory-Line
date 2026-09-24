@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { put } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { occasionBySlug } from "@/lib/occasions";
 
 // Only the account whose email matches ADMIN_EMAIL can use this route.
 // Everyone else (including paying customers) gets a 403.
@@ -55,12 +56,18 @@ export async function POST(req: Request) {
     const title = formData.get("title") as string | null;
     const isAnswer = formData.get("isAnswer") === "true";
     const isLargePrint = formData.get("isLargePrint") === "true";
+    // Empty means the regular library; otherwise a calendar occasion slug.
+    const occasion = (formData.get("occasion") as string | null) || null;
 
     if (!file || !category || !title) {
       return NextResponse.json({ error: "Missing file, category, or title" }, { status: 400 });
     }
+    if (occasion && !occasionBySlug(occasion)) {
+      return NextResponse.json({ error: `Unknown occasion "${occasion}"` }, { status: 400 });
+    }
 
-    const blob = await put(`activities/${category}/${file.name}`, file, {
+    const folder = occasion ? `occasions/${occasion}/${category}` : category;
+    const blob = await put(`activities/${folder}/${file.name}`, file, {
       access: "public",
       addRandomSuffix: true,
     });
@@ -75,18 +82,18 @@ export async function POST(req: Request) {
       // two from being linked.
       const existing =
         (await prisma.template.findFirst({
-          where: { category, title: baseTitle },
+          where: { category, occasion, title: baseTitle },
           orderBy: { createdAt: "desc" },
         })) ??
         (await prisma.template.findFirst({
-          where: { category, title: { equals: baseTitle, mode: "insensitive" } },
+          where: { category, occasion, title: { equals: baseTitle, mode: "insensitive" } },
           orderBy: { createdAt: "desc" },
         }));
 
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching base template found for "${file.name}" (looked for title "${baseTitle}" in category "${category}"). Upload the standard worksheet first.`,
+            error: `No matching base template found for "${file.name}" (looked for title "${baseTitle}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -108,6 +115,7 @@ export async function POST(req: Request) {
         category,
         fileUrl: blob.url,
         fileName: file.name,
+        occasion,
       },
     });
 
