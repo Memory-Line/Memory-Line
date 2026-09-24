@@ -11,7 +11,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/login?next=/dashboard");
   }
 
-  const activeStatuses = ["active", "trialing"];
+  // "free" = access given by the admin without a Stripe subscription.
+  const activeStatuses = ["active", "trialing", "free"];
   if (!activeStatuses.includes(session.user.subscriptionStatus)) {
     redirect("/pricing");
   }

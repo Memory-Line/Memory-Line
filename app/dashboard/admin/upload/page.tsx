@@ -312,6 +312,7 @@ export default function AdminUploadPage() {
       )}
 
       <RenumberSection />
+      <FreeAccessSection />
     </div>
   );
 }
@@ -403,6 +404,67 @@ function RenumberSection() {
         </>
       )}
 
+      {message && <p className="text-sm mt-3">{message}</p>}
+    </div>
+  );
+}
+
+// Gives an existing account (they sign up first) full access without
+// paying, e.g. a care home trialling the site, or takes it away again.
+// Admin access is separate: only the ADMIN_EMAIL account ever has it.
+function FreeAccessSection() {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  async function run(grant: boolean) {
+    setBusy(true);
+    setMessage("");
+    try {
+      const res = await fetch("/api/admin/free-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, grant }),
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
+      setMessage(data.message);
+    } catch (err: any) {
+      setMessage(`✕ ${err.message}`);
+    }
+    setBusy(false);
+  }
+
+  return (
+    <div className="mt-10 pt-6 border-t border-line">
+      <h2 className="font-serif text-xl mb-1">Free access</h2>
+      <p className="text-sm text-inkSoft mb-4">
+        Give an account full access to the library without paying. They need to sign up
+        first. This never gives admin access.
+      </p>
+      <div className="flex gap-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="care.home@example.co.uk"
+          className="flex-1 rounded-lg border border-line px-3 py-2 text-sm"
+        />
+        <button
+          onClick={() => run(true)}
+          disabled={busy || !email.trim()}
+          className="rounded-lg bg-sage text-white px-4 py-2 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-50"
+        >
+          Give free access
+        </button>
+        <button
+          onClick={() => run(false)}
+          disabled={busy || !email.trim()}
+          className="rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint hover:bg-line transition-colors disabled:opacity-50"
+        >
+          Remove
+        </button>
+      </div>
       {message && <p className="text-sm mt-3">{message}</p>}
     </div>
   );
