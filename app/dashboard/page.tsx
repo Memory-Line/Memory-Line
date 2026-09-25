@@ -30,11 +30,22 @@ export default async function DashboardHome() {
   const session = await getServerSession(authOptions);
   const userId = session!.user.id;
 
-  const recentDownloads = await prisma.download.findMany({
+  // The last three downloads of activities that still exist (downloads of
+  // the old sample activities are skipped).
+  const latestDownloads = await prisma.download.findMany({
     where: { userId },
     orderBy: { downloadedAt: "desc" },
-    take: 3,
+    take: 20,
   });
+  const existingIds = new Set(
+    (
+      await prisma.template.findMany({
+        where: { id: { in: latestDownloads.map((d) => d.templateId) } },
+        select: { id: true },
+      })
+    ).map((t) => t.id)
+  );
+  const recentDownloads = latestDownloads.filter((d) => existingIds.has(d.templateId)).slice(0, 3);
 
   const activityCount = await prisma.template.count({ where: { occasion: null } });
 

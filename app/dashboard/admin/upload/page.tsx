@@ -5,20 +5,11 @@ import { CATEGORIES } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
 import { FEATURES } from "@/lib/featureList";
+import { titleFromFilename } from "@/lib/titles";
 
 // Files picked as part of a folder count as large print when any folder
 // in their path says so (e.g. "A3 Large Print/").
 const LARGE_PRINT_FOLDER = /large[-_\s]?print/i;
-
-function titleFromFilename(name: string): string {
-  const withoutExt = name.replace(/\.[^/.]+$/, "");
-  const withoutLeadingNumber = withoutExt.replace(/^\d+[-_.\s]*/, "");
-  const spaced = withoutLeadingNumber.replace(/[-_]+/g, " ").trim();
-  return spaced
-    .split(" ")
-    .map((word) => (word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word))
-    .join(" ");
-}
 
 type FileStatus = {
   name: string;

@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
+import { displayTitle } from "@/lib/titles";
 
 // The free samples come from the database, so render on each request.
 export const dynamic = "force-dynamic";
@@ -19,13 +20,6 @@ const FREE_SAMPLE_CATEGORIES = [
   "Conversation Starters",
   "Trivia",
 ];
-
-// "001-008-cottage-kitchen-conversation-starters-a4.pdf" gives the title
-// "008 Cottage Kitchen Conversation Starters A4"; drop the stray number
-// and paper size for display.
-function sampleTitle(title: string): string {
-  return title.replace(/^\d+\s+/, "").replace(/\s+A\d$/i, "");
-}
 
 const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
@@ -152,7 +146,7 @@ export default async function LandingPage() {
                   <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
                     {Icon && <Icon size={14} />} {t.category}
                   </p>
-                  <p className="font-serif text-base">{sampleTitle(t.title)}</p>
+                  <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
                 <div className="mt-4 grid gap-2">
                   <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
