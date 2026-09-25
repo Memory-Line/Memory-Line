@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CATEGORIES } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
+import { FEATURES } from "@/lib/featureList";
 
 // Files picked as part of a folder count as large print when any folder
 // in their path says so (e.g. "A3 Large Print/").
@@ -413,7 +414,13 @@ function RenumberSection() {
 // access (full access without paying, e.g. a care home trialling the
 // site), and set whether it's a care home or personal account.
 // Admin access is separate: only the ADMIN_EMAIL account ever has it.
-type Account = { email: string; name: string | null; accountType: string; subscriptionStatus: string };
+type Account = {
+  email: string;
+  name: string | null;
+  accountType: string;
+  subscriptionStatus: string;
+  features: string[];
+};
 
 const ACCESS_LABELS: Record<string, string> = {
   free: "free access",
@@ -427,6 +434,7 @@ function FreeAccessSection() {
   const [email, setEmail] = useState("");
   const [editType, setEditType] = useState<"care-home" | "personal">("personal");
   const [editName, setEditName] = useState("");
+  const [editFeatures, setEditFeatures] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -436,6 +444,7 @@ function FreeAccessSection() {
     const account = accounts?.find((a) => a.email === value);
     setEditType(account?.accountType === "care-home" ? "care-home" : "personal");
     setEditName(account?.name ?? "");
+    setEditFeatures(account?.features ?? []);
   }
 
   async function saveDetails() {
@@ -445,7 +454,7 @@ function FreeAccessSection() {
       const res = await fetch("/api/admin/free-access", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, accountType: editType, name: editName }),
+        body: JSON.stringify({ email, accountType: editType, name: editName, features: editFeatures }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
@@ -496,8 +505,8 @@ function FreeAccessSection() {
       <h2 className="font-serif text-xl mb-1">Accounts</h2>
       <p className="text-sm text-inkSoft mb-4">
         Choose an account that has signed up. You can give it full access to the library
-        without paying (this never gives admin access), and set whether it's a care home
-        or personal account.
+        without paying (this never gives admin access), set whether it's a care home or
+        personal account, and switch on extra features like the professional calendar.
       </p>
       <div className="flex gap-2">
         <select
@@ -550,6 +559,27 @@ function FreeAccessSection() {
                   onChange={() => setEditType(value)}
                 />
                 {label}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs font-semibold text-inkSoft mb-1.5">Extra features</p>
+          <div className="space-y-1.5 mb-3">
+            {FEATURES.map((f) => (
+              <label key={f.key} className="flex items-start gap-2 text-sm cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={editFeatures.includes(f.key)}
+                  onChange={(e) =>
+                    setEditFeatures((prev) =>
+                      e.target.checked ? [...prev, f.key] : prev.filter((k) => k !== f.key)
+                    )
+                  }
+                />
+                <span>
+                  {f.label}
+                  <span className="block text-xs text-inkSoft">{f.description}</span>
+                </span>
               </label>
             ))}
           </div>

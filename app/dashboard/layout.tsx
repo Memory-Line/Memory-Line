@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
+import { userHasFeature } from "@/lib/features";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
 
@@ -20,10 +21,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   const isAdmin =
     !!session.user.email && !!adminEmail && session.user.email.toLowerCase() === adminEmail;
+  const professionalCalendar = await userHasFeature(session.user.id, "professional-calendar");
 
   return (
     <div className="flex min-h-screen bg-bg">
-      <Sidebar isAdmin={isAdmin} />
+      <Sidebar isAdmin={isAdmin} professionalCalendar={professionalCalendar} />
       <div className="flex-1">
         <TopBar userName={session.user.name ?? session.user.email ?? "there"} />
         <main className="px-6 pb-10 max-w-[980px]">{children}</main>
