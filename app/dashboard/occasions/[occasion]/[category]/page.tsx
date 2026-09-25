@@ -42,7 +42,7 @@ export default async function OccasionCategoryPage({
       <Link href={`/dashboard/occasions/${occasion.slug}`} className="text-xs text-inkSoft">
         ← {occasion.label}
       </Link>
-      <div className="flex items-center justify-between mt-1 mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-1 mb-5">
         <h1 className="font-serif text-[26px]">
           {occasion.label}: {category.key}
         </h1>

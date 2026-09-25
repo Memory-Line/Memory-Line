@@ -3,11 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield,
+  Briefcase, Calendar, CalendarDays, Shield, Menu, X,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -95,9 +95,13 @@ export default function Sidebar({
   professionalCalendar?: boolean;
 }) {
   const pathname = usePathname();
+  // Phones: the menu is hidden behind a Menu button and slides in over the
+  // page; it closes again when a page is chosen.
+  const [open, setOpen] = useState(false);
+  useEffect(() => setOpen(false), [pathname]);
 
-  return (
-    <aside className="w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen flex flex-col">
+  const contents = (
+    <>
       <Link href="/dashboard" className="flex items-center gap-2 mb-6 px-1">
         <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
         <span className="font-serif text-lg">Activity Central</span>
@@ -143,6 +147,44 @@ export default function Sidebar({
           />
         </div>
       )}
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <div className="md:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-bg border-b border-line">
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={36} height={36} />
+          <span className="font-serif text-base">Activity Central</span>
+        </Link>
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold bg-card border border-line"
+          aria-label="Open menu"
+        >
+          <Menu size={16} /> Menu
+        </button>
+      </div>
+
+      {open && (
+        <div className="md:hidden fixed inset-0 z-40">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-64 max-w-[85%] bg-bg overflow-y-auto px-4 py-5 flex flex-col shadow-xl">
+            <button
+              onClick={() => setOpen(false)}
+              className="self-end rounded-lg p-1.5 text-inkSoft hover:bg-card"
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+            {contents}
+          </aside>
+        </div>
+      )}
+
+      <aside className="hidden md:flex w-56 shrink-0 px-4 py-5 border-r border-line min-h-screen flex-col">
+        {contents}
+      </aside>
+    </>
   );
 }

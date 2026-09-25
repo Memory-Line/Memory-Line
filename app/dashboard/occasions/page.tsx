@@ -27,7 +27,7 @@ export default async function OccasionsPage() {
       </p>
 
       <div className="rounded-xl p-4 bg-card border border-line">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {occasions.map((o) => (
             <Link
               key={o.slug}

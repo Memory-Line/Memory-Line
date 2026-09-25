@@ -62,7 +62,7 @@ export default async function CategoryPage({ params }: { params: { category: str
       <div>
         <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
         <p className="text-clay text-[13px] mt-0.5 mb-5">Choose a level.</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {subcategories.map((s) => (
             <Link
               key={s.slug}

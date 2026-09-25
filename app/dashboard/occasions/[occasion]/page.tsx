@@ -46,7 +46,7 @@ export default async function OccasionPage({ params }: { params: { occasion: str
       </p>
 
       <div className="rounded-xl p-4 bg-card border border-line">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {THEMEABLE_CATEGORIES.map((c) => {
             const Icon = ICONS[c.key];
             const count = countFor(c.key);

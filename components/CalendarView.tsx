@@ -299,6 +299,28 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; height: 274mm !important; max-height: 274mm !important; }
         }
+        /* Short weekday names are only for phones (never printed). */
+        .cal-wd-short { display: none; }
+        /* Phones: stack the header, shorten weekday names and tighten the grid.
+           Screen only, so printing is unchanged. */
+        @media screen and (max-width: 640px) {
+          #calendar-print-area { padding: 16px 8px !important; }
+          .cal-header-row { grid-template-columns: 1fr auto !important; row-gap: 6px; }
+          .cal-header-row > .cal-header-centre { grid-column: 1 / -1; grid-row: 2; }
+          .cal-brand-name { display: none; }
+          .cal-title { font-size: 32px !important; }
+          .cal-year { font-size: 15px !important; padding: 6px 14px !important; }
+          .cal-toolbar { flex-wrap: wrap; gap: 8px !important; }
+          .cal-toolbar button { padding: 9px 12px !important; font-size: 13px; }
+          .cal-weekday-row, .cal-grid { gap: 2px !important; }
+          .cal-weekday { font-size: 11px !important; padding: 6px 0 !important; border-radius: 6px !important; }
+          .cal-wd-long { display: none; }
+          .cal-wd-short { display: inline; }
+          .cal-day-cell { min-height: 68px !important; }
+          .cal-day-cell-inner { padding: 4px !important; }
+          .cal-day-plain { font-size: 12px !important; }
+          .cal-event-tab { font-size: 9.5px !important; padding: 2px 3px !important; line-height: 1.15 !important; }
+        }
       `}</style>
             <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
 
@@ -308,9 +330,9 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         <div className="cal-header-row" style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", marginBottom: 4 }}>
           <Link href="/dashboard" style={{ display: "flex", alignItems: "center", justifySelf: "start" }}>
             <Image src="/activity-central-icon.png" alt="Activity Central - back to Dashboard" width={60} height={60} />
-            <span style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#3F3237", marginLeft: 10 }}>Activity Central</span>
+            <span className="cal-brand-name" style={{ fontFamily: "Georgia, serif", fontSize: 20, color: "#3F3237", marginLeft: 10 }}>Activity Central</span>
           </Link>
-          <div style={{ textAlign: "center" }}>
+          <div className="cal-header-centre" style={{ textAlign: "center" }}>
             <p className="cal-eyebrow" style={{ color: "#B5714A", fontWeight: 700, fontSize: 12, letterSpacing: 1.5, margin: 0 }}>
               {professional ? "PROFESSIONAL CALENDAR" : <>HOLIDAYS &amp; CELEBRATIONS</>}
             </p>
@@ -339,7 +361,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         </div>
 
         {/* Month navigation */}
-        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
+        <div className="cal-no-print cal-toolbar" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
           <button
             onClick={() => {
               // Carry on into the previous year.
@@ -364,7 +386,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         </div>
 
         {/* Print controls */}
-        <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
+        <div className="cal-no-print cal-toolbar" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
           <button
             onClick={() => handlePrint("A4")}
             style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", cursor: "pointer", fontWeight: 600 }}
@@ -424,7 +446,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
                 borderRadius: 10,
               }}
             >
-              {w}
+              <span className="cal-wd-long">{w}</span>
+              <span className="cal-wd-short">{w.slice(0, 3)}</span>
             </div>
           ))}
         </div>
