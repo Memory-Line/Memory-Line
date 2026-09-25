@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { isFeatureKey } from "@/lib/features";
 
 // Admin tools for other accounts: GET lists them, POST gives an account
 // full access without a Stripe subscription (status "free") or takes it
-// away again, and PUT sets its type and name. Paid subscriptions are
-// never changed here; Stripe manages those.
+// away again, and PUT sets its type, name and extra features. Paid
+// subscriptions are never changed here; Stripe manages those.
 
 // Always read fresh: new sign-ups should appear straight away.
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export async function GET() {
   }
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   const users = await prisma.user.findMany({
-    select: { email: true, name: true, accountType: true, subscriptionStatus: true },
+    select: { email: true, name: true, accountType: true, subscriptionStatus: true, features: true },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json({
@@ -72,20 +73,24 @@ export async function POST(req: Request) {
   }
 }
 
-// Sets an account's type (care home or personal) and its name — for
-// accounts made before sign-up asked, or to correct a care home's name.
+// Sets an account's type (care home or personal), name and extra features:
+// for accounts made before sign-up asked, to correct a care home's name, or
+// to switch features like the professional calendar on or off.
 export async function PUT(req: Request) {
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    const { email, accountType, name } = await req.json();
+    const { email, accountType, name, features } = await req.json();
     if (accountType !== "care-home" && accountType !== "personal") {
       return NextResponse.json({ error: "Choose care home or personal" }, { status: 400 });
     }
     if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
       return NextResponse.json({ error: "Enter a name (up to 100 characters)" }, { status: 400 });
+    }
+    if (features !== undefined && (!Array.isArray(features) || !features.every(isFeatureKey))) {
+      return NextResponse.json({ error: "Unknown feature" }, { status: 400 });
     }
 
     const user = await prisma.user.findFirst({
@@ -97,11 +102,15 @@ export async function PUT(req: Request) {
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { accountType, name: name.trim() },
+      data: {
+        accountType,
+        name: name.trim(),
+        ...(features !== undefined && { features: Array.from(new Set(features as string[])) }),
+      },
     });
     return NextResponse.json({
       ok: true,
-      message: `✓ Saved: ${user.email} is ${accountType === "care-home" ? "the care home" : "a personal account for"} ${name.trim()}.`,
+      message: `✓ Saved details for ${name.trim()} (${user.email}).`,
     });
   } catch (err: any) {
     console.error("account update failed:", err);

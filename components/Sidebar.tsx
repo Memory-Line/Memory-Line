@@ -7,7 +7,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, Shield,
+  Briefcase, Calendar, CalendarDays, Shield,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -85,7 +85,14 @@ function NavItem({
   );
 }
 
-export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
+export default function Sidebar({
+  isAdmin = false,
+  professionalCalendar = false,
+}: {
+  isAdmin?: boolean;
+  // Only for accounts with the professional calendar switched on.
+  professionalCalendar?: boolean;
+}) {
   const pathname = usePathname();
 
   return (
@@ -98,6 +105,14 @@ export default function Sidebar({ isAdmin = false }: { isAdmin?: boolean }) {
       <div className="space-y-0.5">
         <NavItem href="/dashboard" icon={LayoutDashboard} label="Dashboard" active={pathname === "/dashboard"} />
         <NavItem href="/calendar" icon={Calendar} label="Calendar" active={pathname === "/calendar"} />
+        {professionalCalendar && (
+          <NavItem
+            href="/professional-calendar"
+            icon={CalendarDays}
+            label="Professional Calendar"
+            active={pathname === "/professional-calendar"}
+          />
+        )}
         {CATEGORIES.map((c: any) => (
           <NavItem
             key={c.slug}

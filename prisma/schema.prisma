@@ -16,6 +16,8 @@ model User {
   id                   String    @id @default(cuid())
   name                 String?   // the care home's name for care-home accounts
   accountType          String    @default("personal") // personal | care-home
+  // Extra features switched on for this account by the admin (lib/features.ts).
+  features             String[]  @default([])
   email                String    @unique
   passwordHash         String
   createdAt            DateTime  @default(now())
@@ -37,6 +39,9 @@ model CalendarEvent {
   year      Int
   month     Int      // 0-11, matches the calendar page's month index
   day       Int
+  // "activity" = the Holidays & Celebrations calendar; "professional" = the
+  // blank calendar (a per-account feature).
+  calendar  String   @default("activity")
   title     String
   time      String?
   createdAt DateTime @default(now())
