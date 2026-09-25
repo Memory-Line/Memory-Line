@@ -319,7 +319,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           .cal-day-cell { min-height: 68px !important; }
           .cal-day-cell-inner { padding: 4px !important; }
           .cal-day-plain { font-size: 12px !important; }
-          .cal-event-tab { font-size: 9.5px !important; padding: 2px 3px !important; line-height: 1.15 !important; }
+          .cal-event-tab { font-size: 9.5px !important; padding: 2px 3px !important; line-height: 1.15 !important; overflow-wrap: anywhere; hyphens: auto; }
         }
       `}</style>
             <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
@@ -701,7 +701,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
 
         {/* Footer */}
         <div className="cal-footer" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#8A7A6B", marginTop: 12 }}>
-          <span>Date sources: UK bank holidays, 2027 observances</span>
+          <span>UK bank holidays and observances, worked out for {year}</span>
           <span>UK | {String(monthIndex + 1).padStart(2, "0")} / 12</span>
         </div>
       </div>
