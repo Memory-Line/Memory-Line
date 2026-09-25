@@ -6,6 +6,7 @@ import TemplateList from "@/components/TemplateList";
 import { subcategoriesFor } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
+import BingoCaller from "@/components/BingoCaller";
 
 export function generateStaticParams() {
   return [
@@ -107,6 +108,9 @@ export default async function CategoryPage({ params }: { params: { category: str
           </span>
         )}
       </p>
+
+      {/* Bingo: a caller for playing on the printed cards, above the cards. */}
+      {category.key === "Bingo" && <BingoCaller />}
 
       {realUploads.length > 0 ? (
         <TemplateList templates={realUploads} completedIds={done} playable={PLAYABLE_CATEGORIES.has(category.key)} />
