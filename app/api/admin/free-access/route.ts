@@ -89,8 +89,8 @@ export async function PUT(req: Request) {
     if (typeof name !== "string" || !name.trim() || name.trim().length > 100) {
       return NextResponse.json({ error: "Enter a name (up to 100 characters)" }, { status: 400 });
     }
-    if (features !== undefined && (!Array.isArray(features) || !features.every(isFeatureKey))) {
-      return NextResponse.json({ error: "Unknown feature" }, { status: 400 });
+    if (features !== undefined && !Array.isArray(features)) {
+      return NextResponse.json({ error: "Features must be a list" }, { status: 400 });
     }
 
     const user = await prisma.user.findFirst({
@@ -105,7 +105,9 @@ export async function PUT(req: Request) {
       data: {
         accountType,
         name: name.trim(),
-        ...(features !== undefined && { features: Array.from(new Set(features as string[])) }),
+        // Unknown or retired features (e.g. "play-sudoku", now for everyone)
+        // are dropped rather than refused.
+        ...(features !== undefined && { features: Array.from(new Set((features as unknown[]).filter(isFeatureKey))) }),
       },
     });
     return NextResponse.json({

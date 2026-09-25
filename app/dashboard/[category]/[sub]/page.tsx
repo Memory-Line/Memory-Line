@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { subcategoryBySlug } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
 import TemplateList from "@/components/TemplateList";
+import { PLAYABLE_CATEGORIES } from "@/lib/play";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default async function SubcategoryPage({
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, templates.map((t) => t.id))
     : undefined;
-  const playable = category.key === "Sudoku" && viewer.has("play-sudoku");
+  const playable = PLAYABLE_CATEGORIES.has(category.key);
 
   return (
     <div>
