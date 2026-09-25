@@ -1,6 +1,8 @@
-import { Download } from "lucide-react";
+import Link from "next/link";
+import { Download, Play } from "lucide-react";
 import type { Template } from "@prisma/client";
 import { displayTitle } from "@/lib/titles";
+import CompleteButton from "@/components/CompleteButton";
 
 // The number a file name starts with ("001-…", "23. …"), ignoring any
 // folder path in front; files without one sort after numbered ones.
@@ -13,7 +15,18 @@ function leadingNumber(fileName: string): number {
 // / video links, in number order (1, 2 … 200). PDF links go through
 // /api/download so each download is recorded. Shared by the regular
 // category pages, the calendar occasion pages and the language pages.
-export default function TemplateList({ templates }: { templates: Template[] }) {
+// For accounts with those features, rows also get "Play online" (Sudoku)
+// and a Completed button (pass the ids already completed to switch it on).
+export default function TemplateList({
+  templates,
+  completedIds,
+  playable = false,
+}: {
+  templates: Template[];
+  completedIds?: string[];
+  playable?: boolean;
+}) {
+  const done = completedIds ? new Set(completedIds) : null;
   const sorted = [...templates].sort(
     (a, b) => leadingNumber(a.fileName) - leadingNumber(b.fileName) || a.title.localeCompare(b.title)
   );
@@ -25,7 +38,13 @@ export default function TemplateList({ templates }: { templates: Template[] }) {
             <p className="text-[15px] font-bold">{displayTitle(t)}</p>
             <p className="text-[11px] text-inkSoft mt-0.5">{t.fileName}</p>
           </div>
-          <div className="flex gap-2 shrink-0">
+          <div className="flex flex-wrap justify-end gap-2 shrink-0 max-w-[65%]">
+            {playable && (
+              <Link href={`/dashboard/play/${t.id}`} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
+                <Play size={14} />
+                Play online
+              </Link>
+            )}
             <a href={`/api/download/${t.id}?file=standard`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
               <Download size={14} />
               Standard
@@ -42,9 +61,10 @@ export default function TemplateList({ templates }: { templates: Template[] }) {
             )}
             {t.videoUrl && (
               <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
-                {/youtube.com|youtu.be/.test(t.videoUrl) ? "Watch on YouTube" : "Watch sign video"}
+                {/youtube\.com|youtu\.be/.test(t.videoUrl) ? "Watch on YouTube" : "Watch sign video"}
               </a>
             )}
+            {done && <CompleteButton templateId={t.id} initiallyCompleted={done.has(t.id)} />}
           </div>
         </div>
       ))}

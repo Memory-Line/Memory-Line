@@ -15,13 +15,14 @@ The whole output folder can be uploaded in one go from the admin page's
 "…or a whole folder" picker (level, large print and answers are read from
 the folder names).
 
-Usage:
+Usage (add --json to write the puzzles as data for playing online instead):
     python generate_sudoku.py OUTPUT_DIR [--count 1000] [--levels beginner,intermediate,advanced]
 Needs: reportlab, Pillow (installed with reportlab).
 """
 
 import argparse
 import io
+import json
 import os
 import random
 import sys
@@ -298,7 +299,26 @@ def main():
     parser.add_argument("out")
     parser.add_argument("--count", type=int, default=1000)
     parser.add_argument("--levels", default="beginner,intermediate,advanced")
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        help="write the puzzles as JSON to OUT (a file) instead of PDFs; used to play them online",
+    )
     args = parser.parse_args()
+
+    if args.json:
+        # The same seeds give exactly the same puzzles as the PDFs.
+        data = {
+            key: [
+                {"n": n, "puzzle": "".join(map(str, p)), "solution": "".join(map(str, s))}
+                for n, (p, s) in enumerate(make_puzzles(key, args.count), start=1)
+            ]
+            for key in args.levels.split(",")
+        }
+        with open(args.out, "w", encoding="utf-8") as f:
+            json.dump(data, f, separators=(",", ":"))
+        print(f"wrote {sum(len(v) for v in data.values())} puzzles to {args.out}")
+        return 0
 
     logo = small_logo()
     for key in args.levels.split(","):

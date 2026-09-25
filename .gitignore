@@ -6,3 +6,6 @@ node_modules
 *.db-journal
 .DS_Store
 next-env.d.ts
+
+# Python (scripts/)
+__pycache__/

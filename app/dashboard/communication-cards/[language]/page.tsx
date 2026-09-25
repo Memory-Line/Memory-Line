@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
+import { completedIds, getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,10 @@ export default async function CommunicationCardsLanguagePage({
     where: { category: LANGUAGE_CATEGORY, occasion: null, language: language.slug },
     orderBy: { fileName: "asc" },
   });
+  const viewer = await getViewer();
+  const done = viewer.has("completion-tracking")
+    ? await completedIds(viewer.userId, cards.map((t) => t.id))
+    : undefined;
 
   return (
     <div>
@@ -33,7 +38,7 @@ export default async function CommunicationCardsLanguagePage({
       </p>
 
       {cards.length > 0 ? (
-        <TemplateList templates={cards} />
+        <TemplateList templates={cards} completedIds={done} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {language.label} cards yet.
