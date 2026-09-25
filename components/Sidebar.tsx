@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  LayoutDashboard, Footprints, Grid3x3, Search, HelpCircle, Brain, Hash,
+  LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
   Briefcase, Calendar, CalendarDays, Shield,
 } from "lucide-react";
@@ -27,6 +27,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Sudoku: Grid2x2,
 };
 
 // One colour per nav item, used only on hover
@@ -119,7 +120,7 @@ export default function Sidebar({
             href={`/dashboard/${c.slug}`}
             icon={ICONS[c.key]}
             label={c.key}
-            active={pathname === `/dashboard/${c.slug}`}
+            active={pathname === `/dashboard/${c.slug}` || pathname.startsWith(`/dashboard/${c.slug}/`)}
           />
         ))}
         <div className="border-t border-line my-2.5" />

@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, SERVICES } from "@/lib/data";
 import {
-  Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
+  Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
 } from "lucide-react";
 
@@ -24,6 +24,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Sudoku: Grid2x2,
 };
 
 export default async function DashboardHome() {

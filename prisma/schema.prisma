@@ -74,5 +74,8 @@ model Template {
   // Language slug (lib/languages.ts) for Communication Cards; null for
   // every other category.
   language      String?
+  // Sub-category slug (lib/subcategories.ts), e.g. Sudoku level; null for
+  // categories without sub-categories.
+  subcategory   String?
   createdAt     DateTime @default(now())
 }

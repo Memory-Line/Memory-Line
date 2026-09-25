@@ -56,6 +56,7 @@ const EXCLUDED_CATEGORIES = new Set([
   "Sing-Alongs",
   "Communication Cards",
   "BSL Tools",
+  "Sudoku",
 ]);
 
 export const THEMEABLE_CATEGORIES = CATEGORIES.filter((c) => !EXCLUDED_CATEGORIES.has(c.key));

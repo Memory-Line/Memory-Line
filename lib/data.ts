@@ -21,6 +21,7 @@ export const CATEGORIES: Category[] = [
   { key: "Sing-Alongs", slug: "sing-alongs", color: "#A78BB5", tint: "#E7DEEC" },
   { key: "Communication Cards", slug: "communication-cards", color: "#B5453D", tint: "#F3DAD8" },
   { key: "BSL Tools", slug: "bsl-tools", color: "#5A8A44", tint: "#DCEAD5" },
+  { key: "Sudoku", slug: "sudoku", color: "#2F7A63", tint: "#D6EBE3" },
 ];
 
 export function categoryBySlug(slug: string) {
