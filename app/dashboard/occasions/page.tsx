@@ -1,7 +1,23 @@
 import Link from "next/link";
-import { OCCASIONS } from "@/lib/occasions";
+import { prisma } from "@/lib/prisma";
+import { LEGACY_OCCASIONS, OCCASIONS } from "@/lib/occasions";
 
-export default function OccasionsPage() {
+export const dynamic = "force-dynamic";
+
+export default async function OccasionsPage() {
+  // Old occasions the calendar no longer shows are listed only if they
+  // have uploads.
+  const withUploads = new Set(
+    (
+      await prisma.template.findMany({
+        where: { occasion: { in: LEGACY_OCCASIONS.map((o) => o.slug) } },
+        select: { occasion: true },
+        distinct: ["occasion"],
+      })
+    ).map((t) => t.occasion)
+  );
+  const occasions = [...OCCASIONS, ...LEGACY_OCCASIONS.filter((o) => withUploads.has(o.slug))];
+
   return (
     <div>
       <h1 className="font-serif text-2xl mb-1">Occasions</h1>
@@ -12,7 +28,7 @@ export default function OccasionsPage() {
 
       <div className="rounded-xl p-4 bg-card border border-line">
         <div className="grid grid-cols-3 gap-3">
-          {OCCASIONS.map((o) => (
+          {occasions.map((o) => (
             <Link
               key={o.slug}
               href={`/dashboard/occasions/${o.slug}`}
