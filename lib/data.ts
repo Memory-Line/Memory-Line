@@ -8,6 +8,7 @@ export type Category = {
 export const CATEGORIES: Category[] = [
   { key: "Physical & Exercise", slug: "physical-exercise", color: "#4A7FB5", tint: "#DCE7F2" },
   { key: "Crosswords", slug: "crosswords", color: "#A6822C", tint: "#F1E4C4" },
+  { key: "Sudoku", slug: "sudoku", color: "#2F7A63", tint: "#D6EBE3" },
   { key: "Word Searches", slug: "word-searches", color: "#5B9AA0", tint: "#D9E7E6" },
   { key: "Guess the Word", slug: "guess-the-word", color: "#8B6FB0", tint: "#E5DEEF" },
   { key: "Trivia", slug: "trivia", color: "#3E7CAA", tint: "#D7E4EF" },
@@ -21,7 +22,6 @@ export const CATEGORIES: Category[] = [
   { key: "Sing-Alongs", slug: "sing-alongs", color: "#A78BB5", tint: "#E7DEEC" },
   { key: "Communication Cards", slug: "communication-cards", color: "#B5453D", tint: "#F3DAD8" },
   { key: "BSL Tools", slug: "bsl-tools", color: "#5A8A44", tint: "#DCEAD5" },
-  { key: "Sudoku", slug: "sudoku", color: "#2F7A63", tint: "#D6EBE3" },
 ];
 
 export function categoryBySlug(slug: string) {
