@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import TemplateList from "@/components/TemplateList";
 import { subcategoriesFor } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
+import { PLAYABLE_CATEGORIES } from "@/lib/play";
 
 export function generateStaticParams() {
   return [
@@ -108,7 +109,7 @@ export default async function CategoryPage({ params }: { params: { category: str
       </p>
 
       {realUploads.length > 0 ? (
-        <TemplateList templates={realUploads} completedIds={done} />
+        <TemplateList templates={realUploads} completedIds={done} playable={PLAYABLE_CATEGORIES.has(category.key)} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No activities here yet.
