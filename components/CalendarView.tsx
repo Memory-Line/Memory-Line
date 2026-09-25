@@ -5,8 +5,8 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 import { occasionHref } from "@/lib/occasions";
+import { occasionsForYear } from "@/lib/ukCalendar";
 
-type BuiltInEvent = { day: number; label: string; bankHoliday?: boolean };
 
 type CustomEvent = {
   id: string;
@@ -28,96 +28,11 @@ type DisplayEvent = {
   id?: string;
 };
 
-const MONTHS: { name: string; events: BuiltInEvent[]; note: string }[] = [
-  { name: "January", note: "Twelfth Night is shown on 5 January; some traditions observe it on 6 January. Lunar New Year falls on 6 February in 2027.", events: [
-    { day: 1, label: "New Year's Day", bankHoliday: true },
-    { day: 4, label: "Bank holiday (Scotland)", bankHoliday: true },
-    { day: 5, label: "Twelfth Night" },
-    { day: 25, label: "Burns Night" },
-  ]},
-  { name: "February", note: "Chinese / Lunar New Year: 6 February. Pancake Day: 9 February. Activity theme: friendship, familiar love songs and pancake traditions.", events: [
-    { day: 6, label: "Chinese / Lunar New Year" },
-    { day: 9, label: "Pancake Day (Shrove Tuesday)" },
-    { day: 10, label: "Ash Wednesday" },
-    { day: 14, label: "Valentine's Day" },
-  ]},
-  { name: "March", note: "Easter falls in March in 2027. Easter Monday is a bank holiday in England, Wales and Northern Ireland.", events: [
-    { day: 1, label: "St David's Day" },
-    { day: 7, label: "Mother's Day (Mothering Sunday)" },
-    { day: 8, label: "International Women's Day" },
-    { day: 17, label: "St Patrick's Day" },
-    { day: 20, label: "First day of spring" },
-    { day: 21, label: "Palm Sunday" },
-    { day: 26, label: "Good Friday", bankHoliday: true },
-    { day: 28, label: "Easter Sunday" },
-    { day: 29, label: "Easter Monday", bankHoliday: true },
-  ]},
-  { name: "April", note: "Easter was on 28 March this year; Easter Monday was on 29 March. Activity theme: spring gardens, flowers and St George's Day traditions.", events: [
-    { day: 1, label: "April Fool's Day" },
-    { day: 23, label: "St George's Day" },
-  ]},
-  { name: "May", note: "Chelsea Flower Show: 18-22 May. Mental Health Awareness Week: 2027 dates to be confirmed.", events: [
-    { day: 1, label: "May Day" },
-    { day: 3, label: "Early May bank holiday", bankHoliday: true },
-    { day: 8, label: "VE Day" },
-    { day: 12, label: "International Nurses Day" },
-    { day: 18, label: "Chelsea Flower Show begins" },
-    { day: 22, label: "Chelsea Flower Show ends" },
-    { day: 31, label: "Spring bank holiday", bankHoliday: true },
-  ]},
-  { name: "June", note: "Wimbledon: 28 June - 11 July. Trooping the Colour / King's Official Birthday: 2027 date to be confirmed.", events: [
-    { day: 6, label: "D-Day anniversary" },
-    { day: 20, label: "Father's Day" },
-    { day: 21, label: "First day of summer" },
-    { day: 28, label: "Wimbledon begins" },
-  ]},
-  { name: "July", note: "Wimbledon continues until 11 July. Summer / seaside celebrations: choose any day. Activity theme: seaside memories and summer music.", events: [
-    { day: 4, label: "American Independence Day" },
-    { day: 7, label: "World Chocolate Day" },
-    { day: 11, label: "Wimbledon ends" },
-    { day: 12, label: "Battle of the Boyne (NI)" },
-  ]},
-  { name: "August", note: "Notting Hill Carnival: 29-30 August. Bank holiday in England, Wales and NI on 30 August. Afternoon Tea Week: date to be confirmed.", events: [
-    { day: 1, label: "Yorkshire Day" },
-    { day: 2, label: "Summer bank holiday (Scotland)", bankHoliday: true },
-    { day: 8, label: "International Cat Day" },
-    { day: 15, label: "VJ Day" },
-    { day: 29, label: "Notting Hill Carnival begins" },
-    { day: 30, label: "Summer bank holiday", bankHoliday: true },
-  ]},
-  { name: "September", note: "Harvest Festival season: choose a date to suit your home or local community. Macmillan Coffee Morning: date to be confirmed.", events: [
-    { day: 15, label: "Battle of Britain Day" },
-    { day: 21, label: "World Alzheimer's Day" },
-    { day: 22, label: "First day of autumn" },
-  ]},
-  { name: "October", note: "Harvest Festival: local dates vary through September and October. Activity theme: autumn colours, harvest traditions and friendly Halloween crafts.", events: [
-    { day: 1, label: "International Day of Older Persons" },
-    { day: 10, label: "World Mental Health Day" },
-    { day: 31, label: "Halloween" },
-  ]},
-  { name: "November", note: "Advent begins on Sunday 28 November and continues into December. St Andrew's Day is a bank holiday in Scotland.", events: [
-    { day: 1, label: "All Saints' Day" },
-    { day: 5, label: "Bonfire Night (Guy Fawkes Night)" },
-    { day: 11, label: "Armistice Day" },
-    { day: 14, label: "Remembrance Sunday" },
-    { day: 28, label: "Advent begins" },
-    { day: 30, label: "St Andrew's Day", bankHoliday: true },
-  ]},
-  { name: "December", note: "Advent continues. Hanukkah: sunset 24 December 2027 to nightfall 1 January 2028. Christmas Jumper Day: date to be confirmed.", events: [
-    { day: 6, label: "St Nicholas Day" },
-    { day: 20, label: "First day of winter" },
-    { day: 24, label: "Christmas Eve / Hanukkah begins at sunset" },
-    { day: 25, label: "Christmas Day", bankHoliday: true },
-    { day: 26, label: "Boxing Day", bankHoliday: true },
-    { day: 27, label: "Christmas bank holiday (substitute)", bankHoliday: true },
-    { day: 28, label: "Boxing Day bank holiday (substitute)", bankHoliday: true },
-    { day: 31, label: "New Year's Eve" },
-  ]},
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
-// The Holidays & Celebrations calendar is for this one year (its occasion
-// dates above are for it); the professional calendar can show any year.
-const ACTIVITY_YEAR = 2027;
 const WEEKDAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 // One colour per weekday column, matching the reference design
@@ -175,11 +90,12 @@ const labelStyle: CSSProperties = {
   display: "block",
 };
 
-// "activity": Holidays & Celebrations, with the built-in occasions (each
-// linking to its themed activities) for ACTIVITY_YEAR.
-// "professional": a blank calendar for the home's own events, starting at
-// the current month and able to move between years. Its events are kept
-// separate from the activity calendar's.
+// Both calendars start at the current month and roll on through the years.
+// "activity": Holidays & Celebrations, with the built-in occasions worked
+// out for whichever year is showing (lib/ukCalendar.ts), each linking to
+// its themed activities.
+// "professional": a blank calendar for the home's own events. Its events
+// are kept separate from the activity calendar's.
 export type CalendarVariant = "activity" | "professional";
 
 export default function CalendarView({ variant = "activity" }: { variant?: CalendarVariant }) {
@@ -187,8 +103,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
   const signedIn = status === "authenticated";
   const professional = variant === "professional";
 
-  const [year, setYear] = useState(() => (professional ? new Date().getFullYear() : ACTIVITY_YEAR));
-  const [monthIndex, setMonthIndex] = useState(() => (professional ? new Date().getMonth() : 0));
+  const [year, setYear] = useState(() => new Date().getFullYear());
+  const [monthIndex, setMonthIndex] = useState(() => new Date().getMonth());
   const [openDay, setOpenDay] = useState<number | null>(null);
   const [customEvents, setCustomEvents] = useState<CustomEvent[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(false);
@@ -200,7 +116,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
   const [saving, setSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  const month = MONTHS[monthIndex];
+  const month = { name: MONTH_NAMES[monthIndex] };
   const cells = getMonthGrid(year, monthIndex);
   const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
 
@@ -228,12 +144,13 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
   }, [signedIn, year, variant]);
 
   const eventsByDay: Record<number, DisplayEvent[]> = {};
-  for (const e of professional ? [] : month.events) {
+  const builtIn = professional ? [] : occasionsForYear(year).filter((e) => e.month === monthIndex);
+  for (const e of builtIn) {
     (eventsByDay[e.day] ??= []).push({
-      key: `built-in-${monthIndex}-${e.day}-${e.label}`,
+      key: `built-in-${year}-${monthIndex}-${e.day}-${e.label}`,
       day: e.day,
       label: e.label,
-      link: occasionHref(e.label),
+      link: occasionHref(e.occasion ?? e.label),
       custom: false,
     });
   }
@@ -425,8 +342,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         <div className="cal-no-print" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 20, margin: "20px 0" }}>
           <button
             onClick={() => {
-              // The professional calendar carries on into the previous year.
-              if (professional && monthIndex === 0) setYear((y) => y - 1);
+              // Carry on into the previous year.
+              if (monthIndex === 0) setYear((y) => y - 1);
               setMonthIndex((m) => (m === 0 ? 11 : m - 1));
               setOpenDay(null);
             }}
@@ -436,7 +353,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           </button>
           <button
             onClick={() => {
-              if (professional && monthIndex === 11) setYear((y) => y + 1);
+              if (monthIndex === 11) setYear((y) => y + 1);
               setMonthIndex((m) => (m === 11 ? 0 : m + 1));
               setOpenDay(null);
             }}
