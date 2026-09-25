@@ -148,10 +148,12 @@ export default function SudokuPlayer({
   });
 
   const cellPx = size === 4 ? 96 : size === 6 ? 72 : 52;
+  // On a phone the squares shrink so the whole grid fits the screen.
+  const cell = `min(${cellPx}px, calc((100vw - 72px) / ${size}))`;
   const selectedValue = selected !== null ? values[selected] : 0;
 
   return (
-    <div className="flex flex-wrap gap-8 items-start">
+    <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
       <div
         role="grid"
         aria-label="Sudoku grid"
@@ -161,7 +163,7 @@ export default function SudokuPlayer({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: `repeat(${size}, ${cellPx}px)`,
+            gridTemplateColumns: `repeat(${size}, ${cell})`,
             border: `3px solid ${INK}`,
           }}
         >
@@ -186,14 +188,14 @@ export default function SudokuPlayer({
                 aria-label={`Row ${r + 1}, column ${c + 1}${v ? `, ${v}` : ", empty"}`}
                 onClick={() => setSelected(i)}
                 style={{
-                  width: cellPx,
-                  height: cellPx,
+                  width: cell,
+                  height: cell,
                   background,
                   borderRight: c === size - 1 ? "none" : `${(c + 1) % boxCols === 0 ? 2.5 : 1}px solid ${(c + 1) % boxCols === 0 ? INK : LINE}`,
                   borderBottom: r === size - 1 ? "none" : `${(r + 1) % boxRows === 0 ? 2.5 : 1}px solid ${(r + 1) % boxRows === 0 ? INK : LINE}`,
                   outline: selected === i ? `3px solid #b5714a` : "none",
                   outlineOffset: -3,
-                  fontSize: cellPx * 0.55,
+                  fontSize: `calc(${cell} * 0.55)`,
                   fontWeight: isGiven ? 700 : 500,
                   color: isGiven ? INK : ANSWER,
                   cursor: isGiven ? "default" : "pointer",

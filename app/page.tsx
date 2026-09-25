@@ -58,17 +58,17 @@ export default async function LandingPage() {
   return (
     <main>
       {/* Nav */}
-      <header className="flex items-center justify-between px-8 py-5 max-w-6xl mx-auto">
-        <div className="flex items-center gap-2">
+      <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-4 sm:py-5 max-w-6xl mx-auto">
+        <div className="flex items-center gap-2 shrink-0">
           <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
-          <span className="font-serif text-xl">Activity Central</span>
+          <span className="font-serif text-lg sm:text-xl leading-tight">Activity Central</span>
         </div>
-        <div className="flex items-center gap-4 text-sm font-medium">
-          <a href="#pricing" className="text-inkSoft hover:text-ink">Pricing</a>
-          <Link href="/login" className="text-inkSoft hover:text-ink">Log in</Link>
+        <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
+          <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
+          <Link href="/login" className="whitespace-nowrap text-inkSoft hover:text-ink">Log in</Link>
           <Link
             href="/signup"
-            className="rounded-lg bg-sage text-white px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
+            className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
           >
             Start free trial
           </Link>
@@ -76,19 +76,19 @@ export default async function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section className="max-w-4xl mx-auto px-8 pt-16 pb-20 text-center">
+      <section className="max-w-4xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-14 sm:pb-20 text-center">
         <p className="text-clay font-semibold text-sm tracking-wide uppercase mb-4">
           For care home activity teams
         </p>
-        <h1 className="font-serif text-5xl leading-tight text-ink mb-6">
+        <h1 className="font-serif text-[34px] sm:text-5xl leading-tight text-ink mb-5 sm:mb-6">
           A ready-made library of dementia engagement activities
         </h1>
-        <p className="text-inkSoft text-lg max-w-2xl mx-auto mb-9">
+        <p className="text-inkSoft text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-9">
           1000+ downloadable activities across physical &amp; exercise, word puzzles, trivia
           and games, colouring, communication tools, and more — built for carers who need
           something meaningful ready to run in minutes, not hours.
         </p>
-        <div className="flex items-center justify-center gap-3">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
           <Link
             href="/signup"
             className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
@@ -103,18 +103,18 @@ export default async function LandingPage() {
       </section>
 
       {/* Categories */}
-      <section className="max-w-5xl mx-auto px-8 pb-20">
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">{CATEGORIES.length} categories, every session covered</h2>
         <p className="text-inkSoft text-center mb-10">
           Each activity includes step-by-step facilitator notes, duration, and group size.
         </p>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           {CATEGORIES.map((c) => {
             const Icon = ICONS[c.key];
             return (
               <div
                 key={c.key}
-                className="rounded-2xl p-5 text-center border border-line bg-card"
+                className="rounded-2xl p-4 sm:p-5 text-center border border-line bg-card"
               >
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center mx-auto mb-3"
@@ -131,7 +131,7 @@ export default async function LandingPage() {
 
       {/* Free samples (hidden if none of their categories has uploads yet) */}
       {freeSamples.length > 0 && (
-      <section className="max-w-5xl mx-auto px-8 pb-20">
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">Try a few, free — no signup needed</h2>
         <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
         <div className="flex flex-wrap justify-center gap-4">
@@ -141,7 +141,7 @@ export default async function LandingPage() {
             return (
               <div
                 key={t.id}
-                className="w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border border-line bg-card flex flex-col justify-between"
+                className="w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border border-line bg-card flex flex-col justify-between"
               >
                 <div>
                   <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
@@ -177,8 +177,8 @@ export default async function LandingPage() {
       )}
 
       {/* Services teaser */}
-      <section className="max-w-5xl mx-auto px-8 pb-20">
-        <div className="rounded-2xl border border-line bg-card p-8 flex items-center justify-between gap-8">
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
+        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-8">
           <div>
             <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
             <p className="text-inkSoft text-sm max-w-md">
@@ -197,11 +197,11 @@ export default async function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="max-w-3xl mx-auto px-8 pb-24">
+      <section id="pricing" className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
         <h2 className="font-serif text-2xl text-center mb-2">Simple, single-tier pricing</h2>
         <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
 
-        <div className="rounded-2xl border-2 border-sage bg-card p-8 text-center">
+        <div className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
           <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
           <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
           <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
@@ -230,7 +230,7 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t border-line py-8 px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
+      <footer className="border-t border-line py-8 px-5 sm:px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
         <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams.</p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
       </footer>

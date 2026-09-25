@@ -94,10 +94,10 @@ export default async function DashboardHome() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl">Welcome Back, {firstName}</h1>
+      <h1 className="font-serif text-2xl sm:text-3xl">Welcome Back, {firstName}</h1>
       <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
 
-      <div className="flex items-center justify-between rounded-xl px-5 py-3 mt-5 bg-card border border-line">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl px-5 py-3 mt-5 bg-card border border-line">
         <div>
           <p className="text-sm font-bold text-sageDeep">
             {freeAccess ? "✓ Free access" : "✓ Subscription Active"}
@@ -120,7 +120,7 @@ export default async function DashboardHome() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 mt-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
         <div className="rounded-xl p-4 bg-card border border-line">
           <p className="font-serif text-[15px] mb-2.5">Recently downloaded</p>
           <div className="space-y-2">
@@ -169,7 +169,7 @@ export default async function DashboardHome() {
 
       <div className="rounded-xl p-4 mt-5 bg-card border border-line">
         <p className="font-serif text-[15px] mb-2.5">Browse by category</p>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {CATEGORIES.map((c) => {
             const Icon = ICONS[c.key];
             return (
@@ -194,7 +194,7 @@ export default async function DashboardHome() {
             View all →
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {SERVICES.slice(0, 4).map((s) => (
             <div key={s.name} className="rounded-lg p-3 bg-bg">
               <p className="text-[13px] font-bold">{s.name}</p>

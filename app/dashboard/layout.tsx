@@ -24,12 +24,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const professionalCalendar = await userHasFeature(session.user.id, "professional-calendar");
 
   return (
-    <div className="flex min-h-screen bg-bg">
+    <div className="flex flex-col md:flex-row min-h-screen bg-bg">
       <Sidebar isAdmin={isAdmin} professionalCalendar={professionalCalendar} />
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <TopBar userName={session.user.name ?? session.user.email ?? "there"} />
-        <main className="px-6 pb-10 max-w-[980px]">{children}</main>
-        <p className="px-6 pb-10 max-w-[980px] text-[11px] text-inkSoft leading-relaxed border-t border-line pt-4 mt-6">
+        <main className="px-4 sm:px-6 pb-10 max-w-[980px]">{children}</main>
+        <p className="px-4 sm:px-6 pb-10 max-w-[980px] text-[11px] text-inkSoft leading-relaxed border-t border-line pt-4 mt-6">
           Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.
         </p>
       </div>

@@ -33,12 +33,12 @@ export default function TemplateList({
   return (
     <div className="space-y-3">
       {sorted.map((t) => (
-        <div key={t.id} className="flex items-center justify-between rounded-xl p-4 bg-card border border-line">
+        <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
           <div>
             <p className="text-[15px] font-bold">{displayTitle(t)}</p>
-            <p className="text-[11px] text-inkSoft mt-0.5">{t.fileName}</p>
+            <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
           </div>
-          <div className="flex flex-wrap justify-end gap-2 shrink-0 max-w-[65%]">
+          <div className="flex flex-wrap sm:justify-end gap-2 shrink-0 sm:max-w-[65%]">
             {playable && (
               <Link href={`/dashboard/play/${t.id}`} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
                 <Play size={14} />
