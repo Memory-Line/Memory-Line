@@ -4,6 +4,7 @@ import { categoryBySlug } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import TemplateList from "@/components/TemplateList";
 import { subcategoriesFor } from "@/lib/subcategories";
+import { completedIds, getViewer } from "@/lib/viewer";
 
 export function generateStaticParams() {
   return [
@@ -32,6 +33,9 @@ export default async function CategoryPage({ params }: { params: { category: str
   if (!category) notFound();
 
   // Categories split into sub-categories (e.g. Sudoku levels): pick one first.
+  const viewer = await getViewer();
+  const tracking = viewer.has("completion-tracking");
+
   const subcategories = subcategoriesFor(category.key);
   if (subcategories) {
     const counts = await prisma.template.groupBy({
@@ -40,6 +44,20 @@ export default async function CategoryPage({ params }: { params: { category: str
       _count: { _all: true },
     });
     const countFor = (slug: string) => counts.find((c) => c.subcategory === slug)?._count._all ?? 0;
+    // With completion tracking, how many of each level this account has done.
+    const doneCounts =
+      tracking && viewer.userId
+        ? await Promise.all(
+            subcategories.map((s) =>
+              prisma.completion.count({
+                where: {
+                  userId: viewer.userId,
+                  template: { category: category.key, occasion: null, subcategory: s.slug },
+                },
+              })
+            )
+          )
+        : null;
     return (
       <div>
         <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
@@ -56,7 +74,12 @@ export default async function CategoryPage({ params }: { params: { category: str
                 {s.label}
               </p>
               <p className="text-xs text-inkSoft mt-1">{s.description}</p>
-              <p className="text-xs font-semibold mt-3">{countFor(s.slug)} activities</p>
+              <p className="text-xs font-semibold mt-3">
+                {countFor(s.slug)} activities
+                {doneCounts && (
+                  <span style={{ color: "#2F7A63" }}> · {doneCounts[subcategories.indexOf(s)]} completed</span>
+                )}
+              </p>
             </Link>
           ))}
         </div>
@@ -70,15 +93,22 @@ export default async function CategoryPage({ params }: { params: { category: str
     orderBy: { createdAt: "desc" },
   });
 
+  const done = tracking ? await completedIds(viewer.userId, realUploads.map((t) => t.id)) : undefined;
+
   return (
     <div>
       <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         {realUploads.length} downloadable activities — choose from memory boxes, conversation prompts, photo collections, and more
+        {done && (
+          <span className="ml-2 font-semibold" style={{ color: "#2F7A63" }}>
+            · {done.length} of {realUploads.length} completed
+          </span>
+        )}
       </p>
 
       {realUploads.length > 0 ? (
-        <TemplateList templates={realUploads} />
+        <TemplateList templates={realUploads} completedIds={done} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No activities here yet.

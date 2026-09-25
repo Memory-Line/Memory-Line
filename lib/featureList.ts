@@ -9,6 +9,16 @@ export const FEATURES = [
     label: "Professional calendar",
     description: "A blank calendar for the home's own events",
   },
+  {
+    key: "play-sudoku",
+    label: "Play Sudoku online",
+    description: "Solve the Sudoku puzzles on screen, as well as printing them",
+  },
+  {
+    key: "completion-tracking",
+    label: "Completion tracking",
+    description: "A Completed button on every activity, with progress for each category",
+  },
 ] as const;
 
 export type FeatureKey = (typeof FEATURES)[number]["key"];

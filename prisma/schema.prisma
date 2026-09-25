@@ -30,6 +30,7 @@ model User {
 
   downloads            Download[]
   calendarEvents       CalendarEvent[]
+  completions          Completion[]
 }
 
 model CalendarEvent {
@@ -78,4 +79,19 @@ model Template {
   // categories without sub-categories.
   subcategory   String?
   createdAt     DateTime @default(now())
+  completions   Completion[]
+}
+
+// Activities an account has marked as completed (the "completion-tracking"
+// feature). One row per account and activity; everyone using that login
+// shares the list.
+model Completion {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId  String
+  template    Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  completedAt DateTime @default(now())
+
+  @@unique([userId, templateId])
 }

@@ -6,6 +6,7 @@ import { categoryBySlug } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import TemplateList from "@/components/TemplateList";
+import { completedIds, getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,10 @@ export default async function OccasionCategoryPage({
     where: { category: category.key, occasion: occasion.slug },
     orderBy: { createdAt: "desc" },
   });
+  const viewer = await getViewer();
+  const done = viewer.has("completion-tracking")
+    ? await completedIds(viewer.userId, templates.map((t) => t.id))
+    : undefined;
 
   const session = await getServerSession(authOptions);
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
@@ -52,7 +57,7 @@ export default async function OccasionCategoryPage({
       </div>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} />
+        <TemplateList templates={templates} completedIds={done} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {category.key.toLowerCase()} for {occasion.label} yet.
