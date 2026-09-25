@@ -7,8 +7,10 @@ import { displayTitle } from "@/lib/titles";
 import { subcategoryBySlug } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
+import { crossword } from "@/lib/crossword";
 import SudokuPlayer from "@/components/SudokuPlayer";
 import WordSearchPlayer from "@/components/WordSearchPlayer";
+import CrosswordPlayer from "@/components/CrosswordPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -53,6 +55,21 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   } else if (template.category === "Word Searches" && !template.occasion) {
     const data = wordSearch(number);
     if (data) player = <WordSearchPlayer {...common} grid={data.grid} words={data.words} />;
+  } else if (template.category === "Crosswords" && !template.occasion) {
+    const data = crossword(number);
+    if (data) {
+      player = (
+        <CrosswordPlayer
+          {...common}
+          rows={data.rows}
+          cols={data.cols}
+          solution={data.solution}
+          numbers={data.numbers}
+          across={data.across}
+          down={data.down}
+        />
+      );
+    }
   }
 
   return (
