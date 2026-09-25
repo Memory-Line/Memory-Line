@@ -8,9 +8,11 @@ import { subcategoryBySlug } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
+import { guessTheWord } from "@/lib/guessTheWord";
 import SudokuPlayer from "@/components/SudokuPlayer";
 import WordSearchPlayer from "@/components/WordSearchPlayer";
 import CrosswordPlayer from "@/components/CrosswordPlayer";
+import GuessTheWordPlayer from "@/components/GuessTheWordPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -70,6 +72,9 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
         />
       );
     }
+  } else if (template.category === "Guess the Word" && !template.occasion) {
+    const data = guessTheWord(number);
+    if (data) player = <GuessTheWordPlayer {...common} clue={data.clue} answer={data.answer} tries={data.tries} />;
   }
 
   return (
