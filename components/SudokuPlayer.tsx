@@ -10,6 +10,7 @@ const BOX_TINT = "#f7f3ea";
 const LINE = "#c9bfb0";
 const SELECTED = "#fcefe7";
 const WRONG = "#f2d6da";
+const WRONG_INK = "#c0392b";
 const PILLS = ["#cfe3f2", "#c9e6dd", "#f1d2be", "#dfd5ec", "#f2e2b8", "#d3e6f5", "#f2d6da", "#d8e7cb", "#cfe3f2"];
 
 // A Sudoku to solve on screen: tap a square, then a number. Large squares
@@ -151,6 +152,13 @@ export default function SudokuPlayer({
   // On a phone the squares shrink so the whole grid fits the screen.
   const cell = `min(${cellPx}px, calc((100vw - 72px) / ${size}))`;
   const selectedValue = selected !== null ? values[selected] : 0;
+  // A number is "all in" once every one of it is in its right square; its
+  // button below is then crossed out. Wrong entries never count.
+  const allIn = new Set(
+    Array.from({ length: size }, (_, k) => k + 1).filter(
+      (n) => values.filter((v, i) => v === n && v === Number(solution[i])).length === size
+    )
+  );
 
   return (
     <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
@@ -172,6 +180,8 @@ export default function SudokuPlayer({
             const c = i % size;
             const tinted = (Math.floor(r / boxRows) + Math.floor(c / boxCols)) % 2 === 1;
             const isGiven = !!given[i];
+            // A number that doesn't belong in this square shows in red straight away.
+            const isWrong = !isGiven && !!v && v !== Number(solution[i]);
             const background = wrong.has(i)
               ? WRONG
               : selected === i
@@ -185,7 +195,7 @@ export default function SudokuPlayer({
               <button
                 key={i}
                 role="gridcell"
-                aria-label={`Row ${r + 1}, column ${c + 1}${v ? `, ${v}` : ", empty"}`}
+                aria-label={`Row ${r + 1}, column ${c + 1}${v ? `, ${v}${isWrong ? ", wrong" : ""}` : ", empty"}`}
                 onClick={() => setSelected(i)}
                 style={{
                   width: cell,
@@ -196,8 +206,8 @@ export default function SudokuPlayer({
                   outline: selected === i ? `3px solid #b5714a` : "none",
                   outlineOffset: -3,
                   fontSize: `calc(${cell} * 0.55)`,
-                  fontWeight: isGiven ? 700 : 500,
-                  color: isGiven ? INK : ANSWER,
+                  fontWeight: isGiven || isWrong ? 700 : 500,
+                  color: isGiven ? INK : isWrong ? WRONG_INK : ANSWER,
                   cursor: isGiven ? "default" : "pointer",
                   fontFamily: "Helvetica, Arial, sans-serif",
                 }}
@@ -212,19 +222,33 @@ export default function SudokuPlayer({
       <div className="max-w-[320px]">
         <p className="text-sm text-inkSoft mb-3">
           Tap an empty square, then a number. Every row, column and outlined box needs the
-          numbers 1 to {size} once each.
+          numbers 1 to {size} once each. A wrong number shows in red, and a number is crossed
+          out below once all of it is in place.
         </p>
         <div className="flex flex-wrap gap-2 mb-3">
-          {Array.from({ length: size }, (_, k) => k + 1).map((n) => (
-            <button
-              key={n}
-              onClick={() => place(n)}
-              className="rounded-full text-lg font-bold"
-              style={{ width: 56, height: 48, background: PILLS[n - 1], color: INK }}
-            >
-              {n}
-            </button>
-          ))}
+          {Array.from({ length: size }, (_, k) => k + 1).map((n) => {
+            const done = allIn.has(n);
+            return (
+              <button
+                key={n}
+                onClick={() => place(n)}
+                disabled={done}
+                aria-label={done ? `${n}, all placed` : String(n)}
+                title={done ? `All the ${n}s are in` : undefined}
+                className="relative rounded-full text-lg font-bold"
+                style={{ width: 56, height: 48, background: PILLS[n - 1], color: INK, opacity: done ? 0.45 : 1 }}
+              >
+                {n}
+                {done && (
+                  <span
+                    aria-hidden
+                    className="absolute left-2 right-2 top-1/2"
+                    style={{ height: 3, background: INK, borderRadius: 2, transform: "rotate(-35deg)" }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
         <div className="flex flex-wrap gap-2">
           <button onClick={() => place(0)} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
