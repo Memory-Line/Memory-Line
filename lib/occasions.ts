@@ -25,8 +25,22 @@ export function occasionSlug(label: string): string {
 
 export const OCCASIONS = OCCASION_LABELS.map((label) => ({ label, slug: occasionSlug(label) }));
 
+// Occasions the calendar used to have (up to September 2026) that it no
+// longer shows: the combined Christmas Eve / Hanukkah day (they only fall
+// together in some years) and the substitute Christmas bank holidays (which
+// now link to the day they stand in for). Their pages still work, and the
+// occasions list shows them only if something was uploaded to them, so no
+// uploads are lost.
+export const LEGACY_OCCASIONS = [
+  "Christmas Eve / Hanukkah begins at sunset",
+  "Christmas bank holiday (substitute)",
+  "Boxing Day bank holiday (substitute)",
+].map((label) => ({ label, slug: occasionSlug(label) }));
+
 export function occasionBySlug(slug: string) {
-  return OCCASIONS.find((o) => o.slug === slug);
+  return (
+    OCCASIONS.find((o) => o.slug === slug) ?? LEGACY_OCCASIONS.find((o) => o.slug === slug)
+  );
 }
 
 export function occasionHref(label: string): string {
