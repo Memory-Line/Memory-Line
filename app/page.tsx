@@ -60,8 +60,8 @@ export default async function LandingPage() {
       {/* Nav */}
       <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-4 sm:py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2 shrink-0">
-          <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
-          <span className="font-serif text-lg sm:text-xl leading-tight">Activity Central</span>
+          <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} className="w-10 h-10 sm:w-[60px] sm:h-[60px]" />
+          <span className="font-serif text-base sm:text-xl leading-tight">Activity Central</span>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
           <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
@@ -70,7 +70,8 @@ export default async function LandingPage() {
             href="/signup"
             className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
           >
-            Start free trial
+            <span className="sm:hidden">Free trial</span>
+            <span className="hidden sm:inline">Start free trial</span>
           </Link>
         </div>
       </header>
