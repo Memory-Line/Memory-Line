@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { occasionBySlug } from "@/lib/occasions";
 import { videoUrlFor } from "@/lib/videoLinksByFile";
 import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
+import { subcategoriesFor, subcategoryBySlug } from "@/lib/subcategories";
 
 // Strips the leading number, then strips an "Answers" / "Answer Key" /
 // "Large Print" marker if present, so a variant file's name reduces to
@@ -86,6 +87,11 @@ export async function POST(req: Request) {
     // Communication Cards come in several languages; nothing else does.
     const language =
       category === LANGUAGE_CATEGORY ? (formData.get("language") as string | null) || null : null;
+    // Only categories split into sub-categories (e.g. Sudoku levels) have one.
+    const subcategory =
+      category && subcategoriesFor(category)
+        ? (formData.get("subcategory") as string | null) || null
+        : null;
 
     if (!file || !category || !title) {
       return NextResponse.json({ error: "Missing file, category, or title" }, { status: 400 });
@@ -99,7 +105,13 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    const scope = { category, occasion, language };
+    if (subcategoriesFor(category) && !(subcategory && subcategoryBySlug(category, subcategory))) {
+      return NextResponse.json(
+        { error: `Pick a level for ${category} (got "${subcategory ?? ""}")` },
+        { status: 400 }
+      );
+    }
+    const scope = { category, occasion, language, subcategory };
     const fileName = baseName(file.name);
     // A "Large Print" file uploaded without the checkbox ticked would
     // otherwise become a separate activity instead of attaching to its
@@ -110,8 +122,8 @@ export async function POST(req: Request) {
 
     const folder = occasion
       ? `occasions/${occasion}/${category}`
-      : language
-      ? `${category}/${language}`
+      : language || subcategory
+      ? `${category}/${language ?? subcategory}`
       : category;
     const blob = await put(`activities/${folder}/${fileName}`, file, {
       access: "public",
@@ -156,7 +168,7 @@ export async function POST(req: Request) {
       if (!existing) {
         return NextResponse.json(
           {
-            error: `No matching worksheet found for "${fileName}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}${language ? ` (${language})` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
+            error: `No matching worksheet found for "${fileName}" in category "${category}"${occasion ? ` for occasion "${occasion}"` : ""}${language || subcategory ? ` (${language ?? subcategory})` : ""} (looked for "${variant.number ? `${variant.number} ` : ""}${baseTitle}"). Upload the standard worksheet first.`,
           },
           { status: 400 }
         );
@@ -203,6 +215,7 @@ export async function POST(req: Request) {
         fileName,
         occasion,
         language,
+        subcategory,
         videoUrl: videoUrlFor(category, fileName),
       },
     });

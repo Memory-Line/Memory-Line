@@ -6,10 +6,13 @@ import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
 import { FEATURES } from "@/lib/featureList";
 import { titleFromFilename } from "@/lib/titles";
+import { subcategoriesFor, subcategoryFromPath } from "@/lib/subcategories";
 
 // Files picked as part of a folder count as large print when any folder
-// in their path says so (e.g. "A3 Large Print/").
+// in their path says so (e.g. "A3 Large Print/"), and as answer sheets when
+// inside a folder named "Answers" (or "Answer Key" / "Answer Sheets").
 const LARGE_PRINT_FOLDER = /large[-_\s]?print/i;
+const ANSWERS_FOLDER = /^answers?(\s*(key|sheets?))?$/i;
 
 type FileStatus = {
   name: string;
@@ -23,6 +26,9 @@ export default function AdminUploadPage() {
   const [occasion, setOccasion] = useState("");
   // Communication Cards only; files inside a language folder override it.
   const [language, setLanguage] = useState(LANGUAGES[0].slug);
+  // Level for categories split into sub-categories (e.g. Sudoku); files inside
+  // a level folder (e.g. "Beginner") use that level instead.
+  const [level, setLevel] = useState("");
   const [isAnswer, setIsAnswer] = useState(false);
   const [isLargePrint, setIsLargePrint] = useState(false);
   const [files, setFiles] = useState<FileList | null>(null);
@@ -41,6 +47,7 @@ export default function AdminUploadPage() {
 
   const categoryOptions = occasion ? THEMEABLE_CATEGORIES : CATEGORIES;
   const isLanguageCategory = category === LANGUAGE_CATEGORY && !occasion;
+  const levels = occasion ? undefined : subcategoriesFor(category);
 
   function handleOccasionChange(value: string) {
     setOccasion(value);
@@ -64,27 +71,34 @@ export default function AdminUploadPage() {
     setUploading(true);
 
     // A picked folder gives each file its path inside that folder, e.g.
-    // "Languages/02-polish/A3 Large Print/001-….pdf". The path tells us the
-    // language and whether it's large print, so a whole pack can go up in
-    // one go. Worksheets go first so the large print files have something
-    // to attach to.
+    // "Languages/02-polish/A3 Large Print/001-….pdf" or
+    // "Sudoku/Beginner/Answers/0001-….pdf". The path tells us the language
+    // or level, and whether it's large print or an answer sheet, so a whole
+    // pack can go up in one go. Worksheets go first so the large print and
+    // answer files have something to attach to.
     const jobs = Array.from(files)
       .filter((f) => /\.pdf$/i.test(f.name))
       .map((file) => {
         const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+        const answers = isAnswer || path.split("/").slice(0, -1).some((p) => ANSWERS_FOLDER.test(p.trim()));
         return {
           file,
           path,
-          largePrint: isLargePrint || LARGE_PRINT_FOLDER.test(path),
+          answers,
+          largePrint: !answers && (isLargePrint || LARGE_PRINT_FOLDER.test(path)),
           language: isLanguageCategory ? languageFromPath(path) ?? language : "",
+          subcategory: levels ? subcategoryFromPath(category, path) ?? (level || levels[0].slug) : "",
         };
       })
-      .sort((a, b) => Number(a.largePrint) - Number(b.largePrint) || a.path.localeCompare(b.path));
+      .sort(
+        (a, b) =>
+          Number(a.largePrint || a.answers) - Number(b.largePrint || b.answers) || a.path.localeCompare(b.path)
+      );
 
     setStatuses(jobs.map((j) => ({ name: j.path, status: "pending" })));
 
     const uploadOne = async (i: number) => {
-      const { file, largePrint, language: jobLanguage } = jobs[i];
+      const { file, largePrint, answers, language: jobLanguage, subcategory: jobLevel } = jobs[i];
       setStatuses((prev) =>
         prev.map((s, idx) => (idx === i ? { ...s, status: "uploading" } : s))
       );
@@ -93,10 +107,11 @@ export default function AdminUploadPage() {
       formData.append("file", file);
       formData.append("category", category);
       formData.append("title", titleFromFilename(file.name));
-      formData.append("isAnswer", String(isAnswer));
+      formData.append("isAnswer", String(answers));
       formData.append("isLargePrint", String(largePrint));
       formData.append("occasion", occasion);
       formData.append("language", jobLanguage);
+      formData.append("subcategory", jobLevel);
 
       try {
         const res = await fetch("/api/admin/upload-template", {
@@ -145,8 +160,8 @@ export default function AdminUploadPage() {
       await Promise.all(Array.from({ length: Math.min(4, indexes.length) }, worker));
     };
     const all = jobs.map((_, i) => i);
-    await runAll(all.filter((i) => !jobs[i].largePrint));
-    await runAll(all.filter((i) => jobs[i].largePrint));
+    await runAll(all.filter((i) => !jobs[i].largePrint && !jobs[i].answers));
+    await runAll(all.filter((i) => jobs[i].largePrint || jobs[i].answers));
 
     setUploading(false);
   }
@@ -220,6 +235,27 @@ export default function AdminUploadPage() {
         </>
       )}
 
+      {levels && (
+        <>
+          <label className="block text-xs font-semibold text-inkSoft mb-1">Level</label>
+          <select
+            value={level || levels[0].slug}
+            onChange={(e) => setLevel(e.target.value)}
+            className="w-full rounded-lg border border-line px-3 py-2 text-sm mb-1"
+          >
+            {levels.map((l) => (
+              <option key={l.slug} value={l.slug}>
+                {l.label} — {l.description}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-inkSoft mb-4">
+            When you upload a folder, files inside a level folder (e.g. "Beginner") use that
+            level instead.
+          </p>
+        </>
+      )}
+
       <label className="flex items-center gap-2 text-sm mb-2">
         <input
           type="checkbox"
@@ -257,8 +293,8 @@ export default function AdminUploadPage() {
         className="w-full text-sm mb-1"
       />
       <p className="text-xs text-inkSoft mb-4">
-        Everything inside is uploaded. Files in a folder with "Large Print" in its name are
-        attached as large print after the standard files have gone up.
+        Everything inside is uploaded. Files in a folder with "Large Print" in its name, or in
+        an "Answers" folder, are attached after the standard files have gone up.
       </p>
 
       <button
@@ -362,7 +398,7 @@ function RenumberSection() {
           }}
           className="flex-1 rounded-lg border border-line px-3 py-2 text-sm"
         >
-          {CATEGORIES.filter((c) => c.key !== LANGUAGE_CATEGORY).map((c) => (
+          {CATEGORIES.filter((c) => c.key !== LANGUAGE_CATEGORY && !subcategoriesFor(c.key)).map((c) => (
             <option key={c.slug} value={c.key}>
               {c.key}
             </option>

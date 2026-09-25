@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Footprints, Grid3x3, Search, HelpCircle, Brain, Hash, Dices, Heart,
+  Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
@@ -40,6 +40,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Sudoku: Grid2x2,
 };
 
 export default async function LandingPage() {
@@ -107,7 +108,7 @@ export default async function LandingPage() {
         <p className="text-inkSoft text-center mb-10">
           Each activity includes step-by-step facilitator notes, duration, and group size.
         </p>
-        <div className="grid grid-cols-5 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {CATEGORIES.map((c) => {
             const Icon = ICONS[c.key];
             return (
