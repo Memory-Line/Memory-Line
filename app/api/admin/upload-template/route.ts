@@ -63,6 +63,9 @@ function matchKey(name: string): { number: string | null; key: string } {
   return { number, key: `${number ?? ""}|${words}` };
 }
 
+// Always fresh (the GET below lists what's been uploaded so far).
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   // Wrap the whole handler: an uncaught exception here (a Blob store
   // limit, a dropped DB connection, anything unexpected) would otherwise
@@ -226,4 +229,39 @@ export async function POST(req: Request) {
     const message = typeof err?.message === "string" ? err.message : "Unexpected server error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
+}
+
+// What's already uploaded in a category, so a folder upload that stopped
+// part way can carry on without sending those files again: each worksheet's
+// file name, number and language/level/occasion, and whether its large print
+// and answers are attached.
+export async function GET(req: Request) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+  }
+  const category = new URL(req.url).searchParams.get("category");
+  if (!category) {
+    return NextResponse.json({ error: "Missing category" }, { status: 400 });
+  }
+  const rows = await prisma.template.findMany({
+    where: { category },
+    select: {
+      fileName: true,
+      occasion: true,
+      language: true,
+      subcategory: true,
+      largePrintFileUrl: true,
+      answerFileUrl: true,
+    },
+  });
+  return NextResponse.json({
+    ok: true,
+    existing: rows.map((t) => ({
+      fileName: baseName(t.fileName),
+      number: matchKey(baseName(t.fileName)).number,
+      scope: t.occasion ?? t.language ?? t.subcategory ?? "",
+      largePrint: !!t.largePrintFileUrl,
+      answers: !!t.answerFileUrl,
+    })),
+  });
 }

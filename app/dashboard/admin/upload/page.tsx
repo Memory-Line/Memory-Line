@@ -16,7 +16,7 @@ const ANSWERS_FOLDER = /^answers?(\s*(key|sheets?))?$/i;
 
 type FileStatus = {
   name: string;
-  status: "pending" | "uploading" | "done" | "error";
+  status: "pending" | "uploading" | "done" | "skipped" | "error";
   error?: string;
 };
 
@@ -34,6 +34,8 @@ export default function AdminUploadPage() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [statuses, setStatuses] = useState<FileStatus[]>([]);
   const [uploading, setUploading] = useState(false);
+  // Leave out files already on the site, so a stopped upload can carry on.
+  const [skipExisting, setSkipExisting] = useState(true);
 
   // The occasion pages link here with ?occasion=…&category=… so the
   // upload lands in the right place without re-picking both.
@@ -95,7 +97,36 @@ export default function AdminUploadPage() {
           Number(a.largePrint || a.answers) - Number(b.largePrint || b.answers) || a.path.localeCompare(b.path)
       );
 
-    setStatuses(jobs.map((j) => ({ name: j.path, status: "pending" })));
+    // Which of these are already on the site: worksheets by file name, and
+    // large print / answers by whether their worksheet (same number, same
+    // language/level/occasion) already has one attached.
+    const skip = new Set<number>();
+    if (skipExisting) {
+      try {
+        const res = await fetch(`/api/admin/upload-template?category=${encodeURIComponent(category)}`);
+        const data = await res.json();
+        if (res.ok && data?.ok) {
+          const worksheets = new Set<string>();
+          const variants = new Map<string, { largePrint: boolean; answers: boolean }>();
+          for (const e of data.existing as { fileName: string; number: string | null; scope: string; largePrint: boolean; answers: boolean }[]) {
+            worksheets.add(`${e.scope}|${e.fileName}`);
+            if (e.number) variants.set(`${e.scope}|${e.number}`, e);
+          }
+          jobs.forEach((j, i) => {
+            const scope = occasion || j.language || j.subcategory || "";
+            const number = j.file.name.match(/^(\d+)/)?.[1];
+            const worksheet = number ? variants.get(`${scope}|${parseInt(number, 10)}`) : undefined;
+            if (j.answers ? worksheet?.answers : j.largePrint ? worksheet?.largePrint : worksheets.has(`${scope}|${j.file.name}`)) {
+              skip.add(i);
+            }
+          });
+        }
+      } catch {
+        // couldn't check; upload everything
+      }
+    }
+
+    setStatuses(jobs.map((j, i) => ({ name: j.path, status: skip.has(i) ? "skipped" : "pending" })));
 
     const uploadOne = async (i: number) => {
       const { file, largePrint, answers, language: jobLanguage, subcategory: jobLevel } = jobs[i];
@@ -151,15 +182,16 @@ export default function AdminUploadPage() {
       }
     };
 
-    // A few at a time: much faster for big packs, without flooding the server.
+    // Two at a time: quicker than one by one, but gentle on the database (four
+    // at a time for 9,000 files used up its connections).
     const runAll = async (indexes: number[]) => {
       let next = 0;
       const worker = async () => {
         while (next < indexes.length) await uploadOne(indexes[next++]);
       };
-      await Promise.all(Array.from({ length: Math.min(4, indexes.length) }, worker));
+      await Promise.all(Array.from({ length: Math.min(2, indexes.length) }, worker));
     };
-    const all = jobs.map((_, i) => i);
+    const all = jobs.map((_, i) => i).filter((i) => !skip.has(i));
     await runAll(all.filter((i) => !jobs[i].largePrint && !jobs[i].answers));
     await runAll(all.filter((i) => jobs[i].largePrint || jobs[i].answers));
 
@@ -168,6 +200,7 @@ export default function AdminUploadPage() {
 
   const doneCount = statuses.filter((s) => s.status === "done").length;
   const errorCount = statuses.filter((s) => s.status === "error").length;
+  const skippedCount = statuses.filter((s) => s.status === "skipped").length;
   // Listing thousands of rows would make the page crawl; for big uploads
   // show the totals plus anything that failed or is in progress.
   const shownStatuses =
@@ -297,6 +330,11 @@ export default function AdminUploadPage() {
         an "Answers" folder, are attached after the standard files have gone up.
       </p>
 
+      <label className="flex items-center gap-2 text-sm mb-3">
+        <input type="checkbox" checked={skipExisting} onChange={(e) => setSkipExisting(e.target.checked)} />
+        Skip files that are already uploaded (to carry on an upload that stopped)
+      </label>
+
       <button
         onClick={handleUpload}
         disabled={!files || files.length === 0 || uploading}
@@ -307,7 +345,8 @@ export default function AdminUploadPage() {
 
       {statuses.length > 0 && (
         <p className="mt-6 text-sm font-semibold">
-          {doneCount} of {statuses.length} uploaded
+          {doneCount} of {statuses.length - skippedCount} uploaded
+          {skippedCount > 0 && <span className="text-inkSoft"> · {skippedCount} already on the site, skipped</span>}
           {errorCount > 0 && <span className="text-red-600"> · {errorCount} failed</span>}
         </p>
       )}
@@ -333,6 +372,7 @@ export default function AdminUploadPage() {
                 {s.status === "error" && `✕ ${s.error}`}
                 {s.status === "uploading" && "Uploading..."}
                 {s.status === "pending" && "Waiting..."}
+                {s.status === "skipped" && "Already uploaded"}
               </span>
             </div>
           ))}
