@@ -1,5 +1,6 @@
 import { Download } from "lucide-react";
 import type { Template } from "@prisma/client";
+import { displayTitle } from "@/lib/titles";
 
 // The number a file name starts with ("001-…", "23. …"), ignoring any
 // folder path in front; files without one sort after numbered ones.
@@ -21,7 +22,7 @@ export default function TemplateList({ templates }: { templates: Template[] }) {
       {sorted.map((t) => (
         <div key={t.id} className="flex items-center justify-between rounded-xl p-4 bg-card border border-line">
           <div>
-            <p className="text-[15px] font-bold">{t.title}</p>
+            <p className="text-[15px] font-bold">{displayTitle(t)}</p>
             <p className="text-[11px] text-inkSoft mt-0.5">{t.fileName}</p>
           </div>
           <div className="flex gap-2 shrink-0">
