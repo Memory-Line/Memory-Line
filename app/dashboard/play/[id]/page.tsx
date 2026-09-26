@@ -101,12 +101,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     const data = spotDifference(number);
     if (data) {
       player = (
-        <SpotDifferencePlayer
-          {...common}
-          pictureA={data.pictureA}
-          pictureB={data.pictureB}
-          regions={data.regions}
-        />
+        <SpotDifferencePlayer {...common} pictureA={data.pictureA} pictureB={data.pictureB} />
       );
     }
   }

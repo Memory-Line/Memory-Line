@@ -1,92 +1,96 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Eye, Lightbulb, Printer, RotateCcw } from "lucide-react";
-import type { DifferenceRegion, PictureRect } from "@/lib/spotDifference";
+import { Check, Printer, RotateCcw, Undo2 } from "lucide-react";
+import type { PictureRect } from "@/lib/spotDifference";
 
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-const RENDER_SCALE = 2.2; // page render resolution — plenty sharp for a cropped picture
+const RENDER_SCALE = 2.2;
+const TARGET = 7;
+const MARK = "#b5714a";
 
-const FOUND = "#2f7a63";
-const HINT = "#b5714a";
+type Mark = { x: number; y: number };
 
-// One picture: a cropped canvas with an invisible, big-target button over
-// each difference (defined outside the player so it keeps its identity
-// across renders — otherwise the canvas would remount and lose its image
-// every time progress changes).
+// One picture: a cropped canvas that the person taps to drop a circle
+// wherever they spot a difference. Nothing checks whether the tap is
+// "right" — there's no answer key for this pack, so the aim is for people
+// to circle what they notice and talk about it, the same spirit as Trivia.
 function Picture({
   canvasRef,
   aspect,
   label,
-  regions,
-  found,
-  revealed,
-  hint,
+  marks,
   loading,
   onTap,
+  onRemove,
 }: {
   canvasRef: React.MutableRefObject<HTMLCanvasElement | null>;
   aspect: number;
   label: string;
-  regions: DifferenceRegion[];
-  found: boolean[];
-  revealed: boolean;
-  hint: number | null;
+  marks: Mark[];
   loading: boolean;
-  onTap: (i: number) => void;
+  onTap: (x: number, y: number) => void;
+  onRemove: (index: number) => void;
 }) {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    const el = wrapRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    onTap(x, y);
+  }
+
   return (
     <div
-      className="relative rounded-xl bg-white border border-line overflow-hidden"
+      ref={wrapRef}
+      onClick={handleClick}
+      className="relative rounded-xl bg-white border border-line overflow-hidden cursor-crosshair"
       style={{ width: "100%", aspectRatio: `${aspect}` }}
       aria-label={label}
     >
-      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
+      <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none" }} />
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center text-sm text-inkSoft">Loading picture…</div>
       )}
-      {regions.map((r, i) => {
-        const show = found[i] || revealed || hint === i;
-        return (
-          <button
-            key={i}
-            onClick={() => onTap(i)}
-            aria-label={found[i] ? `Difference ${i + 1}, found` : `Look for difference ${i + 1} here`}
-            className="absolute"
-            style={{
-              left: `${r.x * 100}%`,
-              top: `${r.y * 100}%`,
-              width: `${r.w * 100}%`,
-              height: `${r.h * 100}%`,
-            }}
-          >
-            {show && (
-              <span
-                className="absolute inset-0 rounded-full"
-                style={{
-                  border: `4px solid ${found[i] ? FOUND : HINT}`,
-                  boxShadow: found[i] ? "0 0 0 2px rgba(47,122,99,0.25)" : "0 0 0 2px rgba(181,113,74,0.25)",
-                  animation: hint === i && !found[i] ? "spotdiff-pulse 0.9s ease-in-out infinite" : undefined,
-                }}
-              />
-            )}
-          </button>
-        );
-      })}
+      {marks.map((m, i) => (
+        <button
+          key={i}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(i);
+          }}
+          aria-label="Remove this circle"
+          className="absolute rounded-full"
+          style={{
+            left: `${m.x * 100}%`,
+            top: `${m.y * 100}%`,
+            width: 56,
+            height: 56,
+            transform: "translate(-50%, -50%)",
+            border: `4px solid ${MARK}`,
+            boxShadow: "0 0 0 2px rgba(181,113,74,0.25)",
+            background: "rgba(255,255,255,0.05)",
+          }}
+        />
+      ))}
     </div>
   );
 }
 
 // Spot the Difference on screen: the sheet's own Standard PDF is loaded in
 // the browser (pdf.js) and Picture A / Picture B are cropped out of it into
-// two canvases, side by side. Tapping inside a difference circles it on both
-// pictures at once. Progress is kept on this device.
+// two canvases, side by side. Tap anywhere on either picture to circle
+// something — tap a circle again to remove it. The sheet's own instructions
+// say "find seven", so that's shown as a friendly target, but nothing here
+// marks a circle right or wrong.
 export default function SpotDifferencePlayer({
   templateId,
   pictureA,
   pictureB,
-  regions,
   tracking,
   initiallyCompleted,
   hasLargePrint,
@@ -94,30 +98,27 @@ export default function SpotDifferencePlayer({
   templateId: string;
   pictureA: PictureRect;
   pictureB: PictureRect;
-  regions: DifferenceRegion[];
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
 }) {
   const storageKey = `spotdifference:${templateId}`;
-  const [found, setFound] = useState<boolean[]>(() => regions.map(() => false));
-  const [message, setMessage] = useState("");
+  const [marksA, setMarksA] = useState<Mark[]>([]);
+  const [marksB, setMarksB] = useState<Mark[]>([]);
   const [completed, setCompleted] = useState(initiallyCompleted);
-  const [revealed, setRevealed] = useState(false);
-  const [hint, setHint] = useState<number | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
 
   const canvasARef = useRef<HTMLCanvasElement | null>(null);
   const canvasBRef = useRef<HTMLCanvasElement | null>(null);
   const [aspectA, setAspectA] = useState(1.4);
   const [aspectB, setAspectB] = useState(1.4);
-  const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     try {
       const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
-      if (saved && Array.isArray(saved.found) && saved.found.length === regions.length) {
-        setFound(saved.found);
+      if (saved && Array.isArray(saved.marksA) && Array.isArray(saved.marksB)) {
+        setMarksA(saved.marksA);
+        setMarksB(saved.marksB);
       }
     } catch {
       // nothing saved, or storage unavailable
@@ -125,10 +126,11 @@ export default function SpotDifferencePlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey]);
 
-  function save(next: boolean[]) {
-    setFound(next);
+  function save(a: Mark[], b: Mark[]) {
+    setMarksA(a);
+    setMarksB(b);
     try {
-      window.localStorage.setItem(storageKey, JSON.stringify({ found: next }));
+      window.localStorage.setItem(storageKey, JSON.stringify({ marksA: a, marksB: b }));
     } catch {
       // storage unavailable: progress just isn't kept
     }
@@ -148,7 +150,6 @@ export default function SpotDifferencePlayer({
     }
   }
 
-  // Load the sheet's own PDF and crop out Picture A / Picture B.
   useEffect(() => {
     let cancelled = false;
 
@@ -198,48 +199,38 @@ export default function SpotDifferencePlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
-  useEffect(() => () => {
-    if (hintTimer.current) clearTimeout(hintTimer.current);
-  }, []);
+  const total = marksA.length + marksB.length;
 
-  function tap(i: number) {
-    if (found[i]) return;
-    const next = [...found];
-    next[i] = true;
-    save(next);
-    setHint(null);
-    const count = next.filter(Boolean).length;
-    if (count === regions.length) {
-      setMessage("Well done — you found every difference!");
-      markCompleted();
-    } else {
-      setMessage(`Found ${count} of ${regions.length}.`);
-    }
+  function tapA(x: number, y: number) {
+    const next = [...marksA, { x, y }];
+    save(next, marksB);
+    if (next.length + marksB.length === TARGET) markCompleted();
   }
-
-  function showHint() {
-    const i = found.findIndex((f) => !f);
-    if (i === -1) return;
-    setHint(i);
-    if (hintTimer.current) clearTimeout(hintTimer.current);
-    hintTimer.current = setTimeout(() => setHint(null), 2500);
+  function tapB(x: number, y: number) {
+    const next = [...marksB, { x, y }];
+    save(marksA, next);
+    if (marksA.length + next.length === TARGET) markCompleted();
   }
-
+  function removeA(i: number) {
+    save(marksA.filter((_, idx) => idx !== i), marksB);
+  }
+  function removeB(i: number) {
+    save(marksA, marksB.filter((_, idx) => idx !== i));
+  }
+  function undoLast() {
+    if (marksB.length >= marksA.length && marksB.length > 0) save(marksA, marksB.slice(0, -1));
+    else if (marksA.length > 0) save(marksA.slice(0, -1), marksB);
+  }
   function startAgain() {
-    save(regions.map(() => false));
-    setMessage("");
-    setRevealed(false);
-    setHint(null);
+    save([], []);
   }
-
-  const foundCount = found.filter(Boolean).length;
 
   return (
     <div className="max-w-[900px]">
-      <style>{`@keyframes spotdiff-pulse { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }`}</style>
-
       <p className="text-sm text-inkSoft mb-3">
-        Tap a difference on either picture — it circles on both. There are {regions.length} to find.
+        Have a look at the two pictures together and tap to circle anything that's different — on either picture,
+        wherever's easiest. The sheet has {TARGET} to find, but there's no wrong answer here; tap a circle again to
+        take it away.
       </p>
 
       {status === "error" ? (
@@ -253,12 +244,10 @@ export default function SpotDifferencePlayer({
               canvasRef={canvasARef}
               aspect={aspectA}
               label="Picture A"
-              regions={regions}
-              found={found}
-              revealed={revealed}
-              hint={hint}
+              marks={marksA}
               loading={status === "loading"}
-              onTap={tap}
+              onTap={tapA}
+              onRemove={removeA}
             />
           </div>
           <div style={{ flex: "1 1 320px", minWidth: 220 }}>
@@ -266,44 +255,39 @@ export default function SpotDifferencePlayer({
               canvasRef={canvasBRef}
               aspect={aspectB}
               label="Picture B"
-              regions={regions}
-              found={found}
-              revealed={revealed}
-              hint={hint}
+              marks={marksB}
               loading={status === "loading"}
-              onTap={tap}
+              onTap={tapB}
+              onRemove={removeB}
             />
           </div>
         </div>
       )}
 
       <p className="text-sm font-semibold mb-3">
-        {foundCount} of {regions.length} found
+        {total} of {TARGET} circled
       </p>
 
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={showHint}
-          disabled={foundCount === regions.length}
+          onClick={undoLast}
+          disabled={total === 0}
           className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"
         >
-          <Lightbulb size={14} /> Show me one
-        </button>
-        <button onClick={() => setRevealed((v) => !v)} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
-          <Eye size={14} /> {revealed ? "Hide all" : "Show all"}
+          <Undo2 size={14} /> Undo
         </button>
         <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
           <RotateCcw size={14} /> Start again
         </button>
       </div>
 
-      {message && (
-        <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-block" style={{ background: "#e4eee2", color: FOUND }}>
-          {message}
+      {total >= TARGET && (
+        <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-block" style={{ background: "#e4eee2", color: "#2f7a63" }}>
+          Well done — {TARGET} circled! Take a moment to look over the two pictures together.
         </p>
       )}
       {tracking && completed && (
-        <p className="mt-3 flex items-center gap-1.5 text-sm font-semibold" style={{ color: FOUND }}>
+        <p className="mt-3 flex items-center gap-1.5 text-sm font-semibold" style={{ color: "#2f7a63" }}>
           <Check size={14} /> Marked as completed
         </p>
       )}
