@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Check, Eye, Lightbulb, Printer, RotateCcw } from "lucide-react";
+import { Check, Eye, Heart, Lightbulb, Printer, RotateCcw } from "lucide-react";
 import type { CrosswordClue } from "@/lib/crossword";
+
+const MAX_LIVES = 3;
 
 // Colours from the printed sheets.
 const INK = "#3f3237";
@@ -48,6 +50,7 @@ export default function CrosswordPlayer({
   const [revealed, setRevealed] = useState(false);
   const [message, setMessage] = useState("");
   const [completed, setCompleted] = useState(initiallyCompleted);
+  const [lives, setLives] = useState(MAX_LIVES);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -133,8 +136,25 @@ export default function CrosswordPlayer({
   function type(ch: string) {
     if (!selected) return;
     const [r, c] = selected;
+    const upper = ch.toUpperCase();
+    const wasWrong = upper !== solution[r][c];
+
+    if (wasWrong) {
+      const remaining = lives - 1;
+      if (remaining <= 0) {
+        // Out of lives: start this crossword fresh rather than let mistakes pile up.
+        save(empty());
+        setSelected(null);
+        setRevealed(false);
+        setLives(MAX_LIVES);
+        setMessage("No trouble — let's start this crossword fresh.");
+        return;
+      }
+      setLives(remaining);
+    }
+
     const next = [...letters];
-    setLetter(r, c, ch.toUpperCase(), next);
+    setLetter(r, c, upper, next);
     save(next);
     // Move on to the next square of the word.
     const [dr, dc] = direction === "across" ? [0, 1] : [1, 0];
@@ -170,6 +190,7 @@ export default function CrosswordPlayer({
     setSelected(null);
     setRevealed(false);
     setMessage("");
+    setLives(MAX_LIVES);
   }
 
   const current = selected ? clueAt(selected[0], selected[1], direction) : undefined;
@@ -265,6 +286,11 @@ export default function CrosswordPlayer({
           Tap a square and type. Tap the same square again to switch between across and down.
           Wrong letters show in red.
         </p>
+        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
+          {Array.from({ length: MAX_LIVES }, (_, i) => (
+            <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
+          ))}
+        </div>
         {(["across", "down"] as Direction[]).map((dir) => (
           <div key={dir} className="mb-4">
             <p className="font-serif text-lg capitalize mb-1">{dir}</p>

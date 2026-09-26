@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Eraser, Printer, RotateCcw } from "lucide-react";
+import { Check, Eraser, Heart, Printer, RotateCcw } from "lucide-react";
 
 // Colours from the printed sheets, so on screen matches paper.
 const INK = "#3f3237";
@@ -26,6 +26,7 @@ export default function SudokuPlayer({
   tracking,
   initiallyCompleted,
   hasLargePrint,
+  maxLives = 3,
 }: {
   templateId: string;
   puzzle: string;
@@ -36,6 +37,7 @@ export default function SudokuPlayer({
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
+  maxLives?: number;
 }) {
   const given = puzzle.split("").map(Number);
   const storageKey = `sudoku:${templateId}`;
@@ -44,6 +46,7 @@ export default function SudokuPlayer({
   const [wrong, setWrong] = useState<Set<number>>(new Set());
   const [message, setMessage] = useState("");
   const [completed, setCompleted] = useState(initiallyCompleted);
+  const [lives, setLives] = useState(maxLives);
 
   // Pick up where this device left off.
   useEffect(() => {
@@ -83,6 +86,7 @@ export default function SudokuPlayer({
 
   function place(value: number) {
     if (selected === null || given[selected]) return;
+    const wasWrong = value !== 0 && value !== Number(solution[selected]);
     const next = [...values];
     next[selected] = value;
     save(next);
@@ -92,6 +96,22 @@ export default function SudokuPlayer({
       return copy;
     });
     setMessage("");
+
+    if (wasWrong) {
+      const remaining = lives - 1;
+      if (remaining <= 0) {
+        // Out of lives: start this puzzle fresh rather than let mistakes pile up.
+        save(given);
+        setWrong(new Set());
+        setSelected(null);
+        setLives(maxLives);
+        setMessage("No trouble — let's start this puzzle fresh.");
+        return;
+      }
+      setLives(remaining);
+      return;
+    }
+
     if (next.every((v, i) => v === Number(solution[i]))) {
       setMessage("Well done — the puzzle is complete!");
       markCompleted();
@@ -123,6 +143,7 @@ export default function SudokuPlayer({
     setWrong(new Set());
     setSelected(null);
     setMessage("");
+    setLives(maxLives);
   }
 
   // Keyboard: numbers to fill, Backspace/Delete/0 to clear, arrows to move.
@@ -225,6 +246,17 @@ export default function SudokuPlayer({
           numbers 1 to {size} once each. A wrong number shows in red, and a number is crossed
           out below once all of it is in place.
         </p>
+        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${maxLives} lives left`}>
+          {Array.from({ length: maxLives }, (_, i) => (
+            <Heart
+              key={i}
+              size={20}
+              color={WRONG_INK}
+              fill={i < lives ? WRONG_INK : "none"}
+              strokeWidth={2}
+            />
+          ))}
+        </div>
         <div className="flex flex-wrap gap-2 mb-3">
           {Array.from({ length: size }, (_, k) => k + 1).map((n) => {
             const done = allIn.has(n);
