@@ -74,8 +74,7 @@ export default async function LandingPage() {
             href="/signup"
             className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
           >
-            <span className="sm:hidden">Free trial</span>
-            <span className="hidden sm:inline">Start free trial</span>
+            Sign up
           </Link>
         </div>
       </header>
@@ -98,13 +97,13 @@ export default async function LandingPage() {
             href="/signup"
             className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
           >
-            Start your free trial
+            Sign up
           </Link>
           <a href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
             See pricing
           </a>
         </div>
-        <p className="text-xs text-inkSoft mt-4">No card required to browse the library preview.</p>
+        <p className="text-xs text-inkSoft mt-4">Try samples from every category free, no card or signup needed.</p>
       </section>
 
       {/* Categories */}
@@ -246,7 +245,7 @@ export default async function LandingPage() {
                 href="/signup"
                 className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
               >
-                Start your free trial
+                Sign up
               </Link>
             </div>
           ))}

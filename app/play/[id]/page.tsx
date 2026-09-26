@@ -125,7 +125,7 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
           href="/signup"
           className="inline-block rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
         >
-          Start your free trial
+          Sign up
         </Link>
       </div>
     </div>
