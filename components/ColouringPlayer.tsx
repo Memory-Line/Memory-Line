@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Check, Download, Eraser, Printer, RotateCcw, Undo2 } from "lucide-react";
@@ -177,12 +177,14 @@ export default function ColouringPlayer({
   tracking,
   initiallyCompleted,
   hasLargePrint,
+  isPremium,
 }: {
   templateId: string;
   frame: ColouringFrame;
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
+  isPremium: boolean;
 }) {
   const storageKey = `colouring:${templateId}`;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -578,7 +580,7 @@ export default function ColouringPlayer({
           >
             <Printer size={14} /> Print
           </a>
-          {hasLargePrint && (
+          {hasLargePrint && isPremium && (
             <a
               href={`/api/download/${templateId}?file=large-print`}
               target="_blank"

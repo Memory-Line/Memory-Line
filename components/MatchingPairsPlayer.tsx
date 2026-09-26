@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Printer, RotateCcw } from "lucide-react";
@@ -42,6 +42,7 @@ export default function MatchingPairsPlayer({
   tracking,
   initiallyCompleted,
   hasLargePrint,
+  isPremium,
 }: {
   templateId: string;
   theme: string;
@@ -49,6 +50,7 @@ export default function MatchingPairsPlayer({
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
+  isPremium: boolean;
 }) {
   const storageKey = `matchingpairs:${templateId}`;
   const [images, setImages] = useState<string[] | null>(null); // one cropped image per picture, once the PDF has loaded
@@ -291,7 +293,7 @@ export default function MatchingPairsPlayer({
           >
             <Printer size={14} /> Print
           </a>
-          {hasLargePrint && (
+          {hasLargePrint && isPremium && (
             <a
               href={`/api/download/${templateId}?file=large-print`}
               target="_blank"

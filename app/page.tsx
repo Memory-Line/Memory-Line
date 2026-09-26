@@ -199,35 +199,57 @@ export default async function LandingPage() {
 
       {/* Pricing */}
       <section id="pricing" className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-        <h2 className="font-serif text-2xl text-center mb-2">Simple, single-tier pricing</h2>
-        <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
+        <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
+        <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
 
-        <div className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
-          <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
-          <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
-          <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {[
+            {
+              label: "Standard",
+              price: "£18",
+              features: [
+                "Unlimited access to most of the library",
+                "New activities added regularly — you'll be notified",
+                "Professional Services directory access",
+                "Downloadable PDFs, no expiry",
+              ],
+            },
+            {
+              label: "Premium",
+              price: "£28",
+              features: [
+                "Everything in Standard, plus:",
+                "Communication Cards, BSL Tools and Physical & Exercise",
+                "Large Print (A3) for every activity",
+                "The Holidays & Celebrations calendar and online play",
+              ],
+            },
+          ].map((tier) => (
+            <div key={tier.label} className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
+              <p className="font-serif text-lg text-sageDeep mb-1">{tier.label}</p>
+              <p className="font-serif text-5xl text-ink mb-1">
+                {tier.price}
+                <span className="text-lg text-inkSoft">/month</span>
+              </p>
+              <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
 
-          <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
-            {[
-              "Unlimited access to all 1000+ activities",
-              "New activities added regularly — you'll be notified",
-              "Professional Services directory access",
-              "Downloadable PDFs, no expiry",
-              "Cancel anytime from your account",
-            ].map((line) => (
-              <li key={line} className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
+              <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
+                {tier.features.map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
 
-          <Link
-            href="/signup"
-            className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
-          >
-            Start your free trial
-          </Link>
+              <Link
+                href="/signup"
+                className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
+              >
+                Start your free trial
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 
