@@ -225,7 +225,7 @@ export default async function LandingPage() {
               ],
             },
           ].map((tier) => (
-            <div key={tier.label} className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
+            <div key={tier.label} className="flex flex-col rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
               <p className="font-serif text-lg text-sageDeep mb-1">{tier.label}</p>
               <p className="font-serif text-5xl text-ink mb-1">
                 {tier.price}
@@ -233,7 +233,7 @@ export default async function LandingPage() {
               </p>
               <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
 
-              <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
+              <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8 flex-1">
                 {tier.features.map((line) => (
                   <li key={line} className="flex items-start gap-2">
                     <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
