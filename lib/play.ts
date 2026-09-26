@@ -7,5 +7,7 @@ export const PLAYABLE_CATEGORIES = new Set([
   "Crosswords",
   "Guess the Word",
   "Trivia",
+  "Matching Pairs",
+  "Colouring Pages",
   "Snakes and Ladders",
 ]);
