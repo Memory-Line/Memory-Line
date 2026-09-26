@@ -7,6 +7,8 @@ export const SUDOKU_LEVELS = {
   beginner: { size: 4, boxRows: 2, boxCols: 2 },
   intermediate: { size: 6, boxRows: 2, boxCols: 3 },
   advanced: { size: 9, boxRows: 3, boxCols: 3 },
+  expert: { size: 9, boxRows: 3, boxCols: 3 },
+  master: { size: 9, boxRows: 3, boxCols: 3 },
 } as const;
 
 export type SudokuLevel = keyof typeof SUDOKU_LEVELS;

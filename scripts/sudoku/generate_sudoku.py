@@ -1,9 +1,11 @@
 """Generate the Sudoku activity pack in the Activity Central sheet design.
 
-Three levels, each with its own grid size:
+Five levels, each with its own grid size:
     Beginner      4x4  (2x2 boxes, numbers 1-4)
     Intermediate  6x6  (2x3 boxes, numbers 1-6)
     Advanced      9x9  (3x3 boxes, numbers 1-9)
+    Expert        9x9  (3x3 boxes, numbers 1-9, fewer givens than Advanced)
+    Master        9x9  (3x3 boxes, numbers 1-9, fewer givens still)
 
 Every puzzle has exactly one solution and no puzzle repeats within a level.
 Each one is written three ways, matching the other activity packs:
@@ -55,6 +57,8 @@ LEVELS = {
     "beginner": {"label": "Beginner", "size": 4, "box": (2, 2), "givens": 9, "seed": 4101},
     "intermediate": {"label": "Intermediate", "size": 6, "box": (2, 3), "givens": 18, "seed": 6101},
     "advanced": {"label": "Advanced", "size": 9, "box": (3, 3), "givens": 32, "seed": 9101},
+    "expert": {"label": "Expert", "size": 9, "box": (3, 3), "givens": 27, "seed": 9201},
+    "master": {"label": "Master", "size": 9, "box": (3, 3), "givens": 23, "seed": 9301},
 }
 
 
