@@ -2,9 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check, PlayCircle,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
+import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 
@@ -12,14 +13,10 @@ import { displayTitle } from "@/lib/titles";
 export const dynamic = "force-dynamic";
 
 // One free sample per category, offered on the homepage before sign-up:
-// the first activity (lowest number) in each of these categories.
-const FREE_SAMPLE_CATEGORIES = [
-  "Word Searches",
-  "Remembrance Cards",
-  "BSL Tools",
-  "Conversation Starters",
-  "Trivia",
-];
+// the first activity (lowest number) in each of these categories. Every
+// category gets one, so people can see exactly what they'd be getting
+// across the whole library, not just a handful of categories.
+const FREE_SAMPLE_CATEGORIES = CATEGORIES.map((c) => c.key);
 
 const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
@@ -48,7 +45,14 @@ export default async function LandingPage() {
     await Promise.all(
       FREE_SAMPLE_CATEGORIES.map((category) =>
         prisma.template.findFirst({
-          where: { category, occasion: null, language: null },
+          where: {
+            category,
+            occasion: null,
+            language: null,
+            // A gentle first taste for Sudoku, rather than whichever level
+            // happens to sort first by file name.
+            ...(category === "Sudoku" ? { subcategory: "beginner" } : {}),
+          },
           orderBy: { fileName: "asc" },
         })
       )
@@ -151,6 +155,11 @@ export default async function LandingPage() {
                   <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
                 <div className="mt-4 grid gap-2">
+                  {PLAYABLE_CATEGORIES.has(t.category) && (
+                    <Link href={`/play/${t.id}`} className={SAMPLE_LINK} style={{ background: "#D6EBE3", color: "#2F7A63" }}>
+                      <PlayCircle size={15} className="mr-1.5" /> Play online, free
+                    </Link>
+                  )}
                   <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
                     Download free sample
                   </a>
