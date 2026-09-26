@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Check, Eye, Printer, RotateCcw } from "lucide-react";
+import { Check, Eye, Heart, Printer, RotateCcw } from "lucide-react";
 import type { WordSearchWord } from "@/lib/wordSearch";
 
 // Colours from the printed sheets (the answer-key highlights and word pills).
 const INK = "#3f3237";
 const SELECTED = "#b5714a";
+const WRONG_INK = "#c0392b";
 const HIGHLIGHTS = ["#cfe3f2", "#c9e6dd", "#f1d2be", "#dfd5ec", "#f2e2b8", "#d3e6f5", "#f2d6da", "#d8e7cb"];
 const REVEALED = "#e6e0d4";
+const MAX_LIVES = 3;
 
 type Cell = [number, number];
 
@@ -48,6 +50,7 @@ export default function WordSearchPlayer({
   const [revealed, setRevealed] = useState(false);
   const [message, setMessage] = useState("");
   const [completed, setCompleted] = useState(initiallyCompleted);
+  const [lives, setLives] = useState(MAX_LIVES);
 
   useEffect(() => {
     try {
@@ -81,6 +84,22 @@ export default function WordSearchPlayer({
     }
   }
 
+  // A wrong selection costs a life; running out starts the sheet fresh
+  // rather than letting mistakes pile up. Returns true if it reset (so the
+  // caller can stop, having already shown its own message).
+  function loseLife(): boolean {
+    const remaining = lives - 1;
+    if (remaining <= 0) {
+      save({});
+      setRevealed(false);
+      setLives(MAX_LIVES);
+      setMessage("No trouble — let's start this word search fresh.");
+      return true;
+    }
+    setLives(remaining);
+    return false;
+  }
+
   function tap(cell: Cell) {
     if (!start) {
       setStart(cell);
@@ -94,6 +113,7 @@ export default function WordSearchPlayer({
     const line = lineCells(start, cell);
     setStart(null);
     if (!line) {
+      if (loseLife()) return;
       setMessage("Words run in a straight line — across, down or diagonally. Try again.");
       return;
     }
@@ -108,6 +128,7 @@ export default function WordSearchPlayer({
         )
     );
     if (match === -1) {
+      if (loseLife()) return;
       const letters = line.map(([r, c]) => grid[r][c]).join("");
       setMessage(`"${letters}" isn't one of the words. Try again.`);
       return;
@@ -132,6 +153,7 @@ export default function WordSearchPlayer({
     setStart(null);
     setRevealed(false);
     setMessage("");
+    setLives(MAX_LIVES);
   }
 
   // Colour for each cell: the first found word covering it, or the reveal colour.
@@ -189,6 +211,11 @@ export default function WordSearchPlayer({
           Tap the first letter of a word, then its last letter. Words go across, down or
           diagonally, and can be backwards.
         </p>
+        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
+          {Array.from({ length: MAX_LIVES }, (_, i) => (
+            <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
+          ))}
+        </div>
         <p className="text-sm font-semibold mb-2">
           {foundCount} of {words.length} found
         </p>

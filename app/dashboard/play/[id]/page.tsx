@@ -61,7 +61,13 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     };
     if (data) {
       player = (
-        <SudokuPlayer {...common} puzzle={data.puzzle} solution={data.solution} {...SUDOKU_LEVELS[level]} />
+        <SudokuPlayer
+          {...common}
+          puzzle={data.puzzle}
+          solution={data.solution}
+          {...SUDOKU_LEVELS[level]}
+          maxLives={level === "beginner" ? 2 : 3}
+        />
       );
     }
   } else if (template.category === "Word Searches" && !template.occasion) {
