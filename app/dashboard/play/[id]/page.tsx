@@ -13,6 +13,7 @@ import { triviaQuiz } from "@/lib/trivia";
 import { snakesAndLaddersBoard } from "@/lib/snakesAndLadders";
 import { colouringPage } from "@/lib/colouring";
 import { matchingPairsSet } from "@/lib/matchingPairs";
+import { spotDifference } from "@/lib/spotDifference";
 import SudokuPlayer from "@/components/SudokuPlayer";
 import WordSearchPlayer from "@/components/WordSearchPlayer";
 import CrosswordPlayer from "@/components/CrosswordPlayer";
@@ -21,6 +22,7 @@ import TriviaPlayer from "@/components/TriviaPlayer";
 import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
+import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +97,18 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   } else if (template.category === "Matching Pairs" && !template.occasion) {
     const data = matchingPairsSet(number);
     if (data) player = <MatchingPairsPlayer {...common} theme={data.theme} pictures={data.pictures} />;
+  } else if (template.category === "Spot the Difference" && !template.occasion) {
+    const data = spotDifference(number);
+    if (data) {
+      player = (
+        <SpotDifferencePlayer
+          {...common}
+          pictureA={data.pictureA}
+          pictureB={data.pictureB}
+          regions={data.regions}
+        />
+      );
+    }
   }
 
   return (
