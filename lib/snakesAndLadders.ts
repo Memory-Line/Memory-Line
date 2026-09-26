@@ -15,6 +15,6 @@ export type SnakesAndLaddersBoard = {
 };
 
 export function snakesAndLaddersBoard(n: number): SnakesAndLaddersBoard | null {
-  const entry = (boardsData as SnakesAndLaddersBoard[])[n - 1];
+  const entry = (boardsData as unknown as SnakesAndLaddersBoard[])[n - 1];
   return entry && entry.n === n ? entry : null;
 }
