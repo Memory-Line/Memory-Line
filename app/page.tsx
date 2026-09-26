@@ -179,21 +179,13 @@ export default async function LandingPage() {
 
       {/* Services teaser */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
-        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-8">
-          <div>
-            <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
-            <p className="text-inkSoft text-sm max-w-md">
-              Every subscription includes access to our Professional Services directory —
-              vetted activity coaches, music and reminiscence therapists, and sensory design
-              consultants for the care sector.
-            </p>
-          </div>
-          <Link
-            href="/signup"
-            className="shrink-0 rounded-lg bg-cardTint px-5 py-2.5 font-semibold text-sm hover:bg-line transition-colors"
-          >
-            Explore services
-          </Link>
+        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
+          <p className="text-clay font-semibold text-xs tracking-wide uppercase mb-2">Coming soon</p>
+          <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
+          <p className="text-inkSoft text-sm max-w-md">
+            We're building a Professional Services directory — vetted activity coaches, music and
+            reminiscence therapists, and sensory design consultants for the care sector.
+          </p>
         </div>
       </section>
 
@@ -210,7 +202,6 @@ export default async function LandingPage() {
               features: [
                 "Unlimited access to most of the library",
                 "New activities added regularly — you'll be notified",
-                "Professional Services directory access",
                 "Downloadable PDFs, no expiry",
               ],
             },

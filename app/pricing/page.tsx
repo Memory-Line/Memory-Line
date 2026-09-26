@@ -22,7 +22,6 @@ const TIERS: {
       "Unlimited access to most of the library",
       "New activities added every 3 months",
       "New templates added monthly",
-      "Professional Services directory access",
       "Downloadable PDFs, no expiry",
       "Print activities from the site",
     ],
