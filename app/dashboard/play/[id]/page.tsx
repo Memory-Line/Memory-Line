@@ -11,12 +11,14 @@ import { crossword } from "@/lib/crossword";
 import { guessTheWord } from "@/lib/guessTheWord";
 import { triviaQuiz } from "@/lib/trivia";
 import { colouringPage } from "@/lib/colouring";
+import { matchingPairsSet } from "@/lib/matchingPairs";
 import SudokuPlayer from "@/components/SudokuPlayer";
 import WordSearchPlayer from "@/components/WordSearchPlayer";
 import CrosswordPlayer from "@/components/CrosswordPlayer";
 import GuessTheWordPlayer from "@/components/GuessTheWordPlayer";
 import TriviaPlayer from "@/components/TriviaPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
+import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -85,6 +87,9 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   } else if (template.category === "Colouring Pages" && !template.occasion) {
     const data = colouringPage(number);
     if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
+  } else if (template.category === "Matching Pairs" && !template.occasion) {
+    const data = matchingPairsSet(number);
+    if (data) player = <MatchingPairsPlayer {...common} theme={data.theme} pictures={data.pictures} />;
   }
 
   return (
