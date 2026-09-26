@@ -179,55 +179,68 @@ export default async function LandingPage() {
 
       {/* Services teaser */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
-        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-8">
-          <div>
-            <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
-            <p className="text-inkSoft text-sm max-w-md">
-              Every subscription includes access to our Professional Services directory —
-              vetted activity coaches, music and reminiscence therapists, and sensory design
-              consultants for the care sector.
-            </p>
-          </div>
-          <Link
-            href="/signup"
-            className="shrink-0 rounded-lg bg-cardTint px-5 py-2.5 font-semibold text-sm hover:bg-line transition-colors"
-          >
-            Explore services
-          </Link>
+        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
+          <p className="text-clay font-semibold text-xs tracking-wide uppercase mb-2">Coming soon</p>
+          <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
+          <p className="text-inkSoft text-sm max-w-md">
+            We're building a Professional Services directory — vetted activity coaches, music and
+            reminiscence therapists, and sensory design consultants for the care sector.
+          </p>
         </div>
       </section>
 
       {/* Pricing */}
       <section id="pricing" className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-        <h2 className="font-serif text-2xl text-center mb-2">Simple, single-tier pricing</h2>
-        <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
+        <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
+        <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
 
-        <div className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
-          <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
-          <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
-          <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+        <div className="grid gap-5 sm:grid-cols-2">
+          {[
+            {
+              label: "Standard",
+              price: "£18",
+              features: [
+                "Unlimited access to most of the library",
+                "New activities added regularly — you'll be notified",
+                "Downloadable PDFs, no expiry",
+              ],
+            },
+            {
+              label: "Premium",
+              price: "£28",
+              features: [
+                "Everything in Standard, plus:",
+                "Communication Cards, BSL Tools and Physical & Exercise",
+                "Large Print (A3) for every activity",
+                "The Holidays & Celebrations calendar and online play",
+              ],
+            },
+          ].map((tier) => (
+            <div key={tier.label} className="flex flex-col rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
+              <p className="font-serif text-lg text-sageDeep mb-1">{tier.label}</p>
+              <p className="font-serif text-5xl text-ink mb-1">
+                {tier.price}
+                <span className="text-lg text-inkSoft">/month</span>
+              </p>
+              <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
 
-          <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
-            {[
-              "Unlimited access to all 1000+ activities",
-              "New activities added regularly — you'll be notified",
-              "Professional Services directory access",
-              "Downloadable PDFs, no expiry",
-              "Cancel anytime from your account",
-            ].map((line) => (
-              <li key={line} className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>{line}</span>
-              </li>
-            ))}
-          </ul>
+              <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8 flex-1">
+                {tier.features.map((line) => (
+                  <li key={line} className="flex items-start gap-2">
+                    <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
+                    <span>{line}</span>
+                  </li>
+                ))}
+              </ul>
 
-          <Link
-            href="/signup"
-            className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
-          >
-            Start your free trial
-          </Link>
+              <Link
+                href="/signup"
+                className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
+              >
+                Start your free trial
+              </Link>
+            </div>
+          ))}
         </div>
       </section>
 

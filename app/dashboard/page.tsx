@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES, SERVICES } from "@/lib/data";
+import { CATEGORIES } from "@/lib/data";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
@@ -188,20 +188,12 @@ export default async function DashboardHome() {
       </div>
 
       <div className="rounded-xl p-4 mt-5 bg-card border border-line">
-        <div className="flex items-center justify-between mb-3">
-          <p className="font-serif text-[15px]">Professional Services — Featured</p>
-          <Link href="/dashboard/services" className="text-xs font-semibold text-sageDeep">
-            View all →
-          </Link>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {SERVICES.slice(0, 4).map((s) => (
-            <div key={s.name} className="rounded-lg p-3 bg-bg">
-              <p className="text-[13px] font-bold">{s.name}</p>
-              <p className="text-[11px] text-sageDeep">{s.tag}</p>
-            </div>
-          ))}
-        </div>
+        <p className="text-clay font-semibold text-[11px] tracking-wide uppercase mb-1">Coming soon</p>
+        <p className="font-serif text-[15px] mb-1">Professional Services directory</p>
+        <p className="text-[13px] text-inkSoft">
+          We're building a directory of vetted activity coaches, music and reminiscence therapists,
+          and sensory design consultants for the care sector.
+        </p>
       </div>
     </div>
   );

@@ -8,4 +8,6 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
   apiVersion: "2024-06-20",
 });
 
-export const PRICE_ID = process.env.STRIPE_PRICE_ID ?? "";
+// Price IDs are per-plan (STRIPE_PRICE_STANDARD / STRIPE_PRICE_PREMIUM) and
+// read directly from process.env at request time — see
+// app/api/stripe/checkout/route.ts.

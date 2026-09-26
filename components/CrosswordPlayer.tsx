@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Eye, Heart, Lightbulb, Printer, RotateCcw } from "lucide-react";
@@ -30,6 +30,7 @@ export default function CrosswordPlayer({
   tracking,
   initiallyCompleted,
   hasLargePrint,
+  isPremium,
 }: {
   templateId: string;
   rows: number;
@@ -41,6 +42,7 @@ export default function CrosswordPlayer({
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
+  isPremium: boolean;
 }) {
   const storageKey = `crossword:${templateId}`;
   const empty = () => solution.map((row) => row.replace(/[^.]/g, " "));
@@ -348,7 +350,7 @@ export default function CrosswordPlayer({
             <a href={`/api/download/${templateId}?file=standard`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
               <Printer size={14} /> Print
             </a>
-            {hasLargePrint && (
+            {hasLargePrint && isPremium && (
               <a href={`/api/download/${templateId}?file=large-print`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
                 <Printer size={14} /> Print Large (A3)
               </a>
