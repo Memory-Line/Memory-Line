@@ -9,4 +9,5 @@ export const PLAYABLE_CATEGORIES = new Set([
   "Trivia",
   "Matching Pairs",
   "Colouring Pages",
+  "Snakes and Ladders",
 ]);
