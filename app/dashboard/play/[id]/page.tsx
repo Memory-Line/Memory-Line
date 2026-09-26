@@ -10,11 +10,13 @@ import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
 import { guessTheWord } from "@/lib/guessTheWord";
 import { triviaQuiz } from "@/lib/trivia";
+import { snakesAndLaddersBoard } from "@/lib/snakesAndLadders";
 import SudokuPlayer from "@/components/SudokuPlayer";
 import WordSearchPlayer from "@/components/WordSearchPlayer";
 import CrosswordPlayer from "@/components/CrosswordPlayer";
 import GuessTheWordPlayer from "@/components/GuessTheWordPlayer";
 import TriviaPlayer from "@/components/TriviaPlayer";
+import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 
 export const dynamic = "force-dynamic";
 
@@ -80,6 +82,9 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   } else if (template.category === "Trivia" && !template.occasion) {
     const data = triviaQuiz(number);
     if (data) player = <TriviaPlayer {...common} questions={data.questions} />;
+  } else if (template.category === "Snakes and Ladders" && !template.occasion) {
+    const data = snakesAndLaddersBoard(number);
+    if (data) player = <SnakesAndLaddersPlayer {...common} moves={data.moves} squares={data.squares} />;
   }
 
   return (
