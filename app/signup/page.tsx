@@ -13,12 +13,19 @@ export default function SignupPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError("Those passwords don't match — please check and try again.");
+      return;
+    }
+
     setLoading(true);
 
     const res = await fetch("/api/register", {
@@ -124,6 +131,18 @@ export default function SignupPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
                 placeholder="At least 8 characters"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-inkSoft mb-1">Confirm password</label>
+              <input
+                required
+                type="password"
+                minLength={8}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
+                placeholder="Type it again"
               />
             </div>
 
