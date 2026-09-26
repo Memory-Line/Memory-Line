@@ -47,7 +47,7 @@ export default async function SubcategoryPage({
       </p>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} completedIds={done} playable={playable} />
+        <TemplateList templates={templates} completedIds={done} playable={playable} isPremium={viewer.isPremium} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {sub.label.toLowerCase()} activities yet.

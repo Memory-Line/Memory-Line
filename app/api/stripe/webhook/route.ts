@@ -8,6 +8,19 @@ import { prisma } from "@/lib/prisma";
 // don't parse bodies automatically, so req.text() below gives us the raw body.
 export const runtime = "nodejs";
 
+// Which plan a subscription is for, by comparing its Price ID against the
+// two env vars (not the checkout session's metadata), so this stays correct
+// even for a subscription changed directly in the Stripe dashboard. Returns
+// null if it doesn't match either (e.g. the env vars aren't set yet, or an
+// unrelated price) — callers should leave the account's existing plan alone.
+function planFromSubscription(subscription: Stripe.Subscription): "standard" | "premium" | null {
+  const priceId = subscription.items.data[0]?.price?.id;
+  if (!priceId) return null;
+  if (priceId === process.env.STRIPE_PRICE_STANDARD) return "standard";
+  if (priceId === process.env.STRIPE_PRICE_PREMIUM) return "premium";
+  return null;
+}
+
 async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.userId;
   if (!userId) return;
@@ -16,6 +29,7 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
   const renewsAt = subscription.current_period_end
     ? new Date(subscription.current_period_end * 1000)
     : null;
+  const plan = planFromSubscription(subscription);
 
   await prisma.user.update({
     where: { id: userId },
@@ -23,6 +37,7 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       subscriptionStatus: status,
       subscriptionRenewsAt: renewsAt,
+      ...(plan && { plan }),
     },
   });
 }
