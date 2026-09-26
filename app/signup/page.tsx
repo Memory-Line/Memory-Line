@@ -61,7 +61,7 @@ export default function SignupPage() {
 
         <div className="rounded-2xl border border-line bg-card p-7">
           <h1 className="font-serif text-2xl mb-1">Create your account</h1>
-          <p className="text-inkSoft text-sm mb-6">Start your free trial — no card needed yet.</p>
+          <p className="text-inkSoft text-sm mb-6">No card needed to create your account — you'll choose a plan next.</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
