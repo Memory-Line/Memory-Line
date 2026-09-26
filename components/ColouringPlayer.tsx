@@ -38,6 +38,21 @@ const FLOOD_TOLERANCE = 70;
 // A tapped pixel darker than this is treated as "on a line", so a stray tap
 // on the ink doesn't do anything odd.
 const LINE_LUMINANCE_THRESHOLD = 90;
+// Anything at least this faint counts as part of the outline for working out
+// where the fill should stop — looser than LINE_LUMINANCE_THRESHOLD so it
+// catches the soft grey anti-aliased edge around a line too, not just its
+// solid dark centre.
+const WALL_LUMINANCE_THRESHOLD = 235;
+// The outline mask above is then thickened by this many pixels (at
+// RENDER_SCALE) before it's used to stop a fill, closing the small gaps some
+// sheets have where two strokes don't quite meet — without which a fill can
+// leak straight through and cover half the picture (e.g. the sky spilling
+// into a building).
+const WALL_CLOSE_RADIUS = 3;
+// If a single tap would fill more than this fraction of the picture, treat
+// it as a leak and don't apply it at all, rather than colouring most of the
+// page.
+const MAX_FILL_FRACTION = 0.35;
 const MAX_UNDO = 30;
 
 function hexToRgba(hex: string): [number, number, number, number] {
@@ -45,12 +60,52 @@ function hexToRgba(hex: string): [number, number, number, number] {
   return [parseInt(v.slice(0, 2), 16), parseInt(v.slice(2, 4), 16), parseInt(v.slice(4, 6), 16), 255];
 }
 
+// Builds a closed outline mask (1 = "wall", the fill must not cross this)
+// from the picture's own darkness, so the fill stops at the drawn lines even
+// where the tolerance-to-seed-colour check below wouldn't catch it (e.g. a
+// small gap between two strokes). A separable box dilation grows the raw
+// outline by `radius` pixels first, closing those small gaps.
+function buildWallMask(src: Uint8ClampedArray, w: number, h: number, radius: number): Uint8Array {
+  const raw = new Uint8Array(w * h);
+  for (let i = 0, p = 0; i < src.length; i += 4, p++) {
+    const lum = 0.299 * src[i] + 0.587 * src[i + 1] + 0.114 * src[i + 2];
+    raw[p] = lum < WALL_LUMINANCE_THRESHOLD ? 1 : 0;
+  }
+  if (radius <= 0) return raw;
+
+  // Horizontal pass into `tmp`, then vertical pass into `out` — equivalent
+  // to a full 2D dilation but O(w*h*radius) instead of O(w*h*radius^2).
+  const tmp = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const row = y * w;
+    for (let x = 0; x < w; x++) {
+      let hit = 0;
+      const lo = Math.max(0, x - radius);
+      const hi = Math.min(w - 1, x + radius);
+      for (let xx = lo; xx <= hi && !hit; xx++) hit = raw[row + xx];
+      tmp[row + x] = hit;
+    }
+  }
+  const out = new Uint8Array(w * h);
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      let hit = 0;
+      const lo = Math.max(0, y - radius);
+      const hi = Math.min(h - 1, y + radius);
+      for (let yy = lo; yy <= hi && !hit; yy++) hit = tmp[yy * w + x];
+      out[y * w + x] = hit;
+    }
+  }
+  return out;
+}
+
 // A standard flood fill from (sx, sy): every 4-connected pixel whose colour
-// in `src` is within `tolerance` of the tapped pixel's colour is added to
-// the mask. Uses typed-array buffers passed in so no allocation happens per
-// tap.
+// in `src` is within `tolerance` of the tapped pixel's colour, and isn't
+// past a wall in `walls`, is added to the mask. Returns the number of pixels
+// filled. Uses typed-array buffers passed in so no allocation happens per tap.
 function floodFillMask(
   src: Uint8ClampedArray,
+  walls: Uint8Array,
   w: number,
   h: number,
   sx: number,
@@ -58,7 +113,7 @@ function floodFillMask(
   tolerance: number,
   mask: Uint8Array,
   stack: Int32Array
-) {
+): number {
   mask.fill(0);
   const startIdx = (sy * w + sx) * 4;
   const r0 = src[startIdx];
@@ -66,18 +121,20 @@ function floodFillMask(
   const b0 = src[startIdx + 2];
   const tol2 = tolerance * tolerance;
   let sp = 0;
+  let count = 1;
   mask[sy * w + sx] = 1;
   stack[sp++] = sy * w + sx;
 
   const tryPush = (nx: number, ny: number) => {
     const np = ny * w + nx;
-    if (mask[np]) return;
+    if (mask[np] || walls[np]) return;
     const idx = np * 4;
     const dr = src[idx] - r0;
     const dg = src[idx + 1] - g0;
     const db = src[idx + 2] - b0;
     if (dr * dr + dg * dg + db * db <= tol2) {
       mask[np] = 1;
+      count++;
       stack[sp++] = np;
     }
   };
@@ -91,6 +148,7 @@ function floodFillMask(
     if (y + 1 < h) tryPush(x, y + 1);
     if (y > 0) tryPush(x, y - 1);
   }
+  return count;
 }
 
 function safeGet(key: string): string | null {
@@ -129,6 +187,7 @@ export default function ColouringPlayer({
   const storageKey = `colouring:${templateId}`;
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const originalDataRef = useRef<Uint8ClampedArray | null>(null);
+  const wallMaskRef = useRef<Uint8Array | null>(null);
   const inkCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fillCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const fillCtxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -144,6 +203,8 @@ export default function ColouringPlayer({
   const [canUndo, setCanUndo] = useState(false);
   const [completed, setCompleted] = useState(initiallyCompleted);
   const [finished, setFinished] = useState(initiallyCompleted);
+  const [fillNotice, setFillNotice] = useState(false);
+  const fillNoticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function redraw() {
     const canvas = canvasRef.current;
@@ -243,6 +304,7 @@ export default function ColouringPlayer({
         if (cancelled) return;
 
         originalDataRef.current = original.data;
+        wallMaskRef.current = buildWallMask(original.data, cropW, cropH, WALL_CLOSE_RADIUS);
         inkCanvasRef.current = inkCanvas;
         fillCanvasRef.current = fillCanvas;
         fillCtxRef.current = fillCtx;
@@ -271,6 +333,13 @@ export default function ColouringPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [templateId]);
 
+  useEffect(
+    () => () => {
+      if (fillNoticeTimer.current) clearTimeout(fillNoticeTimer.current);
+    },
+    []
+  );
+
   function pointerToPixel(e: PointerEvent<HTMLCanvasElement>) {
     const canvas = canvasRef.current;
     if (!canvas) return null;
@@ -287,12 +356,13 @@ export default function ColouringPlayer({
 
   function handleTap(e: PointerEvent<HTMLCanvasElement>) {
     const original = originalDataRef.current;
+    const walls = wallMaskRef.current;
     const mask = maskRef.current;
     const stack = stackRef.current;
     const fillCtx = fillCtxRef.current;
     const fillImageData = fillImageDataRef.current;
     const { w, h } = dimsRef.current;
-    if (!original || !mask || !stack || !fillCtx || !fillImageData) return;
+    if (!original || !walls || !mask || !stack || !fillCtx || !fillImageData) return;
     const pt = pointerToPixel(e);
     if (!pt) return;
 
@@ -300,7 +370,15 @@ export default function ColouringPlayer({
     const lum = 0.299 * original[startIdx] + 0.587 * original[startIdx + 1] + 0.114 * original[startIdx + 2];
     if (lum < LINE_LUMINANCE_THRESHOLD) return; // tapped on a line itself: do nothing
 
-    floodFillMask(original, w, h, pt.x, pt.y, FLOOD_TOLERANCE, mask, stack);
+    const filled = floodFillMask(original, walls, w, h, pt.x, pt.y, FLOOD_TOLERANCE, mask, stack);
+    if (filled > w * h * MAX_FILL_FRACTION) {
+      // The area came out far bigger than any real shape on these sheets —
+      // a leak slipped past the walls somewhere, so don't colour it in.
+      setFillNotice(true);
+      if (fillNoticeTimer.current) clearTimeout(fillNoticeTimer.current);
+      fillNoticeTimer.current = setTimeout(() => setFillNotice(false), 4000);
+      return;
+    }
 
     // Save the current picture for Undo before changing it.
     historyRef.current.push(fillImageData.data.slice());
@@ -463,6 +541,12 @@ export default function ColouringPlayer({
           }}
         />
       </div>
+
+      {fillNotice && (
+        <p className="mt-3 text-sm text-inkSoft rounded-lg px-3 py-2 bg-cardTint inline-block">
+          That area's a bit too open to colour in on its own — try tapping a smaller part of it.
+        </p>
+      )}
 
       {finished && (
         <div className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style={{ background: "#e4eee2", color: "#2f7a63" }}>
