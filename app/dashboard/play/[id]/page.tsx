@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
@@ -51,6 +52,25 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
 
   let back = { href: `/dashboard/${category?.slug ?? ""}`, label: `All ${template.category}` };
   let player: React.ReactNode = null;
+
+  // Previous/next within the same shelf (same category, sub-category,
+  // occasion and language), ordered by the sheet's own number, so someone
+  // finishing one activity can move straight to the next without going back
+  // to the list.
+  const siblings = await prisma.template.findMany({
+    where: {
+      category: template.category,
+      subcategory: template.subcategory,
+      occasion: template.occasion,
+      language: template.language,
+    },
+    select: { id: true, fileName: true },
+  });
+  const numberOf = (fileName: string) => parseInt(fileName.split(/[\/]/).pop()?.match(/^(\d+)/)?.[1] ?? "", 10);
+  siblings.sort((a, b) => numberOf(a.fileName) - numberOf(b.fileName));
+  const myIndex = siblings.findIndex((s) => s.id === template.id);
+  const prevSibling = myIndex > 0 ? siblings[myIndex - 1] : null;
+  const nextSibling = myIndex >= 0 && myIndex < siblings.length - 1 ? siblings[myIndex + 1] : null;
 
   if (template.category === "Sudoku" && isSudokuLevel(template.subcategory)) {
     const level = template.subcategory;
@@ -112,17 +132,50 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     }
   }
 
+  const prevNext = (
+    <div className="flex gap-2">
+      {prevSibling ? (
+        <Link
+          href={`/dashboard/play/${prevSibling.id}`}
+          className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold bg-cardTint"
+        >
+          <ChevronLeft size={14} /> Previous
+        </Link>
+      ) : (
+        <span className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold bg-cardTint opacity-40">
+          <ChevronLeft size={14} /> Previous
+        </span>
+      )}
+      {nextSibling ? (
+        <Link
+          href={`/dashboard/play/${nextSibling.id}`}
+          className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold bg-cardTint"
+        >
+          Next <ChevronRight size={14} />
+        </Link>
+      ) : (
+        <span className="flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-semibold bg-cardTint opacity-40">
+          Next <ChevronRight size={14} />
+        </span>
+      )}
+    </div>
+  );
+
   return (
     <div>
-      <Link href={back.href} className="text-xs text-inkSoft">
-        ← {back.label}
-      </Link>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <Link href={back.href} className="text-xs text-inkSoft">
+          ← {back.label}
+        </Link>
+        {prevNext}
+      </div>
       <h1 className="font-serif text-[26px] mt-1 mb-4">{displayTitle(template)}</h1>
       {player ?? (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           This activity can't be played online yet, but you can still download and print it.
         </p>
       )}
+      {player && <div className="mt-6">{prevNext}</div>}
     </div>
   );
 }
