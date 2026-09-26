@@ -10,4 +10,5 @@ export const PLAYABLE_CATEGORIES = new Set([
   "Matching Pairs",
   "Colouring Pages",
   "Snakes and Ladders",
+  "Spot the Difference",
 ]);
