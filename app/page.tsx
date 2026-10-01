@@ -10,8 +10,11 @@ import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/pl
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 
-// The free samples come from the database, so render on each request.
-export const dynamic = "force-dynamic";
+// The free samples come from the database, but they change rarely (only
+// when a new category's first upload changes), so the page is cached and
+// rebuilt at most every 10 minutes rather than hitting the database on
+// every single visit — the main thing making the homepage feel slow.
+export const revalidate = 600;
 
 // One free sample per category, offered on the homepage before sign-up:
 // the first activity (lowest number) in each of these categories. Every
