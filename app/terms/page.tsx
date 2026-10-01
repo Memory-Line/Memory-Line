@@ -154,7 +154,7 @@ export default function TermsPage() {
 
         <Section title="11. Contact">
           <p>
-            Questions about these terms can be sent to hello@activitycentral.co.uk.
+            Questions about these terms can be sent to support@activitycentral.co.uk.
           </p>
         </Section>
       </div>

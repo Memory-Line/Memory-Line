@@ -79,8 +79,8 @@ export default function CookiesPage() {
 
         <Section title="5. Contact us">
           <p>
-            Questions about this policy can be sent to privacy@activitycentral.co.uk (to be set
-            up). See also our <Link href="/privacy" className="text-sageDeep underline">Privacy Policy</Link>.
+            Questions about this policy can be sent to support@activitycentral.co.uk. See also
+            our <Link href="/privacy" className="text-sageDeep underline">Privacy Policy</Link>.
           </p>
         </Section>
       </div>

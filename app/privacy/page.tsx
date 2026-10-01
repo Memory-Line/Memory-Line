@@ -120,9 +120,9 @@ export default function PrivacyPage() {
             <li>Object to certain processing based on legitimate interest.</li>
           </ul>
           <p>
-            To exercise any of these rights, contact us at privacy@activitycentral.co.uk (to be
-            set up). You also have the right to complain to the UK's data protection regulator,
-            the Information Commissioner's Office (ICO), at ico.org.uk.
+            To exercise any of these rights, contact us at support@activitycentral.co.uk. You
+            also have the right to complain to the UK's data protection regulator, the
+            Information Commissioner's Office (ICO), at ico.org.uk.
           </p>
         </Section>
 
@@ -153,7 +153,7 @@ export default function PrivacyPage() {
         <Section title="11. Contact us">
           <p>
             If you have questions about this policy or how we handle your data, contact us at
-            privacy@activitycentral.co.uk (to be set up).
+            support@activitycentral.co.uk.
           </p>
         </Section>
       </div>
