@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { isFeatureKey } from "@/lib/features";
+import { isPlanKey } from "@/lib/plans";
 
 // Admin tools for other accounts: GET lists them, POST gives an account
 // full access without a Stripe subscription (status "free") or takes it
@@ -19,7 +20,7 @@ export async function GET() {
   }
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   const users = await prisma.user.findMany({
-    select: { email: true, name: true, accountType: true, subscriptionStatus: true, features: true },
+    select: { email: true, name: true, accountType: true, subscriptionStatus: true, features: true, plan: true },
     orderBy: { createdAt: "desc" },
   });
   return NextResponse.json({
@@ -73,16 +74,19 @@ export async function POST(req: Request) {
   }
 }
 
-// Sets an account's type (care home or personal), name and extra features:
-// for accounts made before sign-up asked, to correct a care home's name, or
-// to switch features like the professional calendar on or off.
+// Sets an account's type (care home or personal), name, extra features and
+// plan: for accounts made before sign-up asked, to correct a care home's
+// name, to switch features like the professional calendar on or off, or to
+// move an account between Standard and Premium (separate from Stripe — this
+// is what the site itself checks; a real subscription still bills through
+// Stripe as normal, this just overrides which tier the account gets).
 export async function PUT(req: Request) {
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    const { email, accountType, name, features } = await req.json();
+    const { email, accountType, name, features, plan } = await req.json();
     if (accountType !== "care-home" && accountType !== "personal") {
       return NextResponse.json({ error: "Choose care home or personal" }, { status: 400 });
     }
@@ -91,6 +95,9 @@ export async function PUT(req: Request) {
     }
     if (features !== undefined && !Array.isArray(features)) {
       return NextResponse.json({ error: "Features must be a list" }, { status: 400 });
+    }
+    if (plan !== undefined && !isPlanKey(plan)) {
+      return NextResponse.json({ error: "Choose Standard or Premium" }, { status: 400 });
     }
 
     const user = await prisma.user.findFirst({
@@ -108,6 +115,7 @@ export async function PUT(req: Request) {
         // Unknown or retired features (e.g. "play-sudoku", now for everyone)
         // are dropped rather than refused.
         ...(features !== undefined && { features: Array.from(new Set((features as unknown[]).filter(isFeatureKey))) }),
+        ...(plan !== undefined && { plan }),
       },
     });
     return NextResponse.json({

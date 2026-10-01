@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useRef, useState } from "react";
 import { Check, Printer, RotateCcw, Undo2 } from "lucide-react";
@@ -94,6 +94,7 @@ export default function SpotDifferencePlayer({
   tracking,
   initiallyCompleted,
   hasLargePrint,
+  isPremium,
 }: {
   templateId: string;
   pictureA: PictureRect;
@@ -101,6 +102,7 @@ export default function SpotDifferencePlayer({
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
+  isPremium: boolean;
 }) {
   const storageKey = `spotdifference:${templateId}`;
   const [marksA, setMarksA] = useState<Mark[]>([]);
@@ -304,7 +306,7 @@ export default function SpotDifferencePlayer({
           >
             <Printer size={14} /> Print
           </a>
-          {hasLargePrint && (
+          {hasLargePrint && isPremium && (
             <a
               href={`/api/download/${templateId}?file=large-print`}
               target="_blank"

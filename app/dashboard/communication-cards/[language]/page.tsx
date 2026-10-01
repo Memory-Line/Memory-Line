@@ -38,7 +38,7 @@ export default async function CommunicationCardsLanguagePage({
       </p>
 
       {cards.length > 0 ? (
-        <TemplateList templates={cards} completedIds={done} />
+        <TemplateList templates={cards} completedIds={done} isPremium={viewer.isPremium} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {language.label} cards yet.

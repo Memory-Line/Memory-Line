@@ -35,8 +35,9 @@ Fill in:
 - `NEXTAUTH_SECRET` — generate with `openssl rand -base64 32`
 - `STRIPE_SECRET_KEY` / `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` — from your
   [Stripe dashboard](https://dashboard.stripe.com/apikeys) (use test keys first)
-- `STRIPE_PRICE_ID` — create a recurring monthly Price in Stripe
-  (Products → Add product → Recurring), then paste its Price ID here
+- `STRIPE_PRICE_STANDARD` / `STRIPE_PRICE_PREMIUM` — create two recurring
+  monthly Prices in Stripe (Products → Add product → Recurring), one for
+  Standard (£18) and one for Premium (£28), then paste each Price ID here
 - `STRIPE_WEBHOOK_SECRET` — see step 4 below
 
 ## 3. Set up the database

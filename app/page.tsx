@@ -2,9 +2,11 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check, PlayCircle,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
+import { PLAYABLE_CATEGORIES } from "@/lib/play";
+import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 
@@ -12,14 +14,16 @@ import { displayTitle } from "@/lib/titles";
 export const dynamic = "force-dynamic";
 
 // One free sample per category, offered on the homepage before sign-up:
-// the first activity (lowest number) in each of these categories.
-const FREE_SAMPLE_CATEGORIES = [
-  "Word Searches",
-  "Remembrance Cards",
-  "BSL Tools",
-  "Conversation Starters",
-  "Trivia",
-];
+// the first activity (lowest number) in each of these categories. Every
+// category gets one, so people can see exactly what they'd be getting
+// across the whole library, not just a handful of categories.
+const FREE_SAMPLE_CATEGORIES = CATEGORIES.map((c) => c.key);
+
+// Same source of truth the site's own Standard/Premium gating uses
+// (lib/plans.ts), so the pricing section can never drift out of sync with
+// what Standard accounts actually get.
+const PREMIUM_ONLY_CATEGORIES = Array.from(PREMIUM_ONLY_CATEGORIES_SET);
+const STANDARD_CATEGORIES = CATEGORIES.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
 
 const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
@@ -48,7 +52,14 @@ export default async function LandingPage() {
     await Promise.all(
       FREE_SAMPLE_CATEGORIES.map((category) =>
         prisma.template.findFirst({
-          where: { category, occasion: null, language: null },
+          where: {
+            category,
+            occasion: null,
+            language: null,
+            // A gentle first taste for Sudoku, rather than whichever level
+            // happens to sort first by file name.
+            ...(category === "Sudoku" ? { subcategory: "beginner" } : {}),
+          },
           orderBy: { fileName: "asc" },
         })
       )
@@ -70,8 +81,7 @@ export default async function LandingPage() {
             href="/signup"
             className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
           >
-            <span className="sm:hidden">Free trial</span>
-            <span className="hidden sm:inline">Start free trial</span>
+            Sign up
           </Link>
         </div>
       </header>
@@ -94,13 +104,13 @@ export default async function LandingPage() {
             href="/signup"
             className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
           >
-            Start your free trial
+            Sign up
           </Link>
           <a href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
             See pricing
           </a>
         </div>
-        <p className="text-xs text-inkSoft mt-4">No card required to browse the library preview.</p>
+        <p className="text-xs text-inkSoft mt-4">Try samples from every category free, no card or signup needed.</p>
       </section>
 
       {/* Categories */}
@@ -151,6 +161,11 @@ export default async function LandingPage() {
                   <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
                 <div className="mt-4 grid gap-2">
+                  {PLAYABLE_CATEGORIES.has(t.category) && (
+                    <Link href={`/play/${t.id}`} className={SAMPLE_LINK} style={{ background: "#D6EBE3", color: "#2F7A63" }}>
+                      <PlayCircle size={15} className="mr-1.5" /> Play online, free
+                    </Link>
+                  )}
                   <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
                     Download free sample
                   </a>
@@ -179,55 +194,110 @@ export default async function LandingPage() {
 
       {/* Services teaser */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
-        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5 sm:gap-8">
-          <div>
-            <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
-            <p className="text-inkSoft text-sm max-w-md">
-              Every subscription includes access to our Professional Services directory —
-              vetted activity coaches, music and reminiscence therapists, and sensory design
-              consultants for the care sector.
-            </p>
-          </div>
-          <Link
-            href="/signup"
-            className="shrink-0 rounded-lg bg-cardTint px-5 py-2.5 font-semibold text-sm hover:bg-line transition-colors"
-          >
-            Explore services
-          </Link>
+        <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
+          <p className="text-clay font-semibold text-xs tracking-wide uppercase mb-2">Coming soon</p>
+          <h3 className="font-serif text-xl mb-2">Need more than activities?</h3>
+          <p className="text-inkSoft text-sm max-w-md">
+            We're building a Professional Services directory — vetted activity coaches, music and
+            reminiscence therapists, and sensory design consultants for the care sector.
+          </p>
         </div>
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="max-w-3xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-        <h2 className="font-serif text-2xl text-center mb-2">Simple, single-tier pricing</h2>
-        <p className="text-inkSoft text-center mb-10">One subscription. Every activity. Cancel anytime.</p>
+      <section id="pricing" className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+        <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
+        <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
 
-        <div className="rounded-2xl border-2 border-sage bg-card p-6 sm:p-8 text-center">
-          <p className="font-serif text-lg text-sageDeep mb-1">Activity Central Membership</p>
-          <p className="font-serif text-5xl text-ink mb-1">£28<span className="text-lg text-inkSoft">/month</span></p>
-          <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+        <div className="flex flex-col sm:flex-row items-start gap-6">
 
-          <ul className="text-sm text-left max-w-xs mx-auto space-y-2.5 mb-8">
-            {[
-              "Unlimited access to all 1000+ activities",
-              "New activities added regularly — you'll be notified",
-              "Professional Services directory access",
-              "Downloadable PDFs, no expiry",
-              "Cancel anytime from your account",
-            ].map((line) => (
-              <li key={line} className="flex items-start gap-2">
+          {/* Standard */}
+          <div className="flex-1 w-full flex flex-col rounded-2xl border-2 border-line bg-card p-6 sm:p-8 sm:mt-7">
+            <p className="font-serif text-lg text-sageDeep mb-1">Standard</p>
+            <p className="font-serif text-5xl text-ink mb-1">
+              £18<span className="text-lg text-inkSoft">/month</span>
+            </p>
+            <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
+            <div className="flex flex-wrap gap-1.5 mb-8">
+              {STANDARD_CATEGORIES.map((c) => (
+                <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
+                  {c}
+                </span>
+              ))}
+            </div>
+
+            <Link
+              href="/signup"
+              className="mt-auto inline-block text-center rounded-xl bg-cardTint text-ink px-8 py-3 font-semibold hover:bg-line transition-colors"
+            >
+              Sign up
+            </Link>
+          </div>
+
+          {/* Premium */}
+          <div className="flex-1 w-full relative flex flex-col rounded-2xl border-[3px] border-clay bg-card p-6 sm:p-8 shadow-[0_18px_36px_-14px_rgba(176,137,104,0.4)]">
+            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">
+              Recommended for care homes
+            </span>
+
+            <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
+            <p className="font-serif text-5xl text-ink mb-1">
+              £28<span className="text-lg text-inkSoft">/month</span>
+            </p>
+            <p className="text-xs text-inkSoft mb-2">per care home, billed monthly, cancel anytime</p>
+            <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+              Just £10/month more for the full experience
+            </p>
+
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">Everything a care home actually needs</p>
+            <ul className="text-sm text-left space-y-2.5 mb-6">
+              <li className="flex items-start gap-2">
                 <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>{line}</span>
+                <span><b>Large Print (A3)</b> for every activity — easier for residents with low vision</span>
               </li>
-            ))}
-          </ul>
+              <li className="flex items-start gap-2">
+                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
+                <span>
+                  The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in
+                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more), each one linking straight
+                  to matching themed activities. Add your own events on top and remove them any time — it becomes
+                  your activity coordinator, with the day's session already planned when you open it.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
+                <span><b>Play every activity on screen</b> — no printer needed for a spontaneous session</span>
+              </li>
+            </ul>
 
-          <Link
-            href="/signup"
-            className="inline-block rounded-xl bg-sage text-white px-8 py-3 font-semibold hover:bg-sageDeep transition-colors"
-          >
-            Start your free trial
-          </Link>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 16 categories</p>
+            <div className="flex flex-wrap gap-1.5 mb-8">
+              {STANDARD_CATEGORIES.map((c) => (
+                <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
+                  {c}
+                </span>
+              ))}
+              {PREMIUM_ONLY_CATEGORIES.map((c) => (
+                <span
+                  key={c}
+                  className="rounded-full px-3 py-1.5 text-xs font-semibold border"
+                  style={{ background: "#FCEFE7", color: "#B5714A", borderColor: "#E9C4AA" }}
+                >
+                  + {c}
+                </span>
+              ))}
+            </div>
+
+            <Link
+              href="/signup"
+              className="mt-auto inline-block text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold hover:opacity-90 transition-opacity"
+            >
+              Sign up
+            </Link>
+          </div>
+
         </div>
       </section>
 

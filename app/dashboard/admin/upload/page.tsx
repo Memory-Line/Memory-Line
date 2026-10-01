@@ -5,6 +5,7 @@ import { CATEGORIES } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
 import { FEATURES } from "@/lib/featureList";
+import { PLANS, type PlanKey } from "@/lib/plans";
 import { titleFromFilename } from "@/lib/titles";
 import { subcategoriesFor, subcategoryFromPath } from "@/lib/subcategories";
 
@@ -487,6 +488,7 @@ type Account = {
   accountType: string;
   subscriptionStatus: string;
   features: string[];
+  plan: string;
 };
 
 const ACCESS_LABELS: Record<string, string> = {
@@ -502,6 +504,7 @@ function FreeAccessSection() {
   const [editType, setEditType] = useState<"care-home" | "personal">("personal");
   const [editName, setEditName] = useState("");
   const [editFeatures, setEditFeatures] = useState<string[]>([]);
+  const [editPlan, setEditPlan] = useState<PlanKey>("premium");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -512,6 +515,7 @@ function FreeAccessSection() {
     setEditType(account?.accountType === "care-home" ? "care-home" : "personal");
     setEditName(account?.name ?? "");
     setEditFeatures(account?.features ?? []);
+    setEditPlan(account?.plan === "standard" ? "standard" : "premium");
   }
 
   async function saveDetails() {
@@ -521,7 +525,13 @@ function FreeAccessSection() {
       const res = await fetch("/api/admin/free-access", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, accountType: editType, name: editName, features: editFeatures }),
+        body: JSON.stringify({
+          email,
+          accountType: editType,
+          name: editName,
+          features: editFeatures,
+          plan: editPlan,
+        }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok || !data?.ok) throw new Error(data?.error ?? `Failed (${res.status})`);
@@ -588,7 +598,9 @@ function FreeAccessSection() {
             <option key={a.email} value={a.email}>
               {`${a.email}${a.name ? ` — ${a.name}` : ""}${
                 a.accountType === "care-home" ? " (care home)" : ""
-              } · ${ACCESS_LABELS[a.subscriptionStatus] ?? "no access"}`}
+              } · ${ACCESS_LABELS[a.subscriptionStatus] ?? "no access"} · ${
+                a.plan === "standard" ? "Standard" : "Premium"
+              }`}
             </option>
           ))}
         </select>
@@ -626,6 +638,20 @@ function FreeAccessSection() {
                   onChange={() => setEditType(value)}
                 />
                 {label}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs font-semibold text-inkSoft mb-1.5">Plan</p>
+          <div className="flex gap-4 mb-3 text-sm">
+            {PLANS.map((p) => (
+              <label key={p.key} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="editPlan"
+                  checked={editPlan === p.key}
+                  onChange={() => setEditPlan(p.key)}
+                />
+                {p.label}
               </label>
             ))}
           </div>

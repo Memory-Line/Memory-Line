@@ -18,6 +18,10 @@ model User {
   accountType          String    @default("personal") // personal | care-home
   // Extra features switched on for this account by the admin (lib/features.ts).
   features             String[]  @default([])
+  // Which pricing tier this account gets (lib/plans.ts). Defaults to
+  // "premium" so nobody loses access when this field is introduced;
+  // new sign-ups are set explicitly by Stripe checkout / the webhook.
+  plan                 String    @default("premium") // standard | premium
   email                String    @unique
   passwordHash         String
   createdAt            DateTime  @default(now())

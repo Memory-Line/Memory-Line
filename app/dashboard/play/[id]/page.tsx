@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
 import { notFound } from "next/navigation";
+import UpgradePrompt from "@/components/UpgradePrompt";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
 import { CATEGORIES } from "@/lib/data";
@@ -48,6 +49,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     tracking,
     initiallyCompleted: completed,
     hasLargePrint: !!template.largePrintFileUrl,
+    isPremium: viewer.isPremium,
   };
 
   let back = { href: `/dashboard/${category?.slug ?? ""}`, label: `All ${template.category}` };
@@ -130,6 +132,26 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
         <SpotDifferencePlayer {...common} pictureA={data.pictureA} pictureB={data.pictureB} />
       );
     }
+  }
+
+  // Standard accounts can still print (small, non-large-print) from here,
+  // but not play online — enforced here rather than per-player so it
+  // covers every activity type in one place.
+  if (!viewer.isPremium) {
+    player = (
+      <div className="space-y-4">
+        <UpgradePrompt message="Playing activities online is part of the Premium plan." />
+        <a
+          href={`/api/download/${template.id}?file=standard`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold"
+          style={{ background: "#E4EEE2", color: "#6D8C6A" }}
+        >
+          <Printer size={14} /> Print
+        </a>
+      </div>
+    );
   }
 
   const prevNext = (

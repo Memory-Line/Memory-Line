@@ -57,7 +57,7 @@ export default async function OccasionCategoryPage({
       </div>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} completedIds={done} />
+        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {category.key.toLowerCase()} for {occasion.label} yet.

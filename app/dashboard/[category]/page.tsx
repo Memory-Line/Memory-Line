@@ -113,7 +113,12 @@ export default async function CategoryPage({ params }: { params: { category: str
       {category.key === "Bingo" && <BingoCaller />}
 
       {realUploads.length > 0 ? (
-        <TemplateList templates={realUploads} completedIds={done} playable={PLAYABLE_CATEGORIES.has(category.key)} />
+        <TemplateList
+          templates={realUploads}
+          completedIds={done}
+          playable={PLAYABLE_CATEGORIES.has(category.key)}
+          isPremium={viewer.isPremium}
+        />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No activities here yet.
