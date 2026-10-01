@@ -22,6 +22,7 @@ function Picture({
   label,
   marks,
   loading,
+  full,
   onTap,
   onRemove,
 }: {
@@ -30,6 +31,7 @@ function Picture({
   label: string;
   marks: Mark[];
   loading: boolean;
+  full: boolean;
   onTap: (x: number, y: number) => void;
   onRemove: (index: number) => void;
 }) {
@@ -48,7 +50,7 @@ function Picture({
     <div
       ref={wrapRef}
       onClick={handleClick}
-      className="relative rounded-xl bg-white border border-line overflow-hidden cursor-crosshair"
+      className={`relative rounded-xl bg-white border border-line overflow-hidden ${full ? "cursor-default" : "cursor-crosshair"}`}
       style={{ width: "100%", aspectRatio: `${aspect}` }}
       aria-label={label}
     >
@@ -204,11 +206,13 @@ export default function SpotDifferencePlayer({
   const total = marksA.length + marksB.length;
 
   function tapA(x: number, y: number) {
+    if (total >= TARGET) return;
     const next = [...marksA, { x, y }];
     save(next, marksB);
     if (next.length + marksB.length === TARGET) markCompleted();
   }
   function tapB(x: number, y: number) {
+    if (total >= TARGET) return;
     const next = [...marksB, { x, y }];
     save(marksA, next);
     if (marksA.length + next.length === TARGET) markCompleted();
@@ -231,8 +235,8 @@ export default function SpotDifferencePlayer({
     <div className="max-w-[900px]">
       <p className="text-sm text-inkSoft mb-3">
         Have a look at the two pictures together and tap to circle anything that's different — on either picture,
-        wherever's easiest. The sheet has {TARGET} to find, but there's no wrong answer here; tap a circle again to
-        take it away.
+        wherever's easiest. There's no wrong answer here; tap a circle again to take it away. You can circle up to
+        {" "}{TARGET}, the same as the sheet's own "find {TARGET}" — undo one first if you want to change an earlier guess.
       </p>
 
       {status === "error" ? (
@@ -248,6 +252,7 @@ export default function SpotDifferencePlayer({
               label="Picture A"
               marks={marksA}
               loading={status === "loading"}
+              full={total >= TARGET}
               onTap={tapA}
               onRemove={removeA}
             />
@@ -259,6 +264,7 @@ export default function SpotDifferencePlayer({
               label="Picture B"
               marks={marksB}
               loading={status === "loading"}
+              full={total >= TARGET}
               onTap={tapB}
               onRemove={removeB}
             />
