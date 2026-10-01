@@ -43,31 +43,39 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  let customerId = user.stripeCustomerId;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: user.name ?? undefined,
-      metadata: { userId: user.id },
+  try {
+    let customerId = user.stripeCustomerId;
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: user.name ?? undefined,
+        metadata: { userId: user.id },
+      });
+      customerId = customer.id;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      customer: customerId,
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${appUrl}/dashboard?checkout=success`,
+      cancel_url: `${appUrl}/pricing?checkout=cancelled`,
+      metadata: { userId: user.id, plan },
+      subscription_data: { metadata: { userId: user.id, plan } },
     });
-    customerId = customer.id;
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { stripeCustomerId: customerId },
-    });
+
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (err: any) {
+    // Surface Stripe's own message (e.g. "No such price", an invalid/expired
+    // key) instead of a bare 500 with no explanation.
+    console.error("checkout failed:", err);
+    const message = typeof err?.message === "string" ? err.message : "Couldn't start checkout";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    customer: customerId,
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${appUrl}/dashboard?checkout=success`,
-    cancel_url: `${appUrl}/pricing?checkout=cancelled`,
-    metadata: { userId: user.id, plan },
-    subscription_data: { metadata: { userId: user.id, plan } },
-  });
-
-  return NextResponse.json({ url: checkoutSession.url });
 }
