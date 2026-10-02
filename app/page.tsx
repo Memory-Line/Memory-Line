@@ -311,7 +311,7 @@ export default async function LandingPage() {
       </section>
 
       <footer className="border-t border-line py-8 px-5 sm:px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
-        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams.</p>
+        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
       </footer>
     </main>

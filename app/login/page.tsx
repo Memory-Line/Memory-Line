@@ -83,6 +83,8 @@ export default function LoginPage() {
           <p className="text-xs text-inkSoft text-center mt-5">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-sageDeep font-semibold">Sign up</Link>
+            {" · "}
+            <Link href="/support" className="text-sageDeep font-semibold">Need help?</Link>
           </p>
         </div>
       </div>
