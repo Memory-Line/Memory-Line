@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/data";
+import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET, type PlanKey } from "@/lib/plans";
 
 // Same source of truth the site's own Standard/Premium gating uses, so this
@@ -69,7 +70,7 @@ export default function PricingPage() {
             <p className="font-serif text-5xl text-ink mb-1">
               £18<span className="text-lg text-inkSoft">/month</span>
             </p>
-            <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+            <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
             <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
@@ -99,7 +100,7 @@ export default function PricingPage() {
             <p className="font-serif text-5xl text-ink mb-1">
               £28<span className="text-lg text-inkSoft">/month</span>
             </p>
-            <p className="text-xs text-inkSoft mb-2">per care home, billed monthly, cancel anytime</p>
+            <p className="text-xs text-inkSoft mb-2">per account, billed monthly, cancel anytime</p>
             <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
               Just £10/month more for the full experience
             </p>
@@ -108,20 +109,26 @@ export default function PricingPage() {
             <ul className="text-sm text-left space-y-2.5 mb-6">
               <li className="flex items-start gap-2">
                 <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span><b>Large Print (A3)</b> for every activity — easier for residents with low vision</span>
+                <span>
+                  <b>Large Print (A3)</b> sheets on most activities — easier for residents with low vision. Not
+                  every activity has a large print version.
+                </span>
               </li>
               <li className="flex items-start gap-2">
                 <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
                 <span>
                   The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in
-                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more), each one linking straight
-                  to matching themed activities. Add your own events on top and remove them any time — it becomes
-                  your activity coordinator, with the day's session already planned when you open it.
+                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more). Add your own events on
+                  top and remove them any time, so it becomes your activity coordinator. Themed activities for
+                  each date are being made and will be added soon.
                 </span>
               </li>
               <li className="flex items-start gap-2">
                 <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span><b>Play every activity on screen</b> — no printer needed for a spontaneous session</span>
+                <span>
+                  <b>Play {PLAYABLE_CATEGORIES.size} of the {CATEGORIES.length} categories on screen</b> — the
+                  puzzles and games, no printer needed for a spontaneous session
+                </span>
               </li>
             </ul>
 
