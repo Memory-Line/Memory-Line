@@ -27,7 +27,11 @@ const ICONS: Record<string, any> = {
   Sudoku: Grid2x2,
 };
 
-export default async function DashboardHome() {
+export default async function DashboardHome({
+  searchParams,
+}: {
+  searchParams?: { billing?: string };
+}) {
   const session = await getServerSession(authOptions);
   const userId = session!.user.id;
 
@@ -96,6 +100,14 @@ export default async function DashboardHome() {
     <div>
       <h1 className="font-serif text-2xl sm:text-3xl">Welcome Back, {firstName}</h1>
       <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
+
+      {searchParams?.billing && (
+        <p className="mt-4 rounded-lg px-3 py-2 text-sm bg-cardTint text-ink">
+          {searchParams.billing === "none"
+            ? "There's no paid subscription on this account to manage yet."
+            : "We couldn't open the billing page just now. Please try again in a moment, or email support@activitycentral.co.uk and we'll sort it."}
+        </p>
+      )}
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl px-5 py-3 mt-5 bg-card border border-line">
         <div>
