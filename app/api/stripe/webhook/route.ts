@@ -26,9 +26,14 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
   if (!userId) return;
 
   const status = subscription.status; // active | past_due | canceled | ...
-  const renewsAt = subscription.current_period_end
-    ? new Date(subscription.current_period_end * 1000)
-    : null;
+  // Stripe's newer API versions (what the webhook destination sends) moved
+  // the renewal date from the subscription itself onto its items; the
+  // version this code's Stripe library is pinned to still has it on the
+  // subscription. Read from either place so the date is never lost.
+  const periodEnd =
+    subscription.current_period_end ??
+    (subscription.items.data[0] as unknown as { current_period_end?: number } | undefined)?.current_period_end;
+  const renewsAt = periodEnd ? new Date(periodEnd * 1000) : null;
   const plan = planFromSubscription(subscription);
 
   await prisma.user.update({
