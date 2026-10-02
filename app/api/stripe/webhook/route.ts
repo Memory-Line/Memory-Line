@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { planConfirmationEmail, sendEmail } from "@/lib/email";
 
 // Stripe needs the raw request body to verify the signature, so this route
 // must not be JSON-parsed by anything upstream. App Router route handlers
@@ -70,6 +71,27 @@ export async function POST(req: Request) {
       if (session.subscription && typeof session.subscription === "string") {
         const subscription = await stripe.subscriptions.retrieve(session.subscription);
         await upsertSubscriptionFromStripe(subscription);
+        const userId = subscription.metadata?.userId;
+        if (userId) {
+          // Claim "email sent" first: only one delivery of this event can win
+          // it, so Stripe repeating the message can't cause a second email.
+          const claimed = await prisma.user.updateMany({
+            where: {
+              id: userId,
+              OR: [{ planEmailSentFor: null }, { planEmailSentFor: { not: subscription.id } }],
+            },
+            data: { planEmailSentFor: subscription.id },
+          });
+          if (claimed.count === 1) {
+            const user = await prisma.user.findUnique({
+              where: { id: userId },
+              select: { email: true, name: true },
+            });
+            if (user) {
+              await sendEmail(planConfirmationEmail(user.email, user.name, planFromSubscription(subscription)));
+            }
+          }
+        }
       }
       break;
     }

@@ -31,10 +31,27 @@ model User {
   stripeSubscriptionId String?   @unique
   subscriptionStatus   String    @default("inactive") // inactive | active | past_due | canceled | free (given by admin, no Stripe)
   subscriptionRenewsAt DateTime?
+  // The subscription we've already sent a "you're on the X plan" email for,
+  // so a repeated Stripe message can't send a second one.
+  planEmailSentFor     String?
 
-  downloads            Download[]
+  downloads           Download[]
   calendarEvents       CalendarEvent[]
   completions          Completion[]
+  passwordResets       PasswordResetToken[]
+}
+
+// One-time "forgot my password" links. Only a hash of the link's secret is
+// stored (like a password), so a database leak can't be used to reset anyone.
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 model CalendarEvent {
