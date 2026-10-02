@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { sendEmail, welcomeEmail } from "@/lib/email";
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -34,6 +35,9 @@ export async function POST(req: Request) {
   const user = await prisma.user.create({
     data: { name, accountType, email: normalizedEmail, passwordHash },
   });
+
+  // Never lets an email problem fail the signup (sendEmail doesn't throw).
+  await sendEmail(welcomeEmail(user.email, user.name));
 
   return NextResponse.json({ id: user.id, email: user.email }, { status: 201 });
 }
