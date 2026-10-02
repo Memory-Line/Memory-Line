@@ -79,6 +79,7 @@ export default async function LandingPage() {
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
           <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
+          <Link href="/support" className="hidden sm:inline text-inkSoft hover:text-ink">Support</Link>
           <Link href="/login" className="whitespace-nowrap text-inkSoft hover:text-ink">Log in</Link>
           <Link
             href="/signup"
