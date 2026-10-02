@@ -18,7 +18,7 @@ function esc(text: string) {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-type Message = { to: string; subject: string; html: string; text: string };
+type Message = { to: string; subject: string; html: string; text: string; replyTo?: string };
 
 export async function sendEmail(message: Message): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
@@ -32,7 +32,7 @@ export async function sendEmail(message: Message): Promise<boolean> {
       headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: FROM,
-        reply_to: REPLY_TO,
+        reply_to: message.replyTo ?? REPLY_TO,
         to: [message.to],
         subject: message.subject,
         html: message.html,
@@ -151,5 +151,34 @@ ${link}
 If you didn't ask for this, you can ignore this email: your password stays as it is.
 
 Questions? Reply to this email or write to support@activitycentral.co.uk.`,
+  };
+}
+
+// Goes to the support inbox, with Reply set to the customer so answering it in
+// Gmail goes straight back to them.
+export function supportMessageEmail(input: {
+  name: string;
+  email: string;
+  message: string;
+  account: string | null;
+}): Message {
+  const { name, email, message, account } = input;
+  const accountLine = account ? `Logged-in account: ${account}` : "Not logged in";
+  return {
+    to: "support@activitycentral.co.uk",
+    replyTo: email,
+    subject: `Support message from ${name.replace(/[\r\n]+/g, " ")}`,
+    html: layout(
+      "New support message",
+      `<p><b>From:</b> ${esc(name)} &lt;${esc(email)}&gt;<br><b>${esc(accountLine)}</b></p>
+<p style="white-space:pre-wrap;background:#F5F0E4;border-radius:10px;padding:14px;">${esc(message)}</p>
+<p style="font-size:13px;color:#8A8371;">Press Reply to answer ${esc(name)} directly.</p>`
+    ),
+    text: `From: ${name} <${email}>
+${accountLine}
+
+${message}
+
+Press Reply to answer ${name} directly.`,
   };
 }
