@@ -37,7 +37,7 @@ export default async function SupportPage() {
 
         <h1 className="font-serif text-3xl mb-2 text-center">How can we help?</h1>
         <p className="text-inkSoft text-sm text-center mb-8">
-          Send us a message and we'll reply by email, usually within one working day. You can also write to{" "}
+          Send us a message and we'll reply by email, within 3 working days (sooner when we can). You can also write to{" "}
           <a href="mailto:support@activitycentral.co.uk" className="text-sageDeep font-semibold">
             support@activitycentral.co.uk
           </a>
