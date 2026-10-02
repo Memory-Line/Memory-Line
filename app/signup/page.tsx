@@ -68,7 +68,13 @@ export default function SignupPage() {
 
         <div className="rounded-2xl border border-line bg-card p-7">
           <h1 className="font-serif text-2xl mb-1">Create your account</h1>
-          <p className="text-inkSoft text-sm mb-6">No card needed to create your account — you'll choose a plan next.</p>
+          <p className="text-inkSoft text-sm mb-1">
+            Create your account, then choose a plan to unlock the activities.
+          </p>
+          <p className="text-inkSoft text-sm mb-6">
+            Want a look first? <Link href="/#samples" className="text-sageDeep font-semibold underline">Try the free samples</Link> on
+            the homepage, no account needed.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
