@@ -34,7 +34,7 @@ export default function SupportForm({ defaultName, defaultEmail }: { defaultName
       <div className="rounded-2xl border border-line bg-card p-7">
         <h2 className="font-serif text-xl mb-2">Message sent, thank you</h2>
         <p className="text-inkSoft text-sm">
-          We'll reply to <b>{email}</b>, usually within one working day. Please check your junk folder if you don't
+          We'll reply to <b>{email}</b>, within 3 working days (sooner when we can). Please check your junk folder if you don't
           see our answer.
         </p>
       </div>
