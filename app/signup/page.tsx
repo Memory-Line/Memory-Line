@@ -14,6 +14,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Unticked by default: nobody is signed up to promotional emails unless they choose to be.
+  const [marketing, setMarketing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +33,7 @@ export default function SignupPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, accountType }),
+      body: JSON.stringify({ name, email, password, accountType, marketing }),
     });
 
     if (!res.ok) {
@@ -151,6 +153,18 @@ export default function SignupPage() {
                 placeholder="Type it again"
               />
             </div>
+
+            <label className="flex items-start gap-2 text-xs text-inkSoft cursor-pointer">
+              <input
+                type="checkbox"
+                checked={marketing}
+                onChange={(e) => setMarketing(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                Send me occasional news, new activities and offers by email. You can unsubscribe at any time.
+              </span>
+            </label>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 

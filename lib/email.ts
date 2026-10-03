@@ -18,7 +18,14 @@ function esc(text: string) {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-type Message = { to: string; subject: string; html: string; text: string; replyTo?: string };
+type Message = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+  replyTo?: string;
+  headers?: Record<string, string>;
+};
 
 export async function sendEmail(message: Message): Promise<boolean> {
   const key = process.env.RESEND_API_KEY;
@@ -37,6 +44,7 @@ export async function sendEmail(message: Message): Promise<boolean> {
         subject: message.subject,
         html: message.html,
         text: message.text,
+        ...(message.headers ? { headers: message.headers } : {}),
       }),
     });
     if (!res.ok) {
@@ -51,7 +59,7 @@ export async function sendEmail(message: Message): Promise<boolean> {
 }
 
 // The shared look: cream background, the site's green, plain words.
-function layout(title: string, bodyHtml: string) {
+function layout(title: string, bodyHtml: string, footerExtraHtml = "") {
   return `<!doctype html><html><body style="margin:0;padding:0;background:#F5F0E4;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E4;padding:24px 12px;">
 <tr><td align="center">
@@ -62,7 +70,7 @@ function layout(title: string, bodyHtml: string) {
 ${bodyHtml}
 </td></tr>
 <tr><td style="padding:16px 32px 24px;border-top:1px solid #E6DDC8;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#8A8371;">
-Questions? Just reply to this email or write to <a href="mailto:support@activitycentral.co.uk" style="color:#6D8C6A;">support@activitycentral.co.uk</a>.
+Questions? Just reply to this email or write to <a href="mailto:support@activitycentral.co.uk" style="color:#6D8C6A;">support@activitycentral.co.uk</a>.${footerExtraHtml}
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
@@ -180,5 +188,38 @@ ${accountLine}
 ${message}
 
 Press Reply to answer ${name} directly.`,
+  };
+}
+
+export function unsubscribeUrl(token: string) {
+  return `${siteUrl()}/unsubscribe?t=${token}`;
+}
+
+// A promotional email (news, new activities, offers) to someone on the mailing
+// list. Always carries an unsubscribe link in the footer and the one-click
+// unsubscribe headers Gmail and Outlook look for. `bodyHtml` is trusted HTML
+// that we write ourselves, never customer-typed text.
+export function promotionalEmail(
+  contact: { email: string; name: string | null; unsubscribeToken: string },
+  subject: string,
+  bodyHtml: string,
+  bodyText: string
+): Message {
+  const link = unsubscribeUrl(contact.unsubscribeToken);
+  return {
+    to: contact.email,
+    subject,
+    html: layout(
+      esc(subject),
+      bodyHtml,
+      `<br><br>You're getting this because you asked for updates from Activity Central. <a href="${link}" style="color:#6D8C6A;">Unsubscribe</a> any time.`
+    ),
+    text: `${bodyText}
+
+You're getting this because you asked for updates from Activity Central. Unsubscribe any time: ${link}`,
+    headers: {
+      "List-Unsubscribe": `<${link}>, <mailto:support@activitycentral.co.uk?subject=Unsubscribe>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   };
 }
