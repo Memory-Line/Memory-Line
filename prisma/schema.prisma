@@ -54,6 +54,22 @@ model PasswordResetToken {
   @@index([userId])
 }
 
+// People who agreed to receive our promotional emails (updates, new activities,
+// offers). Kept separate from User so someone can unsubscribe without touching
+// their account, and so the list can grow beyond account holders later.
+// Nobody goes on it without ticking the box, and consentAt records when.
+model MailingContact {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  name           String?
+  source         String    // where they joined: "signup", ...
+  consentAt      DateTime  @default(now())
+  unsubscribedAt DateTime? // set = never email them again
+  // Random secret in the unsubscribe link in every email we send them.
+  unsubscribeToken String  @unique
+  createdAt      DateTime  @default(now())
+}
+
 model CalendarEvent {
   id        String   @id @default(cuid())
   userId    String
