@@ -26,7 +26,7 @@ export default function EmailUpdatesCard({ initiallySubscribed }: { initiallySub
   }
 
   return (
-    <div className="rounded-xl p-4 mt-5 bg-card border border-line">
+    <div className="rounded-xl p-4 bg-card border border-line">
       <label className="flex items-start gap-2 cursor-pointer">
         <input
           type="checkbox"

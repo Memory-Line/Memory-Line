@@ -3,7 +3,6 @@ import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES } from "@/lib/data";
-import EmailUpdatesCard from "@/components/EmailUpdatesCard";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
@@ -54,11 +53,6 @@ export default async function DashboardHome({
   const recentDownloads = latestDownloads.filter((d) => existingIds.has(d.templateId)).slice(0, 3);
 
   const activityCount = await prisma.template.count({ where: { occasion: null } });
-
-  const mailingContact = session!.user.email
-    ? await prisma.mailingContact.findUnique({ where: { email: session!.user.email.toLowerCase() } })
-    : null;
-  const onMailingList = !!mailingContact && !mailingContact.unsubscribedAt;
 
   // Care homes are greeted by the home's full name ("Westcliff Lodge"),
   // personal accounts by first name.
@@ -213,8 +207,6 @@ export default async function DashboardHome({
           and sensory design consultants for the care sector.
         </p>
       </div>
-
-      <EmailUpdatesCard initiallySubscribed={onMailingList} />
     </div>
   );
 }

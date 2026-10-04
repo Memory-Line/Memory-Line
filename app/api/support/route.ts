@@ -8,6 +8,7 @@ const schema = z.object({
   name: z.string().trim().min(1, "Please enter your name").max(100),
   email: z.string().trim().email("Enter a valid email address").max(200),
   message: z.string().trim().min(10, "Please write a little more so we can help").max(3000),
+  kind: z.enum(["support", "suggestion"]).default("support"),
   // Hidden field real people never fill in; bots usually do.
   website: z.string().optional(),
 });
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
       email: parsed.data.email,
       message: parsed.data.message,
       account: session?.user?.email ?? null,
+      kind: parsed.data.kind,
     })
   );
   if (!sent) {
