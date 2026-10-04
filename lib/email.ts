@@ -169,15 +169,17 @@ export function supportMessageEmail(input: {
   email: string;
   message: string;
   account: string | null;
+  kind?: "support" | "suggestion";
 }): Message {
   const { name, email, message, account } = input;
+  const label = input.kind === "suggestion" ? "Suggestion" : "Support message";
   const accountLine = account ? `Logged-in account: ${account}` : "Not logged in";
   return {
     to: "support@activitycentral.co.uk",
     replyTo: email,
-    subject: `Support message from ${name.replace(/[\r\n]+/g, " ")}`,
+    subject: `${label} from ${name.replace(/[\r\n]+/g, " ")}`,
     html: layout(
-      "New support message",
+      `New ${label.toLowerCase()}`,
       `<p><b>From:</b> ${esc(name)} &lt;${esc(email)}&gt;<br><b>${esc(accountLine)}</b></p>
 <p style="white-space:pre-wrap;background:#F5F0E4;border-radius:10px;padding:14px;">${esc(message)}</p>
 <p style="font-size:13px;color:#8A8371;">Press Reply to answer ${esc(name)} directly.</p>`
