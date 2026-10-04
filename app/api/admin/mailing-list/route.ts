@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { addAgreedContacts } from "@/lib/mailing";
 
 // A cell starting with = + - @ can run as a formula when the file is opened in
 // Excel, and names are typed by customers, so those get a ' put in front.
@@ -32,4 +33,21 @@ export async function GET() {
       "Content-Disposition": 'attachment; filename="mailing-list.csv"',
     },
   });
+}
+
+// Adds free-access accounts the owner has ticked, because they've said yes in
+// person. Only accounts that really have free access can be added this way.
+export async function POST(req: Request) {
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+
+  const body = await req.json().catch(() => null);
+  const emails: string[] = Array.isArray(body?.emails) ? body.emails.filter((e: unknown) => typeof e === "string") : [];
+  if (emails.length === 0) return NextResponse.json({ error: "Tick at least one person" }, { status: 400 });
+
+  const users = await prisma.user.findMany({
+    where: { email: { in: emails.map((e) => e.toLowerCase()) }, subscriptionStatus: "free" },
+    select: { email: true, name: true },
+  });
+  const added = await addAgreedContacts(users, "free-access (agreed in person)");
+  return NextResponse.json({ ok: true, added });
 }
