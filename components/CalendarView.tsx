@@ -424,7 +424,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         )}
         {signedIn && (
           <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
-            Click a day's number to see its events — events you've added can be edited or deleted from there.
+            <b>To edit or delete an event you've added, click it.</b> Clicking a day's number shows all of that
+            day's events. The built-in dates can't be changed.
           </p>
         )}
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
@@ -553,6 +554,25 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
                         <Link key={ev.key} href={ev.link} className={className} style={tabStyle}>
                           {inner}
                         </Link>
+                      ) : ev.custom ? (
+                        // Your own events open the day's list (with Edit and Delete) when clicked.
+                        <div
+                          key={ev.key}
+                          className={className}
+                          style={{ ...tabStyle, cursor: "pointer" }}
+                          role="button"
+                          tabIndex={0}
+                          title="Click to edit or delete"
+                          onClick={() => setOpenDay(isOpen ? null : day)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setOpenDay(isOpen ? null : day);
+                            }
+                          }}
+                        >
+                          {inner}
+                        </div>
                       ) : (
                         <div key={ev.key} className={className} style={tabStyle}>
                           {inner}
