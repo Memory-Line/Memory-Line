@@ -39,6 +39,24 @@ model User {
   calendarEvents       CalendarEvent[]
   completions          Completion[]
   passwordResets       PasswordResetToken[]
+  sharedCalendars      SharedCalendar[]
+}
+
+// A public, read-only link to some months of an account's calendar, so a care
+// home can put it on its own website. Anyone with the link (the random token in
+// its address) can see those months, including the events the account added;
+// deleting the row switches the link off.
+model SharedCalendar {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  calendar  String   @default("activity") // activity | professional
+  year      Int
+  months    Int[]    // 0-11
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // One-time "forgot my password" links. Only a hash of the link's secret is
