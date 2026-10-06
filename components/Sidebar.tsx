@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle,
+  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -133,6 +133,12 @@ export default function Sidebar({
           icon={Briefcase}
           label="Services"
           active={pathname === "/dashboard/services"}
+        />
+        <NavItem
+          href="/dashboard/files"
+          icon={FileText}
+          label="Shared files"
+          active={pathname === "/dashboard/files"}
         />
         <NavItem
           href="/dashboard/account"
