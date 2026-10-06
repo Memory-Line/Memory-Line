@@ -110,7 +110,7 @@ export default function FilesManager() {
   }
 
   async function remove(f: SharedFile) {
-    if (!window.confirm(`Switch off "${f.title}"? The link will stop working and the file will be deleted.`)) return;
+    if (!window.confirm(`Delete "${f.title}"? The file will be deleted for good and its link will stop working.`)) return;
     const res = await fetch(`/api/shared-files/${f.id}`, { method: "DELETE" });
     if (res.ok) setFiles((prev) => (prev ?? []).filter((x) => x.id !== f.id));
   }
@@ -199,8 +199,8 @@ export default function FilesManager() {
               <label className="flex items-center gap-1 font-normal text-inkSoft cursor-pointer">
                 <input type="checkbox" checked={f.allowDownload} onChange={() => toggleDownload(f)} /> Visitors can download
               </label>
-              <button type="button" onClick={() => remove(f)} className="text-inkSoft underline ml-auto">
-                Switch off
+              <button type="button" onClick={() => remove(f)} className="text-red-600 underline ml-auto">
+                Delete
               </button>
             </div>
           </div>
