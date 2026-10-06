@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { occasionHref } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
+import RangePrint from "@/components/RangePrint";
 
 
 type CustomEvent = {
@@ -99,7 +100,7 @@ const labelStyle: CSSProperties = {
 export type CalendarVariant = "activity" | "professional";
 
 export default function CalendarView({ variant = "activity" }: { variant?: CalendarVariant }) {
-  const { status } = useSession();
+  const { data: sessionData, status } = useSession();
   const signedIn = status === "authenticated";
   const professional = variant === "professional";
 
@@ -402,6 +403,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           >
             Print Large (A3)
           </button>
+          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}
