@@ -26,10 +26,6 @@ export function StandardFeatures() {
           <b>Ready-to-print activities</b>, with answer sheets where they apply
         </Tick>
         <Tick>
-          <b>Shared files and QR codes</b> — upload a menu, newsletter or room photos and get a link or QR code for your
-          website or noticeboard. Up to 5 files on each link, and you can swap them without changing the link.
-        </Tick>
-        <Tick>
           Your own <b>account area</b> to manage your subscription, email choices and suggestions
         </Tick>
         <Tick>Help by email</Tick>
@@ -59,6 +55,10 @@ export function PremiumFeatures() {
         <Tick>
           <b>Share your calendar</b> — a link or QR code for your website, newsletter or noticeboard, so families can see
           what's coming up
+        </Tick>
+        <Tick>
+          <b>Shared files and QR codes</b> — upload a menu, newsletter or room photos and get a link or QR code for your
+          website or noticeboard. Up to 5 files on each link, and you can swap them without changing the link.
         </Tick>
         <Tick>
           <b>

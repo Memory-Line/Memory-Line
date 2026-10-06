@@ -167,7 +167,7 @@ export default async function LandingPage() {
             {
               Icon: FileText,
               title: "Shared files",
-              plan: "Standard and Premium",
+              plan: "Premium",
               text: "Upload your menu, newsletter or room photos and get a link or QR code. Swap in next week's menu and the link stays the same.",
             },
           ].map(({ Icon, title, plan, text }) => (

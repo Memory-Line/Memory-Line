@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MAX_SHARED_FILES, blobPathFor, checkUpload, cleanTitle } from "@/lib/sharedFiles";
 import { listOwnedLinks, getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
+import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +24,7 @@ export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
+    if (!(await canShareFiles())) return NextResponse.json({ error: SHARED_FILES_PREMIUM_MESSAGE }, { status: 403 });
 
     const form = await req.formData().catch(() => null);
     const file = form?.get("file");
