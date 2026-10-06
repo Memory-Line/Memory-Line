@@ -33,7 +33,11 @@ const RULE = "#D9D2C0";
 
 type SheetEvent = { label: string; time: string | null };
 type SheetDay = { date: Date; weekday: number; events: SheetEvent[] };
-type Job = { days: SheetDay[]; size: "A4" | "A3"; lines: boolean; notes: boolean };
+type Job = { days: SheetDay[]; size: "A4" | "A3"; lines: boolean; notes: boolean; notesText: string };
+
+// The notes you type are remembered on this computer between prints (so a note
+// like "Hairdresser every Tuesday" doesn't need retyping); clear the box to remove it.
+const NOTES_KEY = "range-print-notes";
 
 function toInput(d: Date) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -94,6 +98,12 @@ export default function RangePrint({
   const [size, setSize] = useState<"A4" | "A3">("A4");
   const [lines, setLines] = useState(true);
   const [notes, setNotes] = useState(true);
+  const [notesText, setNotesText] = useState("");
+  useEffect(() => {
+    try {
+      setNotesText(localStorage.getItem(NOTES_KEY) ?? "");
+    } catch {}
+  }, []);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -156,7 +166,10 @@ export default function RangePrint({
       });
 
       setOpen(false);
-      setJob({ days, size, lines, notes });
+      try {
+        localStorage.setItem(NOTES_KEY, notesText);
+      } catch {}
+      setJob({ days, size, lines, notes, notesText: notesText.trim() });
     } finally {
       setBusy(false);
     }
@@ -176,6 +189,17 @@ export default function RangePrint({
         evs.style.fontSize = `${pt}pt`;
       }
     });
+
+    // Typed notes shrink to fit the notes box in the same way.
+    const noteEl = sheetRef.current.querySelector<HTMLElement>("[data-range-notes]");
+    if (noteEl) {
+      let pt = 10;
+      noteEl.style.fontSize = `${pt}pt`;
+      while (noteEl.scrollHeight > noteEl.clientHeight + 1 && pt > 5) {
+        pt -= 0.5;
+        noteEl.style.fontSize = `${pt}pt`;
+      }
+    }
   }, [job]);
 
   // Print, then put the page back to normal.
@@ -273,6 +297,23 @@ export default function RangePrint({
                 <input type="checkbox" checked={notes} onChange={(e) => setNotes(e.target.checked)} /> Notes box at the bottom
               </label>
             </div>
+
+            {notes && (
+              <>
+                <label style={labelStyle}>Notes to print</label>
+                <textarea
+                  style={{ ...fieldStyle, marginBottom: 4, resize: "vertical" }}
+                  rows={4}
+                  maxLength={600}
+                  value={notesText}
+                  onChange={(e) => setNotesText(e.target.value)}
+                  placeholder="Type anything to print in the notes box, or leave it empty for blank lines to write on."
+                />
+                <p style={{ fontSize: 11, color: "#8A7A6B", margin: "0 0 14px" }}>
+                  Edit or clear it any time before you print. We remember your last notes on this computer.
+                </p>
+              </>
+            )}
 
             {error && <p style={{ color: "#B5714A", fontSize: 12, fontWeight: 600, margin: "-4px 0 12px" }}>{error}</p>}
 
@@ -389,7 +430,16 @@ export default function RangePrint({
           {job.notes && (
             <div style={{ flex: "0 0 auto", marginTop: "3mm", border: "1px solid #EAE4D6", borderRadius: "2.5mm", padding: "1.5mm 3mm", height: "24mm", boxSizing: "border-box", fontFamily: "Helvetica, Arial, sans-serif" }}>
               <p style={{ margin: 0, fontSize: "7.5pt", fontWeight: 700, letterSpacing: "1px", color: "#B5714A" }}>NOTES</p>
-              <div style={{ height: "calc(100% - 4mm)", backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, ${RULE} 5.2mm, ${RULE} 5.5mm)` }} />
+              {job.notesText ? (
+                <div
+                  data-range-notes
+                  style={{ height: "calc(100% - 4mm)", overflow: "hidden", whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: "10pt", lineHeight: 1.3, paddingTop: "1mm" }}
+                >
+                  {job.notesText}
+                </div>
+              ) : (
+                <div style={{ height: "calc(100% - 4mm)", backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, ${RULE} 5.2mm, ${RULE} 5.5mm)` }} />
+              )}
             </div>
           )}
         </div>,
