@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import { MONTH_NAMES, WEEKDAYS, TAB_COLORS, getMonthGrid, monthsLabel } from "@/lib/calendarShared";
+import { OWNER_SELECT, ownerIsActive, ownerIsPremium } from "@/lib/ownerAccess";
 import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -18,9 +19,15 @@ type Item = { label: string; time: string | null };
 export default async function SharedCalendarPage({ params }: { params: { token: string } }) {
   const link = await prisma.sharedCalendar.findUnique({
     where: { token: params.token },
-    include: { user: { select: { name: true, accountType: true } } },
+    include: { user: { select: OWNER_SELECT } },
   });
+  // The calendar tools are a Premium feature (the blank professional calendar is
+  // a per-account feature, so it only needs an active account). If the owner has
+  // moved to Standard or cancelled, the link stops working; it works again if
+  // they upgrade.
   if (!link) notFound();
+  const ownerOk = link.calendar === "professional" ? ownerIsActive(link.user) : ownerIsPremium(link.user);
+  if (!ownerOk) notFound();
 
   const professional = link.calendar === "professional";
   const months = [...link.months].sort((a, b) => a - b);
