@@ -2,8 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check, PlayCircle,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, PlayCircle,
+  CalendarDays, Share2, FileText,
 } from "lucide-react";
+import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 import { CATEGORIES } from "@/lib/data";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
@@ -144,6 +146,43 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Tools beyond the library */}
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
+        <h2 className="font-serif text-2xl text-center mb-2">More than a library</h2>
+        <p className="text-inkSoft text-center mb-10">Tools that make planning, printing and sharing easier.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              Icon: CalendarDays,
+              title: "Holidays & Celebrations calendar",
+              plan: "Premium",
+              text: "Nearly 60 dates a year already filled in. Add your own events, then print a whole month or any week on A4 or A3, with a notes box and space to write.",
+            },
+            {
+              Icon: Share2,
+              title: "Share your calendar",
+              plan: "Premium",
+              text: "Get a link or QR code for your website, newsletter or noticeboard, so families can see what's coming up.",
+            },
+            {
+              Icon: FileText,
+              title: "Shared files",
+              plan: "Standard and Premium",
+              text: "Upload your menu, newsletter or room photos and get a link or QR code. Swap in next week's menu and the link stays the same.",
+            },
+          ].map(({ Icon, title, plan, text }) => (
+            <div key={title} className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3 bg-cardTint">
+                <Icon size={20} className="text-sageDeep" />
+              </div>
+              <p className="text-clay font-semibold text-[11px] tracking-wide uppercase mb-1">{plan}</p>
+              <h3 className="font-serif text-lg mb-1.5">{title}</h3>
+              <p className="text-inkSoft text-sm">{text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Free samples (hidden if none of their categories has uploads yet) */}
       {freeSamples.length > 0 && (
       <section id="samples" className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
@@ -223,6 +262,8 @@ export default async function LandingPage() {
             </p>
             <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
+            <StandardFeatures />
+
             <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
@@ -255,32 +296,7 @@ export default async function LandingPage() {
               Just £10/month more for the full experience
             </p>
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">Everything a care home actually needs</p>
-            <ul className="text-sm text-left space-y-2.5 mb-6">
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  <b>Large Print (A3)</b> sheets on most activities — easier for residents with low vision. Not
-                  every activity has a large print version.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in
-                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more). Add your own events on
-                  top and remove them any time, so it becomes your activity coordinator. Themed activities for
-                  each date are being made and will be added soon.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  <b>Play {PLAYABLE_CATEGORIES.size} of the {CATEGORIES.length} categories on screen</b> — the
-                  puzzles and games, no printer needed for a spontaneous session
-                </span>
-              </li>
-            </ul>
+            <PremiumFeatures />
 
             <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 16 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">

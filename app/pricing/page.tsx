@@ -4,11 +4,10 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Check } from "lucide-react";
 import Image from "next/image";
 import { CATEGORIES } from "@/lib/data";
-import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET, type PlanKey } from "@/lib/plans";
+import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 
 // Same source of truth the site's own Standard/Premium gating uses, so this
 // page can't drift out of sync with what Standard accounts actually get.
@@ -72,6 +71,8 @@ export default function PricingPage() {
             </p>
             <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
+            <StandardFeatures />
+
             <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
@@ -105,32 +106,7 @@ export default function PricingPage() {
               Just £10/month more for the full experience
             </p>
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">Everything a care home actually needs</p>
-            <ul className="text-sm text-left space-y-2.5 mb-6">
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  <b>Large Print (A3)</b> sheets on most activities — easier for residents with low vision. Not
-                  every activity has a large print version.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in
-                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more). Add your own events on
-                  top and remove them any time, so it becomes your activity coordinator. Themed activities for
-                  each date are being made and will be added soon.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  <b>Play {PLAYABLE_CATEGORIES.size} of the {CATEGORIES.length} categories on screen</b> — the
-                  puzzles and games, no printer needed for a spontaneous session
-                </span>
-              </li>
-            </ul>
+            <PremiumFeatures />
 
             <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 16 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
