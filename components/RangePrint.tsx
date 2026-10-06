@@ -7,7 +7,8 @@ import { occasionsForYear } from "@/lib/ukCalendar";
 
 // "Print dates": prints any run of up to 7 days (a week, or whatever the home
 // plans by) on one landscape page. The day boxes alternate high and low, each
-// has ruled writing lines, and there's a notes box along the bottom.
+// has ruled writing lines. Only the dates and paper size are chosen; there's no
+// notes box on this page (that belongs to the month calendar).
 //
 // The page is always laid out at A4 size (in millimetres) in a hidden sheet,
 // then enlarged with CSS zoom for A3. Before printing, each box shrinks its
@@ -36,10 +37,6 @@ type SheetDay = { date: Date; weekday: number; events: SheetEvent[] };
 type Job = {
   days: SheetDay[];
   size: "A4" | "A3";
-  lines: boolean;
-  notes: boolean;
-  notesText: string;
-  notesColour: string;
 };
 
 function toInput(d: Date) {
@@ -85,21 +82,11 @@ export default function RangePrint({
   professional,
   signedIn,
   homeName,
-  notesText,
-  notesColour,
-  notesInclude,
-  onNotesIncludeChange,
 }: {
   variant: "activity" | "professional";
   professional: boolean;
   signedIn: boolean;
   homeName: string | null;
-  // The notes box at the bottom of the calendar page (text, colour and whether
-  // it prints). It's edited there; this just prints a copy of it.
-  notesText: string;
-  notesColour: string;
-  notesInclude: boolean;
-  onNotesIncludeChange: (include: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [from, setFrom] = useState(() => toInput(new Date()));
@@ -109,7 +96,6 @@ export default function RangePrint({
     return toInput(d);
   });
   const [size, setSize] = useState<"A4" | "A3">("A4");
-  const [lines, setLines] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -172,7 +158,7 @@ export default function RangePrint({
       });
 
       setOpen(false);
-      setJob({ days, size, lines, notes: notesInclude, notesText: notesText.trim(), notesColour });
+      setJob({ days, size });
     } finally {
       setBusy(false);
     }
@@ -192,17 +178,6 @@ export default function RangePrint({
         evs.style.fontSize = `${pt}pt`;
       }
     });
-
-    // Typed notes shrink to fit the notes box in the same way.
-    const noteEl = sheetRef.current.querySelector<HTMLElement>("[data-range-notes]");
-    if (noteEl) {
-      let pt = 10;
-      noteEl.style.fontSize = `${pt}pt`;
-      while (noteEl.scrollHeight > noteEl.clientHeight + 1 && pt > 5) {
-        pt -= 0.5;
-        noteEl.style.fontSize = `${pt}pt`;
-      }
-    }
   }, [job]);
 
   // Print, then put the page back to normal.
@@ -292,17 +267,6 @@ export default function RangePrint({
               </label>
             </div>
 
-            <div style={{ display: "grid", gap: 6, marginBottom: 14, fontSize: 13.5, color: "#3F3237" }}>
-              <label style={{ cursor: "pointer" }}>
-                <input type="checkbox" checked={lines} onChange={(e) => setLines(e.target.checked)} /> Writing lines in each day
-              </label>
-              <label style={{ cursor: "pointer" }}>
-                <input type="checkbox" checked={notesInclude} onChange={(e) => onNotesIncludeChange(e.target.checked)} /> Print the notes box
-              </label>
-            </div>
-            <p style={{ fontSize: 11, color: "#8A7A6B", margin: "-8px 0 14px" }}>
-              This prints the notes box at the bottom of the calendar, in the colour you chose there. Edit it there before you print.
-            </p>
 
             {error && <p style={{ color: "#B5714A", fontSize: 12, fontWeight: 600, margin: "-4px 0 12px" }}>{error}</p>}
 
@@ -408,7 +372,7 @@ export default function RangePrint({
                       flex: "1 1 0",
                       minHeight: 0,
                       margin: "0 2mm",
-                      backgroundImage: job.lines ? `repeating-linear-gradient(to bottom, transparent 0, transparent 6.2mm, ${RULE} 6.2mm, ${RULE} 6.5mm)` : "none",
+                      backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent 6.2mm, ${RULE} 6.2mm, ${RULE} 6.5mm)`,
                     }}
                   />
                 </div>
@@ -416,30 +380,6 @@ export default function RangePrint({
             })}
           </div>
 
-          {job.notes && (
-            <div style={{ flex: "0 0 auto", marginTop: "3mm", border: "1px solid #EAE4D6", borderRadius: "2.5mm", padding: "1.5mm 3mm", height: "24mm", boxSizing: "border-box", fontFamily: "Helvetica, Arial, sans-serif" }}>
-              <p style={{ margin: 0, fontSize: "7.5pt", fontWeight: 700, letterSpacing: "1px", color: "#B5714A" }}>NOTES</p>
-              {job.notesText ? (
-                <div
-                  data-range-notes
-                  style={{ height: "calc(100% - 4mm)", overflow: "hidden", overflowWrap: "anywhere", fontSize: "10pt", lineHeight: 1.3, paddingTop: "1mm", color: job.notesColour }}
-                >
-                  {job.notesText.split("\n").map((line, i) =>
-                    line.startsWith("• ") ? (
-                      <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
-                        <span>•</span>
-                        <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
-                      </div>
-                    ) : (
-                      <div key={i} style={{ minHeight: line === "" ? "1.3em" : undefined }}>{line}</div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div style={{ height: "calc(100% - 4mm)", backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, ${RULE} 5.2mm, ${RULE} 5.5mm)` }} />
-              )}
-            </div>
-          )}
         </div>,
         area
       )}
