@@ -485,7 +485,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           >
             Print Large (A3)
           </button>
-          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
+          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} notesText={notesText} notesColour={notesColour} notesInclude={notesInclude} onNotesIncludeChange={changeNotesInclude} />
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}

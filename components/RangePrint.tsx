@@ -33,11 +33,14 @@ const RULE = "#D9D2C0";
 
 type SheetEvent = { label: string; time: string | null };
 type SheetDay = { date: Date; weekday: number; events: SheetEvent[] };
-type Job = { days: SheetDay[]; size: "A4" | "A3"; lines: boolean; notes: boolean; notesText: string };
-
-// The notes you type are remembered on this computer between prints (so a note
-// like "Hairdresser every Tuesday" doesn't need retyping); clear the box to remove it.
-const NOTES_KEY = "range-print-notes";
+type Job = {
+  days: SheetDay[];
+  size: "A4" | "A3";
+  lines: boolean;
+  notes: boolean;
+  notesText: string;
+  notesColour: string;
+};
 
 function toInput(d: Date) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -82,11 +85,21 @@ export default function RangePrint({
   professional,
   signedIn,
   homeName,
+  notesText,
+  notesColour,
+  notesInclude,
+  onNotesIncludeChange,
 }: {
   variant: "activity" | "professional";
   professional: boolean;
   signedIn: boolean;
   homeName: string | null;
+  // The notes box at the bottom of the calendar page (text, colour and whether
+  // it prints). It's edited there; this just prints a copy of it.
+  notesText: string;
+  notesColour: string;
+  notesInclude: boolean;
+  onNotesIncludeChange: (include: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [from, setFrom] = useState(() => toInput(new Date()));
@@ -97,13 +110,6 @@ export default function RangePrint({
   });
   const [size, setSize] = useState<"A4" | "A3">("A4");
   const [lines, setLines] = useState(true);
-  const [notes, setNotes] = useState(true);
-  const [notesText, setNotesText] = useState("");
-  useEffect(() => {
-    try {
-      setNotesText(localStorage.getItem(NOTES_KEY) ?? "");
-    } catch {}
-  }, []);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
@@ -166,10 +172,7 @@ export default function RangePrint({
       });
 
       setOpen(false);
-      try {
-        localStorage.setItem(NOTES_KEY, notesText);
-      } catch {}
-      setJob({ days, size, lines, notes, notesText: notesText.trim() });
+      setJob({ days, size, lines, notes: notesInclude, notesText: notesText.trim(), notesColour });
     } finally {
       setBusy(false);
     }
@@ -294,26 +297,12 @@ export default function RangePrint({
                 <input type="checkbox" checked={lines} onChange={(e) => setLines(e.target.checked)} /> Writing lines in each day
               </label>
               <label style={{ cursor: "pointer" }}>
-                <input type="checkbox" checked={notes} onChange={(e) => setNotes(e.target.checked)} /> Notes box at the bottom
+                <input type="checkbox" checked={notesInclude} onChange={(e) => onNotesIncludeChange(e.target.checked)} /> Print the notes box
               </label>
             </div>
-
-            {notes && (
-              <>
-                <label style={labelStyle}>Notes to print</label>
-                <textarea
-                  style={{ ...fieldStyle, marginBottom: 4, resize: "vertical" }}
-                  rows={4}
-                  maxLength={600}
-                  value={notesText}
-                  onChange={(e) => setNotesText(e.target.value)}
-                  placeholder="Type anything to print in the notes box, or leave it empty for blank lines to write on."
-                />
-                <p style={{ fontSize: 11, color: "#8A7A6B", margin: "0 0 14px" }}>
-                  Edit or clear it any time before you print. We remember your last notes on this computer.
-                </p>
-              </>
-            )}
+            <p style={{ fontSize: 11, color: "#8A7A6B", margin: "-8px 0 14px" }}>
+              This prints the notes box at the bottom of the calendar, in the colour you chose there. Edit it there before you print.
+            </p>
 
             {error && <p style={{ color: "#B5714A", fontSize: 12, fontWeight: 600, margin: "-4px 0 12px" }}>{error}</p>}
 
@@ -433,9 +422,18 @@ export default function RangePrint({
               {job.notesText ? (
                 <div
                   data-range-notes
-                  style={{ height: "calc(100% - 4mm)", overflow: "hidden", whiteSpace: "pre-wrap", overflowWrap: "anywhere", fontSize: "10pt", lineHeight: 1.3, paddingTop: "1mm" }}
+                  style={{ height: "calc(100% - 4mm)", overflow: "hidden", overflowWrap: "anywhere", fontSize: "10pt", lineHeight: 1.3, paddingTop: "1mm", color: job.notesColour }}
                 >
-                  {job.notesText}
+                  {job.notesText.split("\n").map((line, i) =>
+                    line.startsWith("• ") ? (
+                      <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
+                        <span>•</span>
+                        <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
+                      </div>
+                    ) : (
+                      <div key={i} style={{ minHeight: line === "" ? "1.3em" : undefined }}>{line}</div>
+                    )
+                  )}
                 </div>
               ) : (
                 <div style={{ height: "calc(100% - 4mm)", backgroundImage: `repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, ${RULE} 5.2mm, ${RULE} 5.5mm)` }} />
