@@ -40,6 +40,27 @@ model User {
   completions          Completion[]
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
+  sharedFiles          SharedFile[]
+}
+
+// A file a care home has uploaded (a menu, newsletter, timetable) with a public
+// read-only link, shown on a page with our branding. The token in the address
+// is the only key; deleting the row (and its file) switches the link off. The
+// file can be replaced later and the link stays the same.
+model SharedFile {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token         String   @unique
+  title         String
+  fileUrl       String   // the stored file (Vercel Blob); never shown to visitors, served via /api/f/[token]/file
+  contentType   String   // application/pdf | image/jpeg | image/png
+  sizeBytes     Int
+  allowDownload Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // A public, read-only link to some months of an account's calendar, so a care
