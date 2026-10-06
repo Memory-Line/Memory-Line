@@ -252,7 +252,10 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
       styleEl.id = "dynamic-print-page";
       document.head.appendChild(styleEl);
     }
-    styleEl.textContent = `@page { size: ${size} landscape; margin: 10mm; }`;
+    // Page margin 0 stops the browser printing its own header and footer (page
+    // title, date, web address) in the margin; the 10mm gap is padding on the
+    // print area instead, so the usable space is the same as before.
+    styleEl.textContent = `@page { size: ${size} landscape; margin: 0; }`;
 
     const wrapper = document.getElementById("calendar-print-area");
     if (wrapper) wrapper.setAttribute("data-print-size", size);
@@ -265,7 +268,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
       <style>{`
         @media print {
           .cal-no-print { display: none !important; }
-          #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 0 !important; }
+          #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 10mm !important; }
           body { background: #fff !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           /* The whole calendar (header + weekday row + day grid + footer) has to fit on a
