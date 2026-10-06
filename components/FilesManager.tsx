@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { MAX_ITEMS_PER_LINK, MAX_SHARED_FILES } from "@/lib/sharedFiles";
+import QrCodeButton from "@/components/QrCodeButton";
 
 type Item = { id: string; contentType: string; sizeBytes: number };
 type Link = { id: string; token: string; title: string; allowDownload: boolean; updatedAt: string; items: Item[] };
@@ -190,6 +191,7 @@ export default function FilesManager() {
               <button type="button" onClick={() => copy(l.token)} className="text-sageDeep underline">
                 {copied === l.token ? "Copied" : "Copy link"}
               </button>
+              <QrCodeButton url={urlFor(l.token)} title={l.title} className="text-sageDeep underline" />
               <a href={`/f/${l.token}`} target="_blank" rel="noreferrer" className="text-sageDeep">Open</a>
               <button type="button" onClick={() => rename(l)} className="text-sageDeep underline">Rename</button>
               <label className="flex items-center gap-1 font-normal text-inkSoft cursor-pointer">

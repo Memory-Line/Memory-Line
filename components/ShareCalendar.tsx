@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type CSSProperties } from "react";
 import { MONTH_NAMES, monthsLabel } from "@/lib/calendarShared";
+import QrCodeButton from "@/components/QrCodeButton";
 
 // "Share calendar": makes a public, read-only link to chosen months, for a care
 // home to put on its own website. Lists the account's links so they can be
@@ -175,6 +176,7 @@ export default function ShareCalendar({
                         <span onClick={() => copy(l.token)} style={{ cursor: "pointer", color: "#B5714A", textDecoration: "underline" }}>
                           {copied === l.token ? "Copied" : "Copy link"}
                         </span>
+                        <QrCodeButton url={urlFor(l.token)} title={`${monthsLabel(l.months)} ${l.year}`} />
                         <a href={`/c/${l.token}`} target="_blank" rel="noreferrer" style={{ color: "#B5714A" }}>Open</a>
                         <span onClick={() => remove(l.id)} style={{ cursor: "pointer", color: "#8A7A6B", textDecoration: "underline", marginLeft: "auto" }}>
                           Switch off
