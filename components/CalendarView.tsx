@@ -61,6 +61,16 @@ const TAB_COLORS = [
   { bg: "#F2D6DA", text: "#7A3A44" },
 ];
 
+// Font colours for the notes box.
+const NOTE_COLOURS = [
+  { name: "Black", value: "#3F3237" },
+  { name: "Red", value: "#C0392B" },
+  { name: "Orange", value: "#C9722B" },
+  { name: "Green", value: "#2F7A4B" },
+  { name: "Blue", value: "#2F5FA8" },
+  { name: "Purple", value: "#6B4A9B" },
+];
+
 function getMonthGrid(year: number, monthIndex: number) {
   const first = new Date(year, monthIndex, 1);
   const startWeekday = (first.getDay() + 6) % 7;
@@ -116,6 +126,72 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // The notes box under the calendar: the text is kept for each month (and each
+  // calendar) on this computer, the colour and the print on/off choice for all.
+  const [notesText, setNotesText] = useState("");
+  const [notesColour, setNotesColour] = useState(NOTE_COLOURS[0].value);
+  const [notesInclude, setNotesInclude] = useState(true);
+  const notesKey = `cal-notes:${variant}:${year}-${monthIndex}`;
+  useEffect(() => {
+    try {
+      setNotesText(localStorage.getItem(notesKey) ?? "");
+      setNotesColour(localStorage.getItem("cal-notes-colour") ?? NOTE_COLOURS[0].value);
+      setNotesInclude(localStorage.getItem("cal-notes-include") !== "no");
+    } catch {}
+  }, [notesKey]);
+
+  function changeNotes(value: string) {
+    setNotesText(value);
+    try {
+      localStorage.setItem(notesKey, value);
+    } catch {}
+  }
+  function changeNotesColour(value: string) {
+    setNotesColour(value);
+    try {
+      localStorage.setItem("cal-notes-colour", value);
+    } catch {}
+  }
+  function changeNotesInclude(value: boolean) {
+    setNotesInclude(value);
+    try {
+      localStorage.setItem("cal-notes-include", value ? "yes" : "no");
+    } catch {}
+  }
+  // Puts a bullet on every line (or takes them all off if they all have one).
+  function toggleBullets() {
+    const lines = notesText.split("\n");
+    const filled = lines.filter((l) => l.trim() !== "");
+    if (filled.length === 0) {
+      changeNotes("• ");
+      return;
+    }
+    const allBulleted = filled.every((l) => l.startsWith("• "));
+    changeNotes(
+      lines
+        .map((l) => (l.trim() === "" ? l : allBulleted ? l.slice(2) : l.startsWith("• ") ? l : `• ${l}`))
+        .join("\n")
+    );
+  }
+  // Enter on a bulleted line starts a new bullet; Enter on an empty bullet ends the list.
+  function handleNotesKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key !== "Enter") return;
+    const el = e.currentTarget;
+    const pos = el.selectionStart;
+    const lineStart = notesText.lastIndexOf("\n", pos - 1) + 1;
+    const line = notesText.slice(lineStart, pos);
+    if (!line.startsWith("• ")) return;
+    e.preventDefault();
+    if (line === "• ") {
+      changeNotes(notesText.slice(0, lineStart) + notesText.slice(pos));
+      return;
+    }
+    changeNotes(notesText.slice(0, pos) + "\n• " + notesText.slice(el.selectionEnd));
+    requestAnimationFrame(() => {
+      el.selectionStart = el.selectionEnd = pos + 3;
+    });
+  }
 
   const month = { name: MONTH_NAMES[monthIndex] };
   const cells = getMonthGrid(year, monthIndex);
@@ -291,6 +367,10 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           .cal-day-cell { height: 100% !important; min-height: 0 !important; }
           .cal-day-cell-inner { height: 100% !important; overflow: hidden !important; }
           .cal-event-tab-overflow { display: flex !important; }
+          .cal-notes { flex: 0 0 auto !important; margin-top: 3mm !important; border: 1px solid #EAE4D6 !important; border-radius: 3mm !important; background: #fff !important; padding: 2mm 3mm !important; }
+          .cal-notes[data-include="false"] { display: none !important; }
+          .cal-notes-print { display: block !important; }
+          [data-print-size="A3"] .cal-notes-print { font-size: 14pt !important; }
         }
         @media print {
           [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
@@ -303,6 +383,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; height: 274mm !important; max-height: 274mm !important; }
         }
+        /* The printed copy of the notes is only shown when printing. */
+        .cal-notes-print { display: none; }
         /* Short weekday names are only for phones (never printed). */
         .cal-wd-short { display: none; }
         /* Phones: stack the header, shorten weekday names and tighten the grid.
@@ -722,6 +804,89 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
               </div>
             );
           })}
+        </div>
+
+        {/* Notes box: prints as part of the same page as the calendar. */}
+        <div
+          className="cal-notes"
+          data-include={notesInclude ? "true" : "false"}
+          style={{ marginTop: 14, border: "1px solid #EAE4D6", borderRadius: 12, background: "#fff", padding: "12px 14px" }}
+        >
+          <div className="cal-no-print">
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#B5714A", letterSpacing: 1 }}>NOTES</span>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }} role="group" aria-label="Font colour">
+                {NOTE_COLOURS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => changeNotesColour(c.value)}
+                    title={c.name}
+                    aria-label={`${c.name} text`}
+                    aria-pressed={notesColour === c.value}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: c.value,
+                      border: "2px solid #fff",
+                      outline: notesColour === c.value ? `2px solid ${c.value}` : "1px solid #EAE4D6",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={toggleBullets}
+                style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #EAE4D6", background: "#FBF9F4", color: "#3F3237", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+              >
+                • Bullet points
+              </button>
+              <label style={{ marginLeft: "auto", fontSize: 12, color: "#8A7A6B", cursor: "pointer" }}>
+                <input type="checkbox" checked={notesInclude} onChange={(e) => changeNotesInclude(e.target.checked)} /> Print this box
+              </label>
+            </div>
+            <textarea
+              value={notesText}
+              onChange={(e) => changeNotes(e.target.value)}
+              onKeyDown={handleNotesKey}
+              rows={3}
+              maxLength={500}
+              placeholder={`Type notes for ${month.name} ${year}. They print under the calendar. Leave it empty to print blank lines to write on.`}
+              style={{ width: "100%", padding: "9px 11px", borderRadius: 8, border: "1px solid #EAE4D6", fontSize: 13.5, fontFamily: "inherit", background: "#FBF9F4", color: notesColour, resize: "vertical" }}
+            />
+            <p style={{ fontSize: 11, color: "#8A7A6B", margin: "4px 0 0" }}>
+              Saved on this computer for each month. Pick a colour above, or use Bullet points for a list.
+            </p>
+          </div>
+
+          <div
+            className="cal-notes-print"
+            style={{
+              color: notesColour,
+              fontSize: "10pt",
+              lineHeight: 1.35,
+              overflowWrap: "anywhere",
+              minHeight: "16mm",
+              ...(notesText.trim()
+                ? {}
+                : { backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, #D9D2C0 5.2mm, #D9D2C0 5.5mm)" }),
+            }}
+          >
+            <p style={{ margin: "0 0 1mm", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "1px", color: "#B5714A" }}>NOTES</p>
+            {notesText.split("\n").map((line, i) =>
+              line.startsWith("• ") ? (
+                <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
+                  <span>•</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
+                </div>
+              ) : (
+                <div key={i} style={{ minHeight: line === "" ? "1.3em" : undefined }}>{line}</div>
+              )
+            )}
+          </div>
         </div>
 
         {/* Footer */}
