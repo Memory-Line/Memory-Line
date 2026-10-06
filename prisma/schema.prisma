@@ -43,24 +43,42 @@ model User {
   sharedFiles          SharedFile[]
 }
 
-// A file a care home has uploaded (a menu, newsletter, timetable) with a public
-// read-only link, shown on a page with our branding. The token in the address
-// is the only key; deleting the row (and its file) switches the link off. The
-// file can be replaced later and the link stays the same.
+// A public, read-only link to up to 5 files a care home has uploaded (a menu,
+// newsletter, room pictures), shown on a page with our branding. The token in
+// the address is the only key; deleting the row (and its files) switches the
+// link off. Files can be replaced, added or removed and the link stays the same.
 model SharedFile {
   id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token         String   @unique
   title         String
-  fileUrl       String   // the stored file (Vercel Blob); never shown to visitors, served via /api/f/[token]/file
-  contentType   String   // application/pdf | image/jpeg | image/png
-  sizeBytes     Int
+  // Old single-file links kept their file here; it's moved into SharedFileItem
+  // the first time the link is read (lib/sharedFilesDb.ts) and these are cleared.
+  fileUrl       String?
+  contentType   String?
+  sizeBytes     Int?
   allowDownload Boolean  @default(false)
+  items         SharedFileItem[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([userId])
+}
+
+// One stored file (Vercel Blob) on a shared link. Its address is never shown to
+// visitors; it's served through /api/f/[token]/file.
+model SharedFileItem {
+  id           String     @id @default(cuid())
+  sharedFileId String
+  sharedFile   SharedFile @relation(fields: [sharedFileId], references: [id], onDelete: Cascade)
+  fileUrl      String
+  contentType  String     // application/pdf | image/jpeg | image/png
+  sizeBytes    Int
+  position     Int
+  createdAt    DateTime   @default(now())
+
+  @@index([sharedFileId])
 }
 
 // A public, read-only link to some months of an account's calendar, so a care
