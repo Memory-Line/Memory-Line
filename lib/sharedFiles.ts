@@ -1,6 +1,7 @@
 // Rules for files a home shares by link (menus, newsletters, timetables).
 
-export const MAX_SHARED_FILES = 10;
+export const MAX_SHARED_FILES = 10; // links per account
+export const MAX_ITEMS_PER_LINK = 5; // files per link
 // Files are sent to the server in one request, and Vercel allows about 4.5MB
 // per request, so 4MB is the practical limit.
 export const MAX_SHARED_FILE_BYTES = 4 * 1024 * 1024;
@@ -20,6 +21,15 @@ export function detectKind(head: Uint8Array): SharedFileKind | null {
     return { contentType: "image/png", ext: "png" };
   }
   return null;
+}
+
+// Checks an uploaded file's size and real type. Returns the kind, or a message
+// to show the person.
+export async function checkUpload(file: File): Promise<{ kind: SharedFileKind } | { error: string }> {
+  if (file.size > MAX_SHARED_FILE_BYTES) return { error: "That file is over 4MB. Try a smaller or compressed copy." };
+  const kind = detectKind(new Uint8Array(await file.slice(0, 16).arrayBuffer()));
+  if (!kind) return { error: "Only PDF, JPG and PNG files can be shared." };
+  return { kind };
 }
 
 export function cleanTitle(value: unknown): string {
