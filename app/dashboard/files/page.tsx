@@ -7,7 +7,7 @@ export default function SharedFilesPage() {
     <div className="max-w-2xl">
       <h1 className="font-serif text-2xl sm:text-3xl">Shared files</h1>
       <p className="text-clay text-sm mt-0.5">
-        Upload a menu, newsletter or timetable and get a link to put on your own website.
+        Upload a menu, newsletter or timetable and get a link to put on your own website. You can replace or delete a file whenever you like.
       </p>
       <FilesManager />
     </div>
