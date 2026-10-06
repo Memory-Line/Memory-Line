@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { OWNER_SELECT, ownerIsPremium } from "@/lib/ownerAccess";
 
 const itemsInclude = { orderBy: { position: "asc" as const } };
 
@@ -39,10 +40,14 @@ export async function getLinkByToken(token: string) {
   const found = await prisma.sharedFile.findUnique({ where: { token }, select: { id: true } });
   if (!found) return null;
   await migrateLegacy([found.id]);
-  return prisma.sharedFile.findUnique({
+  const link = await prisma.sharedFile.findUnique({
     where: { token },
-    include: { items: itemsInclude, user: { select: { name: true, accountType: true } } },
+    include: { items: itemsInclude, user: { select: OWNER_SELECT } },
   });
+  // Shared files is a Premium feature: if the owner has moved to Standard (or
+  // cancelled), the link stops working. It works again if they upgrade.
+  if (!link || !ownerIsPremium(link.user)) return null;
+  return link;
 }
 
 // What the manager page needs about a link (never the stored file addresses).
