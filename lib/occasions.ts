@@ -47,16 +47,9 @@ export function occasionHref(label: string): string {
   return `/dashboard/occasions/${occasionSlug(label)}`;
 }
 
-// Categories that don't get themed/seasonal variants — routine or
-// reference-style content rather than one-off occasion packs — so they're
-// left out of the occasion pages, even though they still show up
+// The only categories that get themed activities for each occasion. Every other
+// category is left off the occasion pages, even though it still shows up
 // everywhere else (sidebar, dashboard home, etc).
-const EXCLUDED_CATEGORIES = new Set([
-  "Physical & Exercise",
-  "Sing-Alongs",
-  "Communication Cards",
-  "BSL Tools",
-  "Sudoku",
-]);
+const OCCASION_CATEGORY_KEYS = ["Crosswords", "Word Searches", "Guess the Word", "Trivia", "Bingo"];
 
-export const THEMEABLE_CATEGORIES = CATEGORIES.filter((c) => !EXCLUDED_CATEGORIES.has(c.key));
+export const THEMEABLE_CATEGORIES = CATEGORIES.filter((c) => OCCASION_CATEGORY_KEYS.includes(c.key));
