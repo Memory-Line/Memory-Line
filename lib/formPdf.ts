@@ -232,3 +232,17 @@ export async function makeFormPdf(input: {
 
   return doc.save();
 }
+
+// The home's logo is a file in /public, fetched from the site itself. If it can't
+// be fetched the PDF is simply made without it.
+export async function loadLogo(baseUrl: string, path: string | null) {
+  if (!path) return null;
+  try {
+    const res = await fetch(`${baseUrl}${path}`);
+    if (!res.ok) return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    return { bytes, type: /\.jpe?g$/i.test(path) ? ("jpg" as const) : ("png" as const) };
+  } catch {
+    return null;
+  }
+}

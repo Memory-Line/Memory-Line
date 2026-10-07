@@ -2,21 +2,7 @@ import { NextResponse } from "next/server";
 import { cleanAnswers } from "@/lib/forms";
 import { getFormByToken } from "@/lib/formsDb";
 import { formSubmissionEmail, sendEmail, siteUrl } from "@/lib/email";
-import { makeFormPdf, todayInLondon } from "@/lib/formPdf";
-
-// The home's logo is a file in /public, fetched from the site itself. If it can't
-// be fetched the PDF is simply made without it.
-async function loadLogo(path: string | null) {
-  if (!path) return null;
-  try {
-    const res = await fetch(`${siteUrl()}${path}`);
-    if (!res.ok) return null;
-    const bytes = new Uint8Array(await res.arrayBuffer());
-    return { bytes, type: /\.jpe?g$/i.test(path) ? ("jpg" as const) : ("png" as const) };
-  } catch {
-    return null;
-  }
-}
+import { loadLogo, makeFormPdf, todayInLondon } from "@/lib/formPdf";
 
 export const dynamic = "force-dynamic";
 
@@ -55,7 +41,7 @@ export async function POST(req: Request, { params }: { params: { token: string }
       title: form.title,
       homeName: form.homeName,
       brandLines: form.brandLines,
-      logo: await loadLogo(form.logoPath),
+      logo: await loadLogo(siteUrl(), form.logoPath),
       items: form.items,
       answers: checked.answers,
       date,
