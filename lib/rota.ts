@@ -15,11 +15,8 @@ export const PRESET_ROTA: string[][] = [
   ["Newspaper & Discussion", "Indoor Games", "Photo & Memory Afternoon", "Quiz Afternoon", "Friday Social"],
 ];
 
-// Ideas offered while typing a slot in "pick my own".
-export const ROTA_SUGGESTIONS = [
-  ...Array.from(new Set(PRESET_ROTA.flat())),
-  "Quiz", "Crossword", "Word Search", "Sudoku", "Trivia", "Music Afternoon", "Garden Walk", "Baking", "Armchair Exercise", "Craft Session",
-];
+// The 20 activities every dropdown in "pick my own" offers (A to Z).
+export const ROTA_ACTIVITIES = Array.from(new Set(PRESET_ROTA.flat())).sort((a, b) => a.localeCompare(b));
 
 export type RotaConfig = {
   enabled: boolean;

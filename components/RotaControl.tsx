@@ -4,7 +4,7 @@ import { useState, type CSSProperties } from "react";
 import {
   PRESET_ROTA,
   ROTA_DAYS,
-  ROTA_SUGGESTIONS,
+  ROTA_ACTIVITIES,
   ROTA_WEEKDAYS,
   ROTA_WEEKS,
   defaultRota,
@@ -92,20 +92,23 @@ export default function RotaControl({
 
   return (
     <>
-      <label
-        title={signedIn ? "Show or hide your weekly rota" : "Sign in to use the weekly rota"}
-        style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 14px", borderRadius: 10, border: "1px solid #EAE4D6", background: "#fff", color: "#3F3237", fontWeight: 600, fontSize: 14, cursor: signedIn ? "pointer" : "not-allowed", opacity: signedIn ? 1 : 0.55 }}
-      >
-        <input type="checkbox" disabled={!signedIn || saving} checked={!!rota?.enabled} onChange={(e) => toggle(e.target.checked)} />
-        Weekly rota
-      </label>
-      <button
-        onClick={() => signedIn && openDialog()}
-        disabled={!signedIn}
-        style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: signedIn ? "pointer" : "not-allowed", fontWeight: 600, opacity: signedIn ? 1 : 0.55 }}
-      >
-        Rota settings
-      </button>
+      {/* A small tick box and link above the calendar (not printed). */}
+      <div className="cal-no-print" style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12.5, color: "#6B5F57", margin: "0 0 6px" }}>
+        <label
+          title={signedIn ? "Show or hide your weekly rota" : "Sign in to use the weekly rota"}
+          style={{ display: "inline-flex", alignItems: "center", gap: 5, cursor: signedIn ? "pointer" : "not-allowed", opacity: signedIn ? 1 : 0.55 }}
+        >
+          <input type="checkbox" disabled={!signedIn || saving} checked={!!rota?.enabled} onChange={(e) => toggle(e.target.checked)} />
+          Weekly rota
+        </label>
+        <button
+          onClick={() => signedIn && openDialog()}
+          disabled={!signedIn}
+          style={{ border: "none", background: "none", padding: 0, color: "#B5714A", fontWeight: 700, fontSize: 12.5, textDecoration: "underline", cursor: signedIn ? "pointer" : "not-allowed", opacity: signedIn ? 1 : 0.55 }}
+        >
+          Rota settings
+        </button>
+      </div>
 
       {open && (
         <div
@@ -115,7 +118,7 @@ export default function RotaControl({
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ width: 640, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", background: "#fff", borderRadius: 16, border: "1px solid #EAE4D6", boxShadow: "0 12px 30px rgba(63,50,55,0.18)", padding: "22px 22px 20px", color: "#3F3237" }}
+            style={{ width: 800, maxWidth: "100%", maxHeight: "92vh", overflowY: "auto", background: "#fff", borderRadius: 16, border: "1px solid #EAE4D6", boxShadow: "0 12px 30px rgba(63,50,55,0.18)", padding: "22px 22px 20px", color: "#3F3237" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2 }}>
               <h2 style={{ fontFamily: "Georgia, serif", fontSize: 19, margin: 0 }}>Weekly rota</h2>
@@ -151,7 +154,7 @@ export default function RotaControl({
             ) : (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <span style={labelStyle}>Type or pick an activity for each day. Leave a box empty for nothing.</span>
+                  <span style={labelStyle}>Pick an activity for each day from the list. Choose "Nothing" to leave a day empty.</span>
                   <button
                     onClick={() => setDraft({ ...draft, slots: PRESET_ROTA.map((r) => [...r]) })}
                     style={{ border: "none", background: "none", color: "#B5714A", fontWeight: 700, fontSize: 12, cursor: "pointer", textDecoration: "underline", whiteSpace: "nowrap" }}
@@ -159,11 +162,6 @@ export default function RotaControl({
                     Start from the preset
                   </button>
                 </div>
-                <datalist id="rota-suggestions">
-                  {ROTA_SUGGESTIONS.map((s) => (
-                    <option key={s} value={s} />
-                  ))}
-                </datalist>
                 <RotaGrid rows={draft.slots} onEdit={setSlot} />
               </>
             )}
@@ -221,14 +219,19 @@ function RotaGrid({
                   {readOnly ? (
                     <div style={{ background: "#FBF9F4", border: "1px solid #EAE4D6", borderRadius: 8, padding: "7px 9px", minHeight: 34 }}>{rows[w]?.[d]}</div>
                   ) : (
-                    <input
-                      list="rota-suggestions"
+                    <select
                       value={rows[w]?.[d] ?? ""}
-                      maxLength={60}
                       onChange={(e) => onEdit?.(w, d, e.target.value)}
                       aria-label={`Week ${w + 1}, ${ROTA_WEEKDAYS[d]}`}
                       style={inputStyle}
-                    />
+                    >
+                      <option value="">Nothing</option>
+                      {/* A saved activity that isn't in the list (typed in an earlier version) stays selectable. */}
+                      {rows[w]?.[d] && !ROTA_ACTIVITIES.includes(rows[w][d]) && <option value={rows[w][d]}>{rows[w][d]}</option>}
+                      {ROTA_ACTIVITIES.map((a) => (
+                        <option key={a} value={a}>{a}</option>
+                      ))}
+                    </select>
                   )}
                 </td>
               ))}

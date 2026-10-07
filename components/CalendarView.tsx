@@ -518,7 +518,6 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           </button>
           <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
           <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
-          <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} />
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}
@@ -551,6 +550,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
+        {/* The weekly rota tick box sits just above the calendar (not printed). */}
+        <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} />
         {/* Weekday header pills */}
         <div className="cal-weekday-row" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
