@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import { MONTH_NAMES, WEEKDAYS, TAB_COLORS, getMonthGrid, monthsLabel } from "@/lib/calendarShared";
 import { OWNER_SELECT, ownerIsActive, ownerIsPremium } from "@/lib/ownerAccess";
+import { rotaLabelFor } from "@/lib/rota";
+import { loadRota } from "@/lib/rotaDb";
 import PrintButton from "./PrintButton";
 
 export const dynamic = "force-dynamic";
@@ -37,10 +39,17 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
     orderBy: [{ month: "asc" }, { day: "asc" }],
   });
   const builtIn = professional ? [] : occasionsForYear(link.year);
+  // The owner's weekly rota, if it's switched on, shows on the shared months too.
+  const rota = await loadRota(link.userId, link.calendar);
 
   const itemsFor = (month: number) => {
     const byDay: Record<number, Item[]> = {};
     for (const o of builtIn) if (o.month === month) (byDay[o.day] ??= []).push({ label: o.label, time: null });
+    const daysInMonth = new Date(link.year, month + 1, 0).getDate();
+    for (let d = 1; d <= daysInMonth; d++) {
+      const label = rotaLabelFor(rota, new Date(link.year, month, d));
+      if (label) (byDay[d] ??= []).push({ label, time: null });
+    }
     for (const e of custom) if (e.month === month) (byDay[e.day] ??= []).push({ label: e.title, time: e.time });
     return byDay;
   };

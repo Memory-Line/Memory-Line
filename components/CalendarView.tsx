@@ -8,6 +8,8 @@ import { occasionHref } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import RangePrint from "@/components/RangePrint";
 import ShareCalendar from "@/components/ShareCalendar";
+import RotaControl from "@/components/RotaControl";
+import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
 
 
 type CustomEvent = {
@@ -27,6 +29,7 @@ type DisplayEvent = {
   time?: string | null;
   link: string | null;
   custom: boolean;
+  rota?: boolean; // from the weekly rota layer: shown, but not editable here
   id?: string;
 };
 
@@ -221,6 +224,25 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
     };
   }, [signedIn, year, variant]);
 
+  // The weekly rota (a repeating 4-week pattern shown as a layer on the calendar).
+  const [rota, setRota] = useState<RotaConfig | null>(null);
+  useEffect(() => {
+    if (!signedIn) {
+      setRota(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/calendar-rota?calendar=${variant}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setRota(data.rota ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, variant]);
+
   const eventsByDay: Record<number, DisplayEvent[]> = {};
   const builtIn = professional ? [] : occasionsForYear(year).filter((e) => e.month === monthIndex);
   for (const e of builtIn) {
@@ -231,6 +253,14 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
       link: occasionHref(e.occasion ?? e.label),
       custom: false,
     });
+  }
+  if (rota?.enabled) {
+    for (let d = 1; d <= daysInMonth; d++) {
+      const label = rotaLabelFor(rota, new Date(year, monthIndex, d));
+      if (label) {
+        (eventsByDay[d] ??= []).push({ key: `rota-${year}-${monthIndex}-${d}`, day: d, label, link: null, custom: false, rota: true });
+      }
+    }
   }
   for (const e of customEvents) {
     if (e.month !== monthIndex) continue;
@@ -488,6 +518,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           </button>
           <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
           <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
+          <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} />
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}
@@ -784,7 +815,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
                                 </span>
                               ) : (
                                 <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                                  Locked
+                                  {ev.rota ? "Rota" : "Locked"}
                                 </span>
                               )}
                             </>

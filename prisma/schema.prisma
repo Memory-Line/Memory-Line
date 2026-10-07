@@ -41,6 +41,24 @@ model User {
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
+  calendarRotas        CalendarRota[]
+}
+
+// A home's repeating 4-week rota for one of its calendars (Holidays &
+// Celebrations or the professional one). It is a layer shown on the calendar,
+// not saved date by date; see lib/rota.ts. One row per account and calendar.
+model CalendarRota {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendar  String   @default("activity") // activity | professional
+  enabled   Boolean  @default(false)
+  mode      String   @default("preset")   // preset | custom
+  startDate String                        // YYYY-MM-DD, the Monday Week 1 starts on
+  slots     Json?                         // 4 weeks x 5 days of text, used when mode is custom
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, calendar])
 }
 
 // A public, read-only link to up to 5 files a care home has uploaded (a menu,
