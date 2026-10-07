@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { occasionsForYear } from "@/lib/ukCalendar";
+import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
 
 // "Print dates": prints any run of up to 7 days (a week, or whatever the home
 // plans by) on one landscape page. The day boxes alternate high and low, each
@@ -146,6 +147,15 @@ export default function RangePrint({
         }
       }
 
+      // The weekly rota (if it's switched on) prints with the dates too.
+      let rota: RotaConfig | null = null;
+      if (signedIn) {
+        rota = await fetch(`/api/calendar-rota?calendar=${variant}`)
+          .then((r) => r.json())
+          .then((data) => (data.rota ?? null) as RotaConfig | null)
+          .catch(() => null);
+      }
+
       const days: SheetDay[] = dates.map((date) => {
         const events: SheetEvent[] = [];
         if (!professional) {
@@ -153,6 +163,8 @@ export default function RangePrint({
             if (o.month === date.getMonth() && o.day === date.getDate()) events.push({ label: o.label, time: null });
           }
         }
+        const rotaLabel = rotaLabelFor(rota, date);
+        if (rotaLabel) events.push({ label: rotaLabel, time: null });
         events.push(...(custom.get(`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`) ?? []));
         return { date, weekday: (date.getDay() + 6) % 7, events };
       });
