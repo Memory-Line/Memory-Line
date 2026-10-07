@@ -4,7 +4,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { occasionHref } from "@/lib/occasions";
+import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import RangePrint from "@/components/RangePrint";
 import ShareCalendar from "@/components/ShareCalendar";
@@ -257,7 +257,9 @@ export default function CalendarView({
       key: `built-in-${year}-${monthIndex}-${e.day}-${e.label}`,
       day: e.day,
       label: e.label,
-      link: occasionHref(e.occasion ?? e.label),
+      // Only dates that have activities link through to a page; the rest
+      // (bank holidays and so on) are just dates on the calendar.
+      link: OCCASIONS.some((o) => o.slug === occasionSlug(e.occasion ?? e.label)) ? occasionHref(e.occasion ?? e.label) : null,
       custom: false,
     });
   }
@@ -823,7 +825,7 @@ export default function CalendarView({
                                 </span>
                               ) : (
                                 <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                                  {ev.rota ? "Rota" : "Locked"}
+                                  {ev.rota ? "Rota" : ""}
                                 </span>
                               )}
                             </>

@@ -190,7 +190,7 @@ export default function UploadCalendarPage() {
 
       {missingList.length > 0 && (
         <div className="rounded-xl p-4 border border-line mb-4" style={{ background: "#FCEFE7" }}>
-          <p className="text-sm font-semibold mb-1">Left out: not on the site's calendar</p>
+          <p className="text-sm font-semibold mb-1">Left out: no activities page for these dates</p>
           <ul className="text-sm text-inkSoft">
             {missingList.map(([prefix, n]) => (
               <li key={prefix}>
@@ -198,7 +198,7 @@ export default function UploadCalendarPage() {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-inkSoft mt-1">These dates don't exist on the calendar yet, so there's no page for them.</p>
+          <p className="text-xs text-inkSoft mt-1">These dates have no activities page on the site, so their files are not uploaded.</p>
         </div>
       )}
 
