@@ -113,8 +113,15 @@ const labelStyle: CSSProperties = {
 // are kept separate from the activity calendar's.
 export type CalendarVariant = "activity" | "professional";
 
-export default function CalendarView({ variant = "activity" }: { variant?: CalendarVariant }) {
-  const { data: sessionData, status } = useSession();
+export default function CalendarView({
+  variant = "activity",
+  homeName = null,
+}: {
+  variant?: CalendarVariant;
+  // Printed at the top of "Print dates": the care home's name, never a personal account's.
+  homeName?: string | null;
+}) {
+  const { status } = useSession();
   const signedIn = status === "authenticated";
   const professional = variant === "professional";
 
@@ -533,7 +540,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           >
             Print Large (A3)
           </button>
-          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
+          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={homeName} />
           <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
         </div>
         {!signedIn && status !== "loading" && (
