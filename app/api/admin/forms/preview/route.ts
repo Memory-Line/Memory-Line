@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 // Admin only: shows what a questionnaire's PDF looks like, made by the real PDF
 // code. ?template=resident|relatives|employee and ?sample=1 fills in example
 // answers (otherwise the PDF is blank, every question showing "No answer").
+// ?download=1 saves it as a file instead of opening it in the browser.
 export async function GET(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const url = new URL(req.url);
@@ -36,6 +37,10 @@ export async function GET(req: Request) {
     date: todayInLondon(),
   });
   return new NextResponse(Buffer.from(bytes), {
-    headers: { "Content-Type": "application/pdf", "Content-Disposition": `inline; filename="preview-${t.key}.pdf"`, "Cache-Control": "no-store" },
+    headers: {
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `${url.searchParams.get("download") === "1" ? "attachment" : "inline"}; filename="preview-${t.key}${sample ? "-example" : "-blank"}.pdf"`,
+      "Cache-Control": "no-store",
+    },
   });
 }

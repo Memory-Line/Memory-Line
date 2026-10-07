@@ -107,6 +107,10 @@ export default function AdminForms() {
               ·{" "}
               <a href={`/api/admin/forms/preview?template=${t.key}&sample=1`} target="_blank" rel="noreferrer" className="text-sageDeep font-semibold underline">
                 with example answers
+              </a>{" "}
+              ·{" "}
+              <a href={`/api/admin/forms/preview?template=${t.key}&sample=1&download=1`} className="text-sageDeep font-semibold underline">
+                download
               </a>
             </p>
           ))}
