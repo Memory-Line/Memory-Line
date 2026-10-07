@@ -23,11 +23,15 @@ export default function TemplateList({
   templates,
   completedIds,
   playable = false,
+  playableIds,
   isPremium = true,
 }: {
   templates: Template[];
   completedIds?: string[];
   playable?: boolean;
+  // Instead of `playable` for the whole list: only these activities get "Play
+  // online" (used on calendar occasion pages, where only some have a puzzle stored).
+  playableIds?: string[];
   // Standard accounts: false. Defaults to true so callers that haven't been
   // updated yet (there shouldn't be any) don't accidentally lock everyone out.
   isPremium?: boolean;
@@ -51,7 +55,7 @@ export default function TemplateList({
               <UpgradePrompt compact />
             ) : (
               <>
-                {playable && (
+                {(playableIds ? playableIds.includes(t.id) : playable) && (
                   <Link href={`/dashboard/play/${t.id}`} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
                     <Play size={14} />
                     Play online
