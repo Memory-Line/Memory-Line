@@ -1,0 +1,56 @@
+// The calendar activity packs are built one set per date, numbered 00a, 00b, 01..47.
+// This says which calendar date on the site each pack number belongs to (by its
+// label in lib/ukCalendar.ts). null means there are no activities for that date
+// on the site, so it gets no activities page and its files aren't uploaded:
+// Harvest Festival (34), Chelsea Flower Show (20) and Wimbledon (24).
+export const PACK_DATES: Record<string, string | null> = {
+  "00a": "Christmas Day",
+  "00b": "Halloween",
+  "01": "New Year's Day",
+  "02": "Twelfth Night",
+  "03": "Burns Night",
+  "04": "Chinese / Lunar New Year",
+  "05": "Pancake Day (Shrove Tuesday)",
+  "06": "Ash Wednesday",
+  "07": "Valentine's Day",
+  "08": "St David's Day",
+  "09": "Mother's Day (Mothering Sunday)",
+  "10": "International Women's Day",
+  "11": "St Patrick's Day",
+  "12": "First day of spring",
+  "13": "Palm Sunday",
+  "14": "Easter Sunday",
+  "15": "April Fool's Day",
+  "16": "St George's Day",
+  "17": "May Day",
+  "18": "VE Day",
+  "19": "International Nurses Day",
+  "20": null, // Chelsea Flower Show: left out
+  "21": "D-Day anniversary",
+  "22": "Father's Day",
+  "23": "First day of summer",
+  "24": null, // Wimbledon: left out
+  "25": "American Independence Day",
+  "26": "World Chocolate Day",
+  "27": "Yorkshire Day",
+  "28": "International Cat Day",
+  "29": "VJ Day",
+  "30": "Notting Hill Carnival begins",
+  "31": "Battle of Britain Day",
+  "32": "World Alzheimer's Day",
+  "33": "First day of autumn",
+  "34": null, // Harvest Festival: left out
+  "35": "International Day of Older Persons",
+  "36": "World Mental Health Day",
+  "37": "All Saints' Day",
+  "38": "Bonfire Night (Guy Fawkes Night)",
+  "39": "Armistice Day",
+  "40": "Remembrance Sunday",
+  "41": "Advent begins",
+  "42": "St Andrew's Day",
+  "43": "St Nicholas Day",
+  "44": "First day of winter",
+  "45": "Hanukkah begins at sunset",
+  "46": "Boxing Day",
+  "47": "New Year's Eve",
+};

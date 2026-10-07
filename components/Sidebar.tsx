@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList,
+  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -180,6 +180,12 @@ export default function Sidebar({
             icon={ClipboardList}
             label="Questionnaires (admin)"
             active={pathname === "/dashboard/admin/forms"}
+          />
+          <NavItem
+            href="/dashboard/admin/upload-calendar"
+            icon={Upload}
+            label="Upload calendar packs"
+            active={pathname === "/dashboard/admin/upload-calendar"}
           />
         </div>
       )}

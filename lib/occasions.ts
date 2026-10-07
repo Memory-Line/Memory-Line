@@ -1,19 +1,23 @@
 import { CATEGORIES } from "@/lib/data";
 import { occasionsForYear } from "@/lib/ukCalendar";
+import { PACK_DATES } from "@/lib/packDates";
 
-// Every pre-loaded calendar event gets its own set of activities, kept
-// separate from the main category library. Uploads for an occasion are
-// tagged with its slug (Template.occasion); untagged uploads are the
-// regular library. The list comes from the calendar's own occasions
-// (lib/ukCalendar.ts), so the two always match; substitute bank holidays
-// are left out, since they link to the day they stand in for.
+// The calendar dates that have their own set of activities, kept separate from
+// the main category library. Uploads for an occasion are tagged with its slug
+// (Template.occasion); untagged uploads are the regular library. The list is
+// the dates in lib/packDates.ts that have activities, matched to the calendar's
+// own dates (lib/ukCalendar.ts); every other date (bank holidays and so on)
+// still shows on the calendar but has no activities page. Substitute bank
+// holidays link to the day they stand in for.
+const WITH_ACTIVITIES = new Set(Object.values(PACK_DATES).filter((l): l is string => !!l));
+
 export const OCCASION_LABELS = Array.from(
   new Set(
     occasionsForYear(2027)
       .filter((e) => !e.occasion)
       .map((e) => e.label)
   )
-);
+).filter((label) => WITH_ACTIVITIES.has(label));
 
 export function occasionSlug(label: string): string {
   return label
