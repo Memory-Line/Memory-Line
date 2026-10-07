@@ -38,7 +38,7 @@ export default function RotaControl({
   variant: "activity" | "professional";
   signedIn: boolean;
   rota: RotaConfig | null;
-  onChange: (rota: RotaConfig) => void;
+  onChange: (rota: RotaConfig | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<RotaConfig>(defaultRota());
@@ -68,6 +68,21 @@ export default function RotaControl({
     const base = rota ?? defaultRota();
     const ok = await save({ ...base, enabled });
     if (!ok && !open) window.alert("The rota couldn't be changed just now. Please try again.");
+  }
+
+  // Takes the rota off the calendar and deletes it, including any "my own" activities.
+  async function remove() {
+    if (!window.confirm("Remove your weekly rota? It will disappear from the calendar and your own activity choices will be deleted.")) return;
+    setError(null);
+    setSaving(true);
+    const res = await fetch(`/api/calendar-rota?calendar=${variant}`, { method: "DELETE" }).catch(() => null);
+    setSaving(false);
+    if (!res || !res.ok) {
+      setError("That didn't work. Please try again.");
+      return;
+    }
+    onChange(null);
+    setOpen(false);
   }
 
   function openDialog() {
@@ -167,6 +182,16 @@ export default function RotaControl({
             )}
 
             {error && <p style={{ color: "#B5714A", fontSize: 12, fontWeight: 600, margin: "12px 0 0" }}>{error}</p>}
+
+            {rota && (
+              <button
+                onClick={remove}
+                disabled={saving}
+                style={{ marginTop: 14, border: "none", background: "none", padding: 0, color: "#B5453D", fontWeight: 700, fontSize: 12.5, textDecoration: "underline", cursor: saving ? "default" : "pointer" }}
+              >
+                Remove the rota from my calendar
+              </button>
+            )}
 
             <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
               <button

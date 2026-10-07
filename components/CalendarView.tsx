@@ -503,21 +503,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         </div>
 
         {/* Print controls */}
-        <div className="cal-no-print cal-toolbar" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
-          <button
-            onClick={() => handlePrint("A4")}
-            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", cursor: "pointer", fontWeight: 600 }}
-          >
-            Print (A4)
-          </button>
-          <button
-            onClick={() => handlePrint("A3")}
-            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
-          >
-            Print Large (A3)
-          </button>
-          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
-          <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
+        <div className="cal-no-print cal-toolbar" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}
@@ -525,9 +511,9 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
             style={{
               padding: "10px 18px",
               borderRadius: 10,
-              border: "1px dashed #B5714A",
-              background: "#FCEFE7",
-              color: "#B5714A",
+              border: "none",
+              background: "#B5714A",
+              color: "#fff",
               cursor: signedIn ? "pointer" : "not-allowed",
               fontWeight: 600,
               opacity: signedIn ? 1 : 0.55,
@@ -535,6 +521,20 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           >
             + Add event
           </button>
+          <button
+            onClick={() => handlePrint("A4")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#CFE3F2", color: "#1F4E66", cursor: "pointer", fontWeight: 600 }}
+          >
+            Print (A4)
+          </button>
+          <button
+            onClick={() => handlePrint("A3")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#C9E6DD", color: "#295044", cursor: "pointer", fontWeight: 600 }}
+          >
+            Print Large (A3)
+          </button>
+          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={sessionData?.user?.name ?? null} />
+          <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
         </div>
         {!signedIn && status !== "loading" && (
           <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
