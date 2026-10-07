@@ -59,3 +59,13 @@ export async function PUT(req: Request) {
   });
   return NextResponse.json({ rota: await loadRota(session.user.id, calendar) });
 }
+
+// Removes the rota completely (including any activities picked for "my own").
+export async function DELETE(req: Request) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
+  const calendar = calendarSchema.safeParse(new URL(req.url).searchParams.get("calendar") ?? "activity");
+  if (!calendar.success) return NextResponse.json({ error: "Unknown calendar" }, { status: 400 });
+  await prisma.calendarRota.deleteMany({ where: { userId: session.user.id, calendar: calendar.data } });
+  return NextResponse.json({ rota: null });
+}

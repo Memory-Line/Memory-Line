@@ -235,7 +235,7 @@ export default function RangePrint({
 
       <button
         onClick={() => setOpen(true)}
-        style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
+        style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#F2E2B8", color: "#6B5723", cursor: "pointer", fontWeight: 600 }}
       >
         Print dates
       </button>

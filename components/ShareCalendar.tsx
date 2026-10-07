@@ -98,7 +98,7 @@ export default function ShareCalendar({
       <button
         onClick={() => signedIn && openDialog()}
         disabled={!signedIn}
-        style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: signedIn ? "pointer" : "not-allowed", fontWeight: 600, opacity: signedIn ? 1 : 0.55 }}
+        style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#DFD5EC", color: "#4A3B63", cursor: signedIn ? "pointer" : "not-allowed", fontWeight: 600, opacity: signedIn ? 1 : 0.55 }}
       >
         Share calendar
       </button>
