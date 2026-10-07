@@ -55,6 +55,8 @@ export async function POST(req: Request) {
           thanks: t.def.thanks,
           items: t.def.items as unknown as object,
           notifyEmail: parsed.data.notifyEmail,
+          logoPath: t.def.logoPath ?? null,
+          brandLines: t.def.brandLines ?? null,
         },
         select: { id: true, token: true, title: true },
       })

@@ -8,6 +8,13 @@ const RELATIVE_OPTIONS = ["Good", "Satisfactory", "Poor", "I don't think this ap
 const STAFF_OPTIONS = ["Strongly agree", "Agree", "Disagree", "Strongly disagree", "I don't think this applies to me"];
 const STAFF_TICK = ["Yes", "No", "Sometimes", "Do not wish to answer"];
 
+// Westcliff Lodge's logo and contact details, from the header of their documents.
+const WESTCLIFF_BRAND = {
+  logoPath: "/form-logos/westcliff-lodge.png",
+  brandLines:
+    "118-120 Crowstone Road, Westcliff-on-Sea, Essex, SS0 8LQ  |  Tel 01702 354 718  |  westclifflodge@gmail.com  |  www.westclifflodge.co.uk",
+};
+
 function build(prefix: string, rows: (string | [string, string?] | { section: string; text?: string } | { free: string; hint?: string })[], options: string[], commentLabel: string): FormItem[] {
   const items: FormItem[] = [];
   let n = 0;
@@ -25,6 +32,7 @@ function build(prefix: string, rows: (string | [string, string?] | { section: st
 }
 
 export const RESIDENT_FORM: FormDef = {
+  ...WESTCLIFF_BRAND,
   title: "Resident Feedback Questionnaire",
   intro:
     "We ask residents to complete this survey once a year so we can understand what is working well and what needs to improve. The questions are aligned to CQC's five key questions: Safe, Effective, Caring, Responsive and Well-led.\n\nYour answers are confidential. You may leave your name blank if you prefer. Please ask a member of staff if you need help to complete this form.",
@@ -76,6 +84,7 @@ export const RESIDENT_FORM: FormDef = {
 };
 
 export const RELATIVES_FORM: FormDef = {
+  ...WESTCLIFF_BRAND,
   title: "Relatives and Friends Feedback Questionnaire",
   intro:
     "Annual Friends and Family Feedback Survey. Your feedback helps us check what is working well, what could be improved, and how we can continue to meet the standards expected by residents, families, commissioners and the Care Quality Commission.\n\nFor each question, please choose one rating: Good, Satisfactory, Poor or \"I don't think this applies to me\". Please add comments where possible, especially if you choose Poor or if you have an example that would help us learn.",
@@ -114,6 +123,7 @@ export const RELATIVES_FORM: FormDef = {
 };
 
 export const EMPLOYEE_FORM: FormDef = {
+  ...WESTCLIFF_BRAND,
   title: "Annual Employee / Staff Feedback Questionnaire 2026",
   intro:
     "This annual questionnaire helps Westcliff Lodge understand what is working well for staff and what could be improved. Your feedback supports safe, effective, caring, responsive and well-led care for the people who live here.\n\nPlease answer openly and honestly. You may remain anonymous, and all feedback will be reviewed without prejudice.\n\nIf you raise an urgent safety concern, please tell the Manager, Deputy Manager or Nominated Individual straight away rather than waiting for this survey to be reviewed.",

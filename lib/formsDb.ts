@@ -22,6 +22,8 @@ export async function getFormByToken(token: string) {
     thanks: form.thanks,
     items: cleanItems(form.items),
     notifyEmail: form.notifyEmail,
+    logoPath: form.logoPath,
+    brandLines: form.brandLines,
     // A care home is named after the home; a personal account's name stays private.
     homeName: form.user.accountType === "care-home" ? form.user.name : null,
   };

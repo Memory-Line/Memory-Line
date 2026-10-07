@@ -7,7 +7,14 @@ export type FormItem =
   // A question answered in the person's own words.
   | { type: "text"; id: string; text: string; hint?: string; long?: boolean };
 
-export type FormDef = { title: string; intro: string; thanks: string; items: FormItem[] };
+export type FormDef = {
+  title: string;
+  intro: string;
+  thanks: string;
+  items: FormItem[];
+  logoPath?: string; // the home's logo (a file under /public), shown on the PDFs
+  brandLines?: string; // address and contact details printed at the foot of the PDFs
+};
 
 const MAX_ANSWER = 3000;
 const MAX_TOTAL = 60_000;
