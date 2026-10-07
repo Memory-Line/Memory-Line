@@ -94,6 +94,29 @@ export default function AdminForms() {
         </button>
       </form>
 
+      <div className="rounded-xl p-4 mt-6 bg-card border border-line">
+        <p className="text-sm font-semibold">See what the PDF looks like</p>
+        <p className="text-xs text-inkSoft mt-0.5 mb-2">Opens a PDF made by the real code, so you can check the layout before anyone sends a response.</p>
+        <div className="space-y-1.5">
+          {TEMPLATES.map((t) => (
+            <p key={t.key} className="text-sm">
+              {t.label}:{" "}
+              <a href={`/api/admin/forms/preview?template=${t.key}`} target="_blank" rel="noreferrer" className="text-sageDeep font-semibold underline">
+                blank
+              </a>{" "}
+              ·{" "}
+              <a href={`/api/admin/forms/preview?template=${t.key}&sample=1`} target="_blank" rel="noreferrer" className="text-sageDeep font-semibold underline">
+                with example answers
+              </a>{" "}
+              ·{" "}
+              <a href={`/api/admin/forms/preview?template=${t.key}&sample=1&download=1`} className="text-sageDeep font-semibold underline">
+                download
+              </a>
+            </p>
+          ))}
+        </div>
+      </div>
+
       <h2 className="font-serif text-xl mt-8 mb-3">Existing questionnaires</h2>
       {forms === null && <p className="text-sm text-inkSoft">Loading...</p>}
       {forms?.length === 0 && <p className="text-sm text-inkSoft">None yet.</p>}

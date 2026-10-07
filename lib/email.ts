@@ -25,6 +25,7 @@ type Message = {
   text: string;
   replyTo?: string;
   headers?: Record<string, string>;
+  attachments?: { filename: string; content: string }[]; // content is base64
 };
 
 export async function sendEmail(message: Message): Promise<boolean> {
@@ -45,6 +46,7 @@ export async function sendEmail(message: Message): Promise<boolean> {
         html: message.html,
         text: message.text,
         ...(message.headers ? { headers: message.headers } : {}),
+        ...(message.attachments ? { attachments: message.attachments } : {}),
       }),
     });
     if (!res.ok) {
@@ -226,40 +228,26 @@ You're getting this because you asked for updates from Activity Central. Unsubsc
   };
 }
 
-// A completed questionnaire, sent to the home's own address. Every question is
-// listed with its answer (or "No answer"), grouped by section.
+// A completed questionnaire, sent to the home's own address. The answers are in
+// the attached PDF (made by lib/formPdf.ts); the message itself just says one
+// has arrived, so the answers aren't repeated in the email body.
 export function formSubmissionEmail(input: {
   to: string;
   formTitle: string;
   homeName: string | null;
-  items: import("@/lib/forms").FormItem[];
-  answers: Record<string, string>;
+  receivedOn: string;
+  pdf: { filename: string; base64: string };
 }): Message {
-  const { to, formTitle, homeName, items, answers } = input;
-  const none = `<span style="color:#8A8371;">No answer</span>`;
-  let html = "";
-  let text = `${formTitle}${homeName ? ` (${homeName})` : ""}\n`;
-  for (const item of items) {
-    if (item.type === "section") {
-      html += `<h2 style="margin:22px 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:normal;color:#657A68;border-bottom:1px solid #E6DDC8;padding-bottom:4px;">${esc(item.title)}</h2>`;
-      text += `\n== ${item.title} ==\n`;
-    } else if (item.type === "choice") {
-      const answer = answers[item.id];
-      const comment = answers[`${item.id}:comment`];
-      html += `<p style="margin:10px 0 2px;">${esc(item.text)}</p><p style="margin:0 0 4px;font-weight:bold;">${answer ? esc(answer) : none}</p>`;
-      if (comment) html += `<p style="margin:0 0 6px;padding:8px 10px;background:#F5F0E4;border-radius:8px;white-space:pre-wrap;">${esc(comment)}</p>`;
-      text += `\n${item.text}\n  ${answer ?? "No answer"}\n`;
-      if (comment) text += `  Comment: ${comment}\n`;
-    } else {
-      const answer = answers[item.id];
-      html += `<p style="margin:10px 0 2px;">${esc(item.text)}</p><p style="margin:0 0 6px;${answer ? "padding:8px 10px;background:#F5F0E4;border-radius:8px;white-space:pre-wrap;" : ""}">${answer ? esc(answer) : none}</p>`;
-      text += `\n${item.text}\n  ${answer ?? "No answer"}\n`;
-    }
-  }
+  const { to, formTitle, homeName, receivedOn, pdf } = input;
   return {
     to,
     subject: `New response: ${formTitle}`,
-    html: layout(esc(formTitle), `<p style="margin:0 0 6px;color:#8A8371;">${homeName ? esc(homeName) + " · " : ""}A new response was submitted online.</p>${html}`),
-    text,
+    html: layout(
+      esc(formTitle),
+      `<p style="margin:0 0 10px;">A new response was submitted online${homeName ? ` for ${esc(homeName)}` : ""} on ${esc(receivedOn)}.</p>
+<p style="margin:0;">The answers are in the attached PDF: <b>${esc(pdf.filename)}</b>.</p>`
+    ),
+    text: `A new response to "${formTitle}" was submitted online${homeName ? ` for ${homeName}` : ""} on ${receivedOn}.\n\nThe answers are in the attached PDF: ${pdf.filename}.`,
+    attachments: [{ filename: pdf.filename, content: pdf.base64 }],
   };
 }
