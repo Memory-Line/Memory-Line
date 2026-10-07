@@ -42,6 +42,26 @@ model User {
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
   calendarRotas        CalendarRota[]
+  sharedForms          SharedForm[]
+}
+
+// An online questionnaire a home can put on its website. Set up by the admin for
+// an account that has the "questionnaires" feature; the address the answers go to
+// (notifyEmail) is also set only by the admin, so a form can never be pointed at
+// a stranger's inbox. Answers are emailed and not stored (nothing is kept here).
+model SharedForm {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token       String   @unique
+  title       String
+  intro       String   @default("")
+  thanks      String   @default("")
+  items       Json     // the sections and questions (see lib/forms.ts)
+  notifyEmail String
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
 }
 
 // A home's repeating 4-week rota for one of its calendars (Holidays &
