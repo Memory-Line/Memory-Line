@@ -225,3 +225,41 @@ You're getting this because you asked for updates from Activity Central. Unsubsc
     },
   };
 }
+
+// A completed questionnaire, sent to the home's own address. Every question is
+// listed with its answer (or "No answer"), grouped by section.
+export function formSubmissionEmail(input: {
+  to: string;
+  formTitle: string;
+  homeName: string | null;
+  items: import("@/lib/forms").FormItem[];
+  answers: Record<string, string>;
+}): Message {
+  const { to, formTitle, homeName, items, answers } = input;
+  const none = `<span style="color:#8A8371;">No answer</span>`;
+  let html = "";
+  let text = `${formTitle}${homeName ? ` (${homeName})` : ""}\n`;
+  for (const item of items) {
+    if (item.type === "section") {
+      html += `<h2 style="margin:22px 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:18px;font-weight:normal;color:#657A68;border-bottom:1px solid #E6DDC8;padding-bottom:4px;">${esc(item.title)}</h2>`;
+      text += `\n== ${item.title} ==\n`;
+    } else if (item.type === "choice") {
+      const answer = answers[item.id];
+      const comment = answers[`${item.id}:comment`];
+      html += `<p style="margin:10px 0 2px;">${esc(item.text)}</p><p style="margin:0 0 4px;font-weight:bold;">${answer ? esc(answer) : none}</p>`;
+      if (comment) html += `<p style="margin:0 0 6px;padding:8px 10px;background:#F5F0E4;border-radius:8px;white-space:pre-wrap;">${esc(comment)}</p>`;
+      text += `\n${item.text}\n  ${answer ?? "No answer"}\n`;
+      if (comment) text += `  Comment: ${comment}\n`;
+    } else {
+      const answer = answers[item.id];
+      html += `<p style="margin:10px 0 2px;">${esc(item.text)}</p><p style="margin:0 0 6px;${answer ? "padding:8px 10px;background:#F5F0E4;border-radius:8px;white-space:pre-wrap;" : ""}">${answer ? esc(answer) : none}</p>`;
+      text += `\n${item.text}\n  ${answer ?? "No answer"}\n`;
+    }
+  }
+  return {
+    to,
+    subject: `New response: ${formTitle}`,
+    html: layout(esc(formTitle), `<p style="margin:0 0 6px;color:#8A8371;">${homeName ? esc(homeName) + " · " : ""}A new response was submitted online.</p>${html}`),
+    text,
+  };
+}

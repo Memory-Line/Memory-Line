@@ -21,10 +21,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   const viewer = await getViewer();
   const professionalCalendar = await userHasFeature(session.user.id, "professional-calendar");
+  const questionnaires = await userHasFeature(session.user.id, "questionnaires");
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-bg">
-      <Sidebar isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} />
+      <Sidebar isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} questionnaires={questionnaires} />
       <div className="flex-1 min-w-0">
         <TopBar
           userName={session.user.name ?? session.user.email ?? "there"}

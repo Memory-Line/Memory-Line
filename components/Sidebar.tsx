@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText,
+  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -89,10 +89,13 @@ function NavItem({
 export default function Sidebar({
   isAdmin = false,
   professionalCalendar = false,
+  questionnaires = false,
 }: {
   isAdmin?: boolean;
   // Only for accounts with the professional calendar switched on.
   professionalCalendar?: boolean;
+  // Only for accounts with the questionnaires feature switched on.
+  questionnaires?: boolean;
 }) {
   const pathname = usePathname();
   // Phones: the menu is hidden behind a Menu button and slides in over the
@@ -140,6 +143,14 @@ export default function Sidebar({
           label="Shared files"
           active={pathname === "/dashboard/files"}
         />
+        {questionnaires && (
+          <NavItem
+            href="/dashboard/questionnaires"
+            icon={ClipboardList}
+            label="Questionnaires"
+            active={pathname === "/dashboard/questionnaires"}
+          />
+        )}
         <NavItem
           href="/dashboard/account"
           icon={UserCircle}
@@ -163,6 +174,12 @@ export default function Sidebar({
             icon={Mail}
             label="Mailing list"
             active={pathname === "/dashboard/admin/mailing-list"}
+          />
+          <NavItem
+            href="/dashboard/admin/forms"
+            icon={ClipboardList}
+            label="Questionnaires (admin)"
+            active={pathname === "/dashboard/admin/forms"}
           />
         </div>
       )}

@@ -14,6 +14,11 @@ export const FEATURES = [
     label: "Completion tracking",
     description: "A Completed button on every activity, with progress for each category",
   },
+  {
+    key: "questionnaires",
+    label: "Questionnaires",
+    description: "Online questionnaires with a link and QR code; answers are emailed to the home",
+  },
 ] as const;
 
 export type FeatureKey = (typeof FEATURES)[number]["key"];
