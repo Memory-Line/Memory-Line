@@ -20,7 +20,7 @@ export async function loadRota(userId: string, calendar: string): Promise<RotaCo
   const row = await prisma.calendarRota.findUnique({ where: { userId_calendar: { userId, calendar } } });
   if (!row) return null;
   return {
-    enabled: row.enabled,
+    months: row.months,
     mode: row.mode === "custom" ? "custom" : "preset",
     startDate: row.startDate,
     slots: cleanSlots(row.slots),

@@ -19,7 +19,9 @@ export const PRESET_ROTA: string[][] = [
 export const ROTA_ACTIVITIES = Array.from(new Set(PRESET_ROTA.flat())).sort((a, b) => a.localeCompare(b));
 
 export type RotaConfig = {
-  enabled: boolean;
+  // The months the rota is switched on for, as "YYYY-MM" (e.g. "2026-11"). It
+  // only shows on those months, not on the whole calendar.
+  months: string[];
   mode: "preset" | "custom";
   startDate: string; // YYYY-MM-DD, the Monday that Week 1 starts on
   slots: string[][]; // 4 weeks x 5 days, used when mode is "custom"
@@ -46,20 +48,33 @@ export function blankSlots(): string[][] {
   return Array.from({ length: ROTA_WEEKS }, () => Array(ROTA_DAYS).fill(""));
 }
 
-export function defaultRota(): RotaConfig {
+export const rotaMonthKey = (year: number, monthIndex: number) => `${year}-${String(monthIndex + 1).padStart(2, "0")}`;
+
+// The first Monday on or after the 1st of a month: where a rota switched on for
+// that month starts its Week 1 unless the person picks another Monday.
+export function firstMondayOfMonth(year: number, monthIndex: number) {
+  const first = new Date(year, monthIndex, 1);
+  first.setDate(first.getDate() + ((8 - first.getDay()) % 7));
+  return first;
+}
+
+// A new rota, not on for any month yet. Week 1 starts on the first Monday of the
+// month being looked at.
+export function defaultRota(year = new Date().getFullYear(), monthIndex = new Date().getMonth()): RotaConfig {
   return {
-    enabled: false,
+    months: [],
     mode: "preset",
-    startDate: toInputDate(mondayOf(new Date())),
+    startDate: toInputDate(firstMondayOfMonth(year, monthIndex)),
     slots: PRESET_ROTA.map((row) => [...row]),
   };
 }
 
-// The rota's activity for one date, or null (rota off, weekend, or an empty slot).
-// Weeks before the start date continue the same pattern backwards, so moving the
-// start date only changes which week comes first.
+// The rota's activity for one date, or null (rota not on for that month, a
+// weekend, or an empty slot). The 4-week pattern runs on from the start date,
+// continuing backwards before it too, so moving the start date only changes which
+// week comes first.
 export function rotaLabelFor(config: RotaConfig | null | undefined, date: Date): string | null {
-  if (!config?.enabled) return null;
+  if (!config?.months.includes(rotaMonthKey(date.getFullYear(), date.getMonth()))) return null;
   const weekday = (date.getDay() + 6) % 7;
   if (weekday >= ROTA_DAYS) return null;
   const start = fromInputDate(config.startDate);

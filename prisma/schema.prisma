@@ -74,7 +74,8 @@ model CalendarRota {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   calendar  String   @default("activity") // activity | professional
-  enabled   Boolean  @default(false)
+  enabled   Boolean  @default(false)      // older: the whole calendar; now just kept in step with months
+  months    String[] @default([])         // the months the rota is on for, "YYYY-MM"
   mode      String   @default("preset")   // preset | custom
   startDate String                        // YYYY-MM-DD, the Monday Week 1 starts on
   slots     Json?                         // 4 weeks x 5 days of text, used when mode is custom

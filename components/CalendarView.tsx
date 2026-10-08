@@ -263,7 +263,7 @@ export default function CalendarView({
       custom: false,
     });
   }
-  if (rota?.enabled) {
+  if (rota) {
     for (let d = 1; d <= daysInMonth; d++) {
       const label = rotaLabelFor(rota, new Date(year, monthIndex, d));
       if (label) {
@@ -560,7 +560,7 @@ export default function CalendarView({
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
         {/* The weekly rota tick box sits just above the calendar (not printed). */}
-        <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} />
+        <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} year={year} monthIndex={monthIndex} />
         {/* Weekday header pills */}
         <div className="cal-weekday-row" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
