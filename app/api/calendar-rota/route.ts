@@ -23,20 +23,23 @@ export async function GET(req: Request) {
 
 const bodySchema = z.object({
   calendar: calendarSchema,
-  enabled: z.boolean(),
+  // The months the rota is on for, as "YYYY-MM".
+  months: z.array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/)).max(240),
   mode: z.enum(["preset", "custom"]),
   startDate: z.string(),
   slots: z.array(z.array(z.string().max(60)).length(ROTA_DAYS)).length(ROTA_WEEKS),
 });
 
-// Saves the rota (on/off, preset or custom, start Monday, and the custom slots).
+// Saves the rota: which months it's on for, preset or custom, the start Monday,
+// and the custom slots.
 export async function PUT(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
 
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "That rota isn't valid." }, { status: 400 });
-  const { calendar, enabled, mode, slots } = parsed.data;
+  const { calendar, mode, slots } = parsed.data;
+  const months = Array.from(new Set(parsed.data.months)).sort();
 
   // The start date has to be a real Monday.
   const start = fromInputDate(parsed.data.startDate);
@@ -51,7 +54,13 @@ export async function PUT(req: Request) {
       : (await getViewer()).isPremium;
   if (!allowed) return NextResponse.json({ error: "Your plan doesn't include this calendar." }, { status: 403 });
 
-  const data = { enabled, mode, startDate: parsed.data.startDate, slots: cleanSlots(slots.map((r) => r.map((c) => c.trim()))) };
+  const data = {
+    enabled: months.length > 0, // kept in step for older code; the months are what count
+    months,
+    mode,
+    startDate: parsed.data.startDate,
+    slots: cleanSlots(slots.map((r) => r.map((c) => c.trim()))),
+  };
   await prisma.calendarRota.upsert({
     where: { userId_calendar: { userId: session.user.id, calendar } },
     create: { userId: session.user.id, calendar, ...data },

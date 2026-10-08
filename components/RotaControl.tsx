@@ -10,12 +10,21 @@ import {
   defaultRota,
   fromInputDate,
   mondayOf,
+  rotaMonthKey,
   toInputDate,
   type RotaConfig,
 } from "@/lib/rota";
 
-// The weekly rota on the calendar: a tick box to show or hide it, and a window to
-// choose the preset rota or make your own, and which Monday Week 1 starts on.
+// The weekly rota on the calendar: a tick box to show or hide it for the month
+// being looked at (it applies to that month only, not the whole calendar), and a
+// window to choose the preset rota or make your own, which Monday Week 1 starts
+// on, and which months it's on for.
+
+const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const monthName = (key: string) => {
+  const [y, m] = key.split("-");
+  return `${MONTH_NAMES[Number(m) - 1]} ${y}`;
+};
 
 const labelStyle: CSSProperties = { fontSize: 12, fontWeight: 700, color: "#3F3237", marginBottom: 5, display: "block" };
 const inputStyle: CSSProperties = {
@@ -34,14 +43,22 @@ export default function RotaControl({
   signedIn,
   rota,
   onChange,
+  year,
+  monthIndex,
 }: {
   variant: "activity" | "professional";
   signedIn: boolean;
   rota: RotaConfig | null;
   onChange: (rota: RotaConfig | null) => void;
+  // The month on screen: the tick box switches the rota on or off for this month only.
+  year: number;
+  monthIndex: number;
 }) {
+  const monthKey = rotaMonthKey(year, monthIndex);
+  const thisMonth = monthName(monthKey);
+  const onForThisMonth = !!rota?.months.includes(monthKey);
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<RotaConfig>(defaultRota());
+  const [draft, setDraft] = useState<RotaConfig>(defaultRota(year, monthIndex));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,10 +80,11 @@ export default function RotaControl({
     return true;
   }
 
-  // The tick box: switches the rota on or off straight away.
-  async function toggle(enabled: boolean) {
-    const base = rota ?? defaultRota();
-    const ok = await save({ ...base, enabled });
+  // The tick box: switches the rota on or off for the month on screen, straight away.
+  async function toggle(on: boolean) {
+    const base = rota ?? defaultRota(year, monthIndex);
+    const months = on ? Array.from(new Set([...base.months, monthKey])) : base.months.filter((m) => m !== monthKey);
+    const ok = await save({ ...base, months });
     if (!ok && !open) window.alert("The rota couldn't be changed just now. Please try again.");
   }
 
@@ -86,7 +104,11 @@ export default function RotaControl({
   }
 
   function openDialog() {
-    setDraft(rota ? { ...rota, slots: rota.slots.map((r) => [...r]) } : { ...defaultRota(), enabled: true });
+    setDraft(
+      rota
+        ? { ...rota, months: [...rota.months], slots: rota.slots.map((r) => [...r]) }
+        : { ...defaultRota(year, monthIndex), months: [monthKey] }
+    );
     setError(null);
     setOpen(true);
   }
@@ -110,11 +132,11 @@ export default function RotaControl({
       {/* A small tick box and link above the calendar (not printed). */}
       <div className="cal-no-print" style={{ display: "flex", alignItems: "center", gap: 14, fontSize: 12.5, color: "#6B5F57", margin: "0 0 6px" }}>
         <label
-          title={signedIn ? "Show or hide your weekly rota" : "Sign in to use the weekly rota"}
+          title={signedIn ? `Show or hide your weekly rota for ${thisMonth} only` : "Sign in to use the weekly rota"}
           style={{ display: "inline-flex", alignItems: "center", gap: 5, cursor: signedIn ? "pointer" : "not-allowed", opacity: signedIn ? 1 : 0.55 }}
         >
-          <input type="checkbox" disabled={!signedIn || saving} checked={!!rota?.enabled} onChange={(e) => toggle(e.target.checked)} />
-          Weekly rota
+          <input type="checkbox" disabled={!signedIn || saving} checked={onForThisMonth} onChange={(e) => toggle(e.target.checked)} />
+          Weekly rota for {thisMonth}
         </label>
         <button
           onClick={() => signedIn && openDialog()}
@@ -140,14 +162,40 @@ export default function RotaControl({
               <button onClick={() => setOpen(false)} style={{ border: "none", background: "none", color: "#8A7A6B", fontSize: 16, cursor: "pointer" }}>×</button>
             </div>
             <p style={{ fontSize: 12.5, color: "#8A7A6B", margin: "0 0 14px" }}>
-              A 4-week pattern, Monday to Friday, that repeats on your calendar. It shows on the screen, in printouts and on shared calendar
-              links, and disappears when you untick it. Your own events aren't touched.
+              A 4-week pattern, Monday to Friday. It only shows on the months you switch it on for, on the screen, in printouts and on
+              shared calendar links. Your own events aren't touched.
             </p>
 
-            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, marginBottom: 14, cursor: "pointer" }}>
-              <input type="checkbox" checked={draft.enabled} onChange={(e) => setDraft({ ...draft, enabled: e.target.checked })} />
-              Show the rota on my calendar
+            <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 600, marginBottom: 8, cursor: "pointer" }}>
+              <input
+                type="checkbox"
+                checked={draft.months.includes(monthKey)}
+                onChange={(e) =>
+                  setDraft({
+                    ...draft,
+                    months: e.target.checked ? Array.from(new Set([...draft.months, monthKey])) : draft.months.filter((m) => m !== monthKey),
+                  })
+                }
+              />
+              Show the rota on {thisMonth}
             </label>
+            {draft.months.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginBottom: 14, fontSize: 12.5 }}>
+                <span style={{ color: "#8A7A6B" }}>On for:</span>
+                {[...draft.months].sort().map((m) => (
+                  <span key={m} style={{ background: "#F2E2B8", color: "#6B5723", borderRadius: 8, padding: "3px 4px 3px 9px", fontWeight: 700 }}>
+                    {monthName(m)}{" "}
+                    <button
+                      onClick={() => setDraft({ ...draft, months: draft.months.filter((x) => x !== m) })}
+                      aria-label={`Switch off for ${monthName(m)}`}
+                      style={{ border: "none", background: "none", color: "#6B5723", cursor: "pointer", fontSize: 14, padding: "0 4px" }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
 
             <span style={labelStyle}>Which rota?</span>
             <div style={{ display: "grid", gap: 6, marginBottom: 14, fontSize: 13.5 }}>
