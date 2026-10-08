@@ -73,6 +73,33 @@ export default function MonthPrint({
     const sheet = sheetRef.current;
     if (!sheet) return;
     const cut: string[] = [];
+
+    // Give each week row the height its busiest day needs. A week where every day
+    // has a single short event gets a short row, and the space it frees is shared
+    // out to the other weeks (the extra is split evenly once every row has what it
+    // needs; if the page is too full, rows shrink in proportion).
+    const grid = sheet.querySelector<HTMLElement>("[data-month-grid]");
+    if (grid) {
+      grid.style.gridTemplateRows = `repeat(${weeks}, max-content)`;
+      const gap = parseFloat(getComputedStyle(grid).rowGap) || 0;
+      const floor = 30;
+      const need: number[] = Array(weeks).fill(floor);
+      grid.querySelectorAll<HTMLElement>("[data-month-cell]").forEach((cell) => {
+        const row = Number(cell.getAttribute("data-row"));
+        const cs = getComputedStyle(cell);
+        const h =
+          (cell.querySelector<HTMLElement>("[data-cell-head]")?.offsetHeight ?? 0) +
+          (cell.querySelector<HTMLElement>("[data-cell-events]")?.offsetHeight ?? 0) +
+          parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) + 4;
+        if (h > need[row]) need[row] = h;
+      });
+      const avail = grid.clientHeight - gap * (weeks - 1);
+      const total = need.reduce((a, b) => a + b, 0);
+      const heights =
+        total <= avail ? need.map((n) => n + (avail - total) / weeks) : need.map((n) => (n / total) * avail);
+      grid.style.gridTemplateRows = heights.map((h) => `${h}px`).join(" ");
+    }
+
     sheet.querySelectorAll<HTMLElement>("[data-month-cell]").forEach((cell) => {
       const head = cell.querySelector<HTMLElement>("[data-cell-head]");
       const evs = cell.querySelector<HTMLElement>("[data-cell-events]");
@@ -188,6 +215,7 @@ export default function MonthPrint({
 
         {/* Days */}
         <div
+          data-month-grid
           style={{
             flex: 1,
             minHeight: 0,
@@ -206,6 +234,7 @@ export default function MonthPrint({
                 key={i}
                 data-month-cell
                 data-day={day}
+                data-row={Math.floor(i / 7)}
                 style={{ border: "0.3mm solid #EAE4D6", borderRadius: "1.8mm", padding: "1.2mm", overflow: "hidden", display: "flex", flexDirection: "column", fontFamily: "Helvetica, Arial, sans-serif", minHeight: 0 }}
               >
                 <div data-cell-head style={{ fontSize: "9pt", fontWeight: 700, lineHeight: 1.1, marginBottom: "0.6mm", flex: "0 0 auto" }}>
