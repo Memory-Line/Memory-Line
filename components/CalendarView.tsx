@@ -7,6 +7,7 @@ import Image from "next/image";
 import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import RangePrint from "@/components/RangePrint";
+import MonthPrint from "@/components/MonthPrint";
 import ShareCalendar from "@/components/ShareCalendar";
 import RotaControl from "@/components/RotaControl";
 import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
@@ -362,22 +363,15 @@ export default function CalendarView({
     }
   }
 
+  // Printing builds a separate sheet (components/MonthPrint.tsx) that fits every
+  // day's events and the notes box on the one page, rather than printing the
+  // on-screen calendar, which cut off days with several or long events.
+  const [printJob, setPrintJob] = useState<null | { size: "A4" | "A3" }>(null);
+  const [printNotice, setPrintNotice] = useState<string | null>(null);
   function handlePrint(size: "A4" | "A3") {
-    let styleEl = document.getElementById("dynamic-print-page");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "dynamic-print-page";
-      document.head.appendChild(styleEl);
-    }
-    // Page margin 0 stops the browser printing its own header and footer (page
-    // title, date, web address) in the margin; the 10mm gap is padding on the
-    // print area instead, so the usable space is the same as before.
-    styleEl.textContent = `@page { size: ${size} landscape; margin: 0; }`;
-
-    const wrapper = document.getElementById("calendar-print-area");
-    if (wrapper) wrapper.setAttribute("data-print-size", size);
-
-    setTimeout(() => window.print(), 50);
+    if (printJob) return;
+    setPrintNotice(null);
+    setPrintJob({ size });
   }
 
   return (
@@ -448,6 +442,20 @@ export default function CalendarView({
           .cal-event-tab { font-size: 9.5px !important; padding: 2px 3px !important; line-height: 1.15 !important; overflow-wrap: anywhere; hyphens: auto; }
         }
       `}</style>
+      {printJob && (
+        <MonthPrint
+          size={printJob.size}
+          year={year}
+          monthIndex={monthIndex}
+          professional={professional}
+          eventsByDay={Object.fromEntries(
+            Object.entries(eventsByDay).map(([d, list]) => [d, list.map((e) => ({ label: e.label, time: e.time }))])
+          )}
+          notes={{ include: notesInclude, text: notesText, colour: notesColour }}
+          onDone={() => setPrintJob(null)}
+          onNotice={setPrintNotice}
+        />
+      )}
             <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
 
         {/* Header row: icon left, title centre, year pill right — grid keeps the centre column
@@ -559,6 +567,11 @@ export default function CalendarView({
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
+        {printNotice && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12.5, color: "#7A3A44", background: "#F2D6DA", borderRadius: 8, padding: "8px 12px", margin: "0 0 16px" }}>
+            {printNotice}
+          </p>
+        )}
         {/* The weekly rota tick box sits just above the calendar (not printed). */}
         <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} year={year} monthIndex={monthIndex} />
         {/* Weekday header pills */}
