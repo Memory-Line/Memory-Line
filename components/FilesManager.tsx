@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { upload } from "@vercel/blob/client";
 import {
-  MAX_FOLDERS,
-  MAX_ITEMS_PER_LINK,
+  MAX_CATEGORIES,
+  MAX_ITEMS_PER_CATEGORY,
   MAX_SHARED_FILES,
   MAX_SHARED_FILE_MB,
   blobPathFor,
@@ -12,32 +12,28 @@ import {
 } from "@/lib/sharedFiles";
 import QrCodeButton from "@/components/QrCodeButton";
 
-type Item = { id: string; contentType: string; sizeBytes: number };
-type Link = { id: string; token: string; title: string; allowDownload: boolean; folderId: string | null; updatedAt: string; items: Item[] };
-type Folder = { id: string; name: string; token: string | null };
-
-const ALL = "all";
-const NONE = "none"; // links that are not in any folder
+type Item = { id: string; categoryId: string | null; contentType: string; sizeBytes: number };
+type Category = { id: string; name: string };
+type Link = { id: string; token: string; title: string; allowDownload: boolean; updatedAt: string; categories: Category[]; items: Item[] };
+type Draft = { key: number; name: string; files: File[] };
 
 const kindLabel = (t: string) => (t === "application/pdf" ? "PDF" : t === "image/png" ? "PNG" : "JPG");
 const sizeLabel = (b: number) => (b >= 1024 * 1024 ? `${(b / (1024 * 1024)).toFixed(1)}MB` : `${Math.max(1, Math.round(b / 1024))}KB`);
 
 export default function FilesManager() {
   const [links, setLinks] = useState<Link[] | null>(null);
-  const [folders, setFolders] = useState<Folder[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [view, setView] = useState<string>(ALL); // ALL, NONE or a folder id
   const [title, setTitle] = useState("");
   const [allowDownload, setAllowDownload] = useState(false);
-  const [picked, setPicked] = useState<File | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [working, setWorking] = useState<string | null>(null); // id of the link or file being changed
+  const [drafts, setDrafts] = useState<Draft[]>([{ key: 1, name: "", files: [] }]);
+  const nextKey = useRef(2);
+  const [busy, setBusy] = useState<string | null>(null); // progress message while making a link
+  const [working, setWorking] = useState<string | null>(null); // id of the section or file being changed
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
-  const createInput = useRef<HTMLInputElement>(null);
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
-  const addFor = useRef<string | null>(null);
+  const addFor = useRef<{ linkId: string; categoryId: string | null } | null>(null);
   const replaceFor = useRef<{ linkId: string; itemId: string } | null>(null);
 
   useEffect(() => {
@@ -45,14 +41,12 @@ export default function FilesManager() {
       .then((r) => r.json())
       .then((d) => {
         setLinks(d.files ?? []);
-        setFolders(d.folders ?? []);
         setUserId(d.userId ?? null);
       })
       .catch(() => setLinks([]));
   }, []);
 
   const urlFor = (token: string) => `${window.location.origin}/f/${token}`;
-  const folderUrl = (token: string) => `${window.location.origin}/h/${token}`;
   const setOne = (link: Link) => setLinks((prev) => (prev ?? []).map((l) => (l.id === link.id ? link : l)));
 
   async function send(url: string, method: string, body?: FormData | Record<string, unknown>): Promise<any | undefined> {
@@ -79,7 +73,7 @@ export default function FilesManager() {
     }
     const checked = await checkUpload(file);
     if ("error" in checked) {
-      setError(checked.error);
+      setError(`${file.name}: ${checked.error}`);
       return null;
     }
     try {
@@ -95,28 +89,41 @@ export default function FilesManager() {
     }
   }
 
+  // ----- making a new link -----
+  const setDraft = (key: number, change: Partial<Draft>) => setDrafts((prev) => prev.map((d) => (d.key === key ? { ...d, ...change } : d)));
+
   async function create(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!picked) return setError("Choose a file first.");
     if (!title.trim()) return setError("Give the link a title.");
-    setBusy(true);
-    const blobUrl = await uploadFile(picked, title);
-    if (!blobUrl) return setBusy(false);
-    const data = await send("/api/shared-files", "POST", {
-      blobUrl,
-      title,
-      allowDownload,
-      folderId: folders.some((f) => f.id === view) ? view : "",
-    });
-    setBusy(false);
+    const several = drafts.length > 1;
+    if (several && drafts.some((d) => !d.name.trim())) return setError("Give every section a name.");
+    if (drafts.some((d) => d.files.length === 0)) return setError("Choose at least one file for every section.");
+    if (drafts.some((d) => d.files.length > MAX_ITEMS_PER_CATEGORY)) return setError(`A section can hold up to ${MAX_ITEMS_PER_CATEGORY} files.`);
+
+    const total = drafts.reduce((n, d) => n + d.files.length, 0);
+    let done = 0;
+    const categories: { name: string; blobUrls: string[] }[] = [];
+    for (const d of drafts) {
+      const blobUrls: string[] = [];
+      for (const f of d.files) {
+        setBusy(`Uploading file ${done + 1} of ${total}...`);
+        const url = await uploadFile(f, title);
+        if (!url) return setBusy(null);
+        blobUrls.push(url);
+        done++;
+      }
+      categories.push({ name: several ? d.name : "", blobUrls });
+    }
+    setBusy("Making your link...");
+    const data = await send("/api/shared-files", "POST", { title, allowDownload, categories });
+    setBusy(null);
     const link: Link | undefined = data?.file;
     if (!link) return;
     setLinks((prev) => [link, ...(prev ?? [])]);
     setTitle("");
-    setPicked(null);
     setAllowDownload(false);
-    if (createInput.current) createInput.current.value = "";
+    setDrafts([{ key: nextKey.current++, name: "", files: [] }]);
     copy(link.token);
   }
 
@@ -129,6 +136,7 @@ export default function FilesManager() {
     }
   }
 
+  // ----- changing an existing link -----
   async function toggleDownload(l: Link) {
     setError(null);
     const form = new FormData();
@@ -147,14 +155,6 @@ export default function FilesManager() {
     if (data?.file) setOne(data.file);
   }
 
-  async function moveLink(l: Link, folderId: string) {
-    setError(null);
-    const form = new FormData();
-    form.append("folderId", folderId);
-    const data = await send(`/api/shared-files/${l.id}`, "PATCH", form);
-    if (data?.file) setOne(data.file);
-  }
-
   async function deleteLink(l: Link) {
     if (!window.confirm(`Delete "${l.title}"? All its files will be deleted for good and the link will stop working.`)) return;
     setError(null);
@@ -162,16 +162,42 @@ export default function FilesManager() {
     if (res.ok) setLinks((prev) => (prev ?? []).filter((x) => x.id !== l.id));
   }
 
+  async function addSection(l: Link) {
+    const name = window.prompt("Name the new section (for example Menu, Calendar or Complaints form)");
+    if (!name || !name.trim()) return;
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/categories`, "POST", { name });
+    if (data?.file) setOne(data.file);
+  }
+
+  async function renameSection(l: Link, c: Category) {
+    const name = window.prompt("New section name", c.name);
+    if (!name || !name.trim()) return;
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/categories/${c.id}`, "PATCH", { name });
+    if (data?.file) setOne(data.file);
+  }
+
+  async function deleteSection(l: Link, c: Category) {
+    const count = l.items.filter((i) => i.categoryId === c.id).length;
+    if (!window.confirm(`Delete the section "${c.name}"${count ? ` and its ${count} file${count === 1 ? "" : "s"}` : ""}? This can't be undone.`)) return;
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/categories/${c.id}`, "DELETE");
+    if (data?.file) setOne(data.file);
+  }
+
   async function onAdd(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
-    const id = addFor.current;
+    const target = addFor.current;
     e.target.value = "";
-    if (!file || !id) return;
+    if (!file || !target) return;
     setError(null);
-    setWorking(id);
-    const link = links?.find((l) => l.id === id);
+    setWorking(target.categoryId ?? target.linkId);
+    const link = links?.find((l) => l.id === target.linkId);
     const blobUrl = await uploadFile(file, link?.title ?? "file");
-    const data = blobUrl ? await send(`/api/shared-files/${id}/items`, "POST", { blobUrl }) : undefined;
+    const data = blobUrl
+      ? await send(`/api/shared-files/${target.linkId}/items`, "POST", { blobUrl, categoryId: target.categoryId ?? "" })
+      : undefined;
     setWorking(null);
     if (data?.file) setOne(data.file);
   }
@@ -190,93 +216,162 @@ export default function FilesManager() {
     if (data?.file) setOne(data.file);
   }
 
-  async function removeItem(l: Link, item: Item, n: number) {
-    if (!window.confirm(`Remove file ${n} from "${l.title}"? It will be deleted for good.`)) return;
+  async function moveItem(l: Link, item: Item, categoryId: string) {
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/items/${item.id}`, "PATCH", { categoryId });
+    if (data?.file) setOne(data.file);
+  }
+
+  async function removeItem(l: Link, item: Item) {
+    if (!window.confirm(`Remove this file from "${l.title}"? It will be deleted for good.`)) return;
     setError(null);
     const data = await send(`/api/shared-files/${l.id}/items/${item.id}`, "DELETE");
     if (data?.file) setOne(data.file);
   }
 
-  async function newFolder() {
-    const name = window.prompt("Name the new folder (for example Menus, Newsletters or Room pictures)");
-    if (!name || !name.trim()) return;
-    setError(null);
-    const data = await send("/api/shared-folders", "POST", { name });
-    if (data?.folder) {
-      setFolders((prev) => [...prev, { ...data.folder, token: null }]);
-      setView(data.folder.id);
-    }
-  }
-
-  async function shareFolder(f: Folder) {
-    setError(null);
-    const data = await send(`/api/shared-folders/${f.id}/share`, "POST");
-    if (data?.token) setFolders((prev) => prev.map((x) => (x.id === f.id ? { ...x, token: data.token } : x)));
-  }
-
-  async function stopSharingFolder(f: Folder) {
-    if (!window.confirm(`Switch off the page for "${f.name}"? Its link and QR code will stop working. Your links inside it are kept.`)) return;
-    setError(null);
-    const res = await fetch(`/api/shared-folders/${f.id}/share`, { method: "DELETE" });
-    if (!res.ok) return setError("That didn't work. Please try again.");
-    setFolders((prev) => prev.map((x) => (x.id === f.id ? { ...x, token: null } : x)));
-  }
-
-  async function renameFolder(f: Folder) {
-    const name = window.prompt("New folder name", f.name);
-    if (!name || !name.trim()) return;
-    setError(null);
-    const data = await send(`/api/shared-folders/${f.id}`, "PATCH", { name });
-    if (data?.folder) setFolders((prev) => prev.map((x) => (x.id === f.id ? { ...x, name: data.folder.name } : x)));
-  }
-
-  async function deleteFolder(f: Folder) {
-    if (!window.confirm(`Delete the folder "${f.name}"? Your links are kept, they just won't be in a folder any more.`)) return;
-    setError(null);
-    const res = await fetch(`/api/shared-folders/${f.id}`, { method: "DELETE" });
-    if (!res.ok) return setError("That didn't work. Please try again.");
-    setFolders((prev) => prev.filter((x) => x.id !== f.id));
-    setLinks((prev) => (prev ?? []).map((l) => (l.folderId === f.id ? { ...l, folderId: null } : l)));
-    setView(ALL);
-  }
-
   const field = "w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage bg-white";
   const accept = "application/pdf,image/jpeg,image/png";
-  const unfiledCount = (links ?? []).filter((l) => !l.folderId).length;
-  const shown = (links ?? []).filter((l) => (view === ALL ? true : view === NONE ? !l.folderId : l.folderId === view));
-  const currentFolder = folders.find((f) => f.id === view) ?? null;
-  const tab = (active: boolean) =>
-    `rounded-full px-3.5 py-1.5 text-xs font-semibold border transition-colors ${
-      active ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line hover:bg-cardTint"
-    }`;
+  const smallBtn = "text-sageDeep underline font-semibold";
+
+  function fileRow(l: Link, item: Item, n: number) {
+    return (
+      <div key={item.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <span className="text-ink">
+          {n}. {kindLabel(item.contentType)} · {sizeLabel(item.sizeBytes)}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            replaceFor.current = { linkId: l.id, itemId: item.id };
+            replaceInput.current?.click();
+          }}
+          disabled={working === item.id}
+          className={`${smallBtn} disabled:opacity-60`}
+        >
+          {working === item.id ? "Replacing..." : "Replace"}
+        </button>
+        {l.categories.length > 0 && (
+          <label className="flex items-center gap-1 text-inkSoft">
+            Move to
+            <select
+              value={item.categoryId ?? ""}
+              onChange={(e) => moveItem(l, item, e.target.value)}
+              className="rounded-lg border border-line bg-white px-1.5 py-0.5 text-xs"
+            >
+              <option value="">No section</option>
+              {l.categories.map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
+        {l.items.length > 1 && (
+          <button type="button" onClick={() => removeItem(l, item)} className="text-red-600 underline font-semibold">
+            Remove
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  function addFileButton(l: Link, categoryId: string | null) {
+    const count = l.items.filter((i) => (categoryId ? i.categoryId === categoryId : !i.categoryId)).length;
+    if (count >= MAX_ITEMS_PER_CATEGORY) return <p className="text-xs text-inkSoft mt-1">Full ({MAX_ITEMS_PER_CATEGORY} files).</p>;
+    const id = categoryId ?? l.id;
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          addFor.current = { linkId: l.id, categoryId };
+          addInput.current?.click();
+        }}
+        disabled={working === id}
+        className="mt-1.5 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint disabled:opacity-60"
+      >
+        {working === id ? "Adding..." : "+ Add a file"}
+      </button>
+    );
+  }
 
   return (
     <div>
       <form onSubmit={create} className="rounded-xl p-4 mt-6 bg-card border border-line space-y-3">
-        <p className="text-sm font-semibold">Make a new link{currentFolder ? ` in "${currentFolder.name}"` : ""}</p>
+        <p className="text-sm font-semibold">Make a new link</p>
         <div>
-          <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="file-title">Title</label>
-          <input id="file-title" className={field} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} placeholder="e.g. This week's menu, or Room 12" />
+          <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="file-title">1. Title of the page</label>
+          <input id="file-title" className={field} value={title} onChange={(e) => setTitle(e.target.value)} maxLength={100} placeholder="e.g. Information for families" />
         </div>
+
         <div>
-          <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="file-pick">First file (PDF, JPG or PNG, up to {MAX_SHARED_FILE_MB}MB)</label>
-          <input id="file-pick" ref={createInput} type="file" accept={accept} onChange={(e) => setPicked(e.target.files?.[0] ?? null)} className="text-sm" />
+          <p className="block text-xs font-semibold text-inkSoft mb-1">2. Sections and their files</p>
+          <p className="text-xs text-inkSoft mb-2">
+            Visitors scan one QR code and see your sections as buttons, such as Menu, Calendar and Complaints form. They tap a
+            button to see the files in it. Up to {MAX_ITEMS_PER_CATEGORY} files in each section, PDF, JPG or PNG, up to {MAX_SHARED_FILE_MB}MB each.
+            If you only have one group of files, leave the section name blank.
+          </p>
+          <div className="space-y-2">
+            {drafts.map((d, idx) => (
+              <div key={d.key} className="rounded-lg border border-line bg-white p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    className={field}
+                    value={d.name}
+                    onChange={(e) => setDraft(d.key, { name: e.target.value })}
+                    maxLength={100}
+                    placeholder={drafts.length > 1 ? `Section ${idx + 1} name, e.g. Menu` : "Section name (optional), e.g. Menu"}
+                    aria-label={`Section ${idx + 1} name`}
+                  />
+                  {drafts.length > 1 && (
+                    <button type="button" onClick={() => setDrafts((prev) => prev.filter((x) => x.key !== d.key))} className="text-xs text-red-600 underline font-semibold whitespace-nowrap">
+                      Remove section
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  multiple
+                  accept={accept}
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    setDraft(d.key, { files: picked });
+                  }}
+                  className="text-sm"
+                  aria-label={`Files for section ${idx + 1}`}
+                />
+                {d.files.length > 0 && (
+                  <p className="text-xs text-inkSoft">
+                    {d.files.length} file{d.files.length === 1 ? "" : "s"}: {d.files.map((f) => f.name).join(", ")}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          {drafts.length < MAX_CATEGORIES && (
+            <button
+              type="button"
+              onClick={() => setDrafts((prev) => [...prev, { key: nextKey.current++, name: "", files: [] }])}
+              className="mt-2 rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
+            >
+              + Add another section
+            </button>
+          )}
         </div>
+
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={allowDownload} onChange={(e) => setAllowDownload(e.target.checked)} />
           Let visitors download the files
         </label>
         <p className="text-xs text-inkSoft">
-          You can add up to {MAX_ITEMS_PER_LINK} files to each link once it's made, such as several photos of a room. Anyone with
-          the link can see what's on it, so don't share residents' names or private details. Delete a link at any time.
+          Anyone with the link can see what's on it, so don't share residents' names or private details. You can add, rename or
+          remove sections and files later, and delete a link at any time.
         </p>
         {error && <p className="text-xs text-red-600">{error}</p>}
         <button
           type="submit"
-          disabled={busy || (links?.length ?? 0) >= MAX_SHARED_FILES}
+          disabled={!!busy || (links?.length ?? 0) >= MAX_SHARED_FILES}
           className="rounded-lg bg-sage text-white px-4 py-2 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-60"
         >
-          {busy ? "Uploading..." : "Upload and make my link"}
+          {busy ?? "Upload and make my link"}
         </button>
         {(links?.length ?? 0) >= MAX_SHARED_FILES && (
           <p className="text-xs text-inkSoft">You've reached {MAX_SHARED_FILES} links. Delete one to make another.</p>
@@ -284,171 +379,76 @@ export default function FilesManager() {
       </form>
 
       <h2 className="font-serif text-xl mt-8 mb-3">Your links</h2>
-
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        <button type="button" onClick={() => setView(ALL)} className={tab(view === ALL)}>
-          All ({links?.length ?? 0})
-        </button>
-        {folders.map((f) => (
-          <button key={f.id} type="button" onClick={() => setView(f.id)} className={tab(view === f.id)}>
-            {f.name} ({(links ?? []).filter((l) => l.folderId === f.id).length})
-          </button>
-        ))}
-        {folders.length > 0 && (
-          <button type="button" onClick={() => setView(NONE)} className={tab(view === NONE)}>
-            No folder ({unfiledCount})
-          </button>
-        )}
-        {folders.length < MAX_FOLDERS && (
-          <button type="button" onClick={newFolder} className="rounded-full px-3.5 py-1.5 text-xs font-semibold border border-dashed border-line text-sageDeep hover:bg-cardTint">
-            + New folder
-          </button>
-        )}
-      </div>
-      {currentFolder && (
-        <div className="rounded-xl p-4 mb-3 bg-card border border-line">
-          <p className="text-sm font-semibold">One link and QR code for this whole folder</p>
-          <p className="text-xs text-inkSoft mt-0.5">
-            Visitors scan one code and see a row of tabs, one for each link in this folder (for example Menu, Calendar and
-            Complaints form). Make a link inside the folder to add a tab, rename a link to rename its tab, and delete a link or
-            move it to another folder to remove its tab. Tabs show oldest first.
-          </p>
-          {currentFolder.token ? (
-            <>
-              <input
-                readOnly
-                value={folderUrl(currentFolder.token)}
-                onFocus={(e) => e.currentTarget.select()}
-                className="w-full rounded-lg border border-line px-2.5 py-1.5 text-xs bg-white mt-2"
-                aria-label="Folder link"
-              />
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await navigator.clipboard.writeText(folderUrl(currentFolder.token!));
-                      setCopied(currentFolder.token);
-                    } catch {
-                      setCopied(null);
-                    }
-                  }}
-                  className="text-sageDeep underline"
-                >
-                  {copied === currentFolder.token ? "Copied" : "Copy link"}
-                </button>
-                <QrCodeButton url={folderUrl(currentFolder.token)} title={currentFolder.name} className="text-sageDeep underline" />
-                <a href={`/h/${currentFolder.token}`} target="_blank" rel="noreferrer" className="text-sageDeep">Open</a>
-                <button type="button" onClick={() => stopSharingFolder(currentFolder)} className="text-red-600 underline">Switch off</button>
-              </div>
-            </>
-          ) : (
-            <button
-              type="button"
-              onClick={() => shareFolder(currentFolder)}
-              className="mt-2 rounded-lg bg-sage text-white px-4 py-2 font-semibold text-sm hover:bg-sageDeep transition-colors"
-            >
-              Make a link and QR code for this folder
-            </button>
-          )}
-          <div className="flex gap-4 text-xs font-semibold mt-3">
-            <button type="button" onClick={() => renameFolder(currentFolder)} className="text-sageDeep underline">Rename folder</button>
-            <button type="button" onClick={() => deleteFolder(currentFolder)} className="text-red-600 underline">Delete folder</button>
-          </div>
-        </div>
-      )}
-
       <input ref={addInput} type="file" accept={accept} onChange={onAdd} className="hidden" />
       <input ref={replaceInput} type="file" accept={accept} onChange={onReplace} className="hidden" />
       {links === null && <p className="text-sm text-inkSoft">Loading...</p>}
-      {links !== null && links.length === 0 && <p className="text-sm text-inkSoft">Nothing shared yet. Make a link above to get started.</p>}
-      {links !== null && links.length > 0 && shown.length === 0 && <p className="text-sm text-inkSoft">Nothing in here yet. Make a link above and it will go in this folder.</p>}
+      {links?.length === 0 && <p className="text-sm text-inkSoft">Nothing shared yet. Make a link above to get started.</p>}
       <div className="space-y-3">
-        {shown.map((l) => (
-          <div key={l.id} className="rounded-xl p-4 bg-card border border-line">
-            <p className="text-sm font-semibold break-words">{l.title}</p>
-            <input
-              readOnly
-              value={urlFor(l.token)}
-              onFocus={(e) => e.currentTarget.select()}
-              className="w-full rounded-lg border border-line px-2.5 py-1.5 text-xs bg-white mt-2"
-              aria-label="Link"
-            />
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs font-semibold">
-              <button type="button" onClick={() => copy(l.token)} className="text-sageDeep underline">
-                {copied === l.token ? "Copied" : "Copy link"}
-              </button>
-              <QrCodeButton url={urlFor(l.token)} title={l.title} className="text-sageDeep underline" />
-              <a href={`/f/${l.token}`} target="_blank" rel="noreferrer" className="text-sageDeep">Open</a>
-              <button type="button" onClick={() => rename(l)} className="text-sageDeep underline">Rename</button>
-              <label className="flex items-center gap-1 font-normal text-inkSoft cursor-pointer">
-                <input type="checkbox" checked={l.allowDownload} onChange={() => toggleDownload(l)} /> Visitors can download
-              </label>
-              <button type="button" onClick={() => deleteLink(l)} className="text-red-600 underline ml-auto">
-                Delete link
-              </button>
-            </div>
-            {folders.length > 0 && (
-              <label className="flex items-center gap-2 mt-2 text-xs text-inkSoft">
-                Folder
-                <select
-                  value={l.folderId ?? ""}
-                  onChange={(e) => moveLink(l, e.target.value)}
-                  className="rounded-lg border border-line bg-white px-2 py-1 text-xs"
-                >
-                  <option value="">No folder</option>
-                  {folders.map((f) => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
-                  ))}
-                </select>
-              </label>
-            )}
-
-            <div className="mt-3 border-t border-line pt-2">
-              <p className="text-xs font-semibold text-inkSoft mb-1">
-                Files on this link ({l.items.length} of {MAX_ITEMS_PER_LINK})
-              </p>
-              <div className="space-y-1">
-                {l.items.map((item, i) => (
-                  <div key={item.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                    <span className="text-ink">
-                      {i + 1}. {kindLabel(item.contentType)} · {sizeLabel(item.sizeBytes)}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        replaceFor.current = { linkId: l.id, itemId: item.id };
-                        replaceInput.current?.click();
-                      }}
-                      disabled={working === item.id}
-                      className="text-sageDeep underline font-semibold disabled:opacity-60"
-                    >
-                      {working === item.id ? "Replacing..." : "Replace"}
-                    </button>
-                    {l.items.length > 1 && (
-                      <button type="button" onClick={() => removeItem(l, item, i + 1)} className="text-red-600 underline font-semibold">
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              {l.items.length < MAX_ITEMS_PER_LINK && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    addFor.current = l.id;
-                    addInput.current?.click();
-                  }}
-                  disabled={working === l.id}
-                  className="mt-2 rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint disabled:opacity-60"
-                >
-                  {working === l.id ? "Adding..." : "+ Add another file"}
+        {links?.map((l) => {
+          const loose = l.items.filter((i) => !i.categoryId);
+          return (
+            <div key={l.id} className="rounded-xl p-4 bg-card border border-line">
+              <p className="text-sm font-semibold break-words">{l.title}</p>
+              <input
+                readOnly
+                value={urlFor(l.token)}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full rounded-lg border border-line px-2.5 py-1.5 text-xs bg-white mt-2"
+                aria-label="Link"
+              />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs font-semibold">
+                <button type="button" onClick={() => copy(l.token)} className="text-sageDeep underline">
+                  {copied === l.token ? "Copied" : "Copy link"}
                 </button>
-              )}
+                <QrCodeButton url={urlFor(l.token)} title={l.title} className="text-sageDeep underline" />
+                <a href={`/f/${l.token}`} target="_blank" rel="noreferrer" className="text-sageDeep">Open</a>
+                <button type="button" onClick={() => rename(l)} className="text-sageDeep underline">Rename</button>
+                <label className="flex items-center gap-1 font-normal text-inkSoft cursor-pointer">
+                  <input type="checkbox" checked={l.allowDownload} onChange={() => toggleDownload(l)} /> Visitors can download
+                </label>
+                <button type="button" onClick={() => deleteLink(l)} className="text-red-600 underline ml-auto">
+                  Delete link
+                </button>
+              </div>
+
+              <div className="mt-3 border-t border-line pt-2 space-y-3">
+                {l.categories.map((c) => {
+                  const inside = l.items.filter((i) => i.categoryId === c.id);
+                  return (
+                    <div key={c.id} className="rounded-lg bg-white border border-line p-2.5">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1">
+                        <p className="text-sm font-semibold">{c.name}</p>
+                        <button type="button" onClick={() => renameSection(l, c)} className={`text-xs ${smallBtn}`}>Rename</button>
+                        <button type="button" onClick={() => deleteSection(l, c)} className="text-xs text-red-600 underline font-semibold">Delete section</button>
+                      </div>
+                      {inside.length === 0 && <p className="text-xs text-inkSoft">No files yet. Add one so visitors see this section.</p>}
+                      <div className="space-y-1">{inside.map((item, i) => fileRow(l, item, i + 1))}</div>
+                      {addFileButton(l, c.id)}
+                    </div>
+                  );
+                })}
+                {(loose.length > 0 || l.categories.length === 0) && (
+                  <div className={l.categories.length > 0 ? "rounded-lg bg-white border border-line p-2.5" : ""}>
+                    <p className="text-xs font-semibold text-inkSoft mb-1">
+                      {l.categories.length > 0 ? "Files not in a section (shown under Other)" : "Files on this link"}
+                    </p>
+                    <div className="space-y-1">{loose.map((item, i) => fileRow(l, item, i + 1))}</div>
+                    {addFileButton(l, null)}
+                  </div>
+                )}
+                {l.categories.length < MAX_CATEGORIES && (
+                  <button
+                    type="button"
+                    onClick={() => addSection(l)}
+                    className="rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
+                  >
+                    + Add a section
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

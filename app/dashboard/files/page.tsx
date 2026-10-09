@@ -12,9 +12,9 @@ export default async function SharedFilesPage() {
     <div className="max-w-2xl">
       <h1 className="font-serif text-2xl sm:text-3xl">Shared files</h1>
       <p className="text-clay text-sm mt-0.5">
-        Upload a menu, newsletter or photos and get a link or QR code to put on your own website. Each link can hold up
-        to 10 files of up to 25MB each, and you can add, replace or delete them whenever you like. Use folders to keep
-        your links tidy.
+        Upload a menu, newsletter or photos and get a link or QR code to put on your own website. Split a link into
+        sections you name yourself, such as Menu, Calendar and Complaints form, and visitors tap the one they want. Each
+        section can hold up to 10 files of up to 25MB each, and you can add, rename or delete sections and files whenever you like.
       </p>
       {viewer.isPremium ? (
         <FilesManager />
