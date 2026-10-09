@@ -185,6 +185,29 @@ model MailingContact {
   createdAt      DateTime  @default(now())
 }
 
+// An email written on the Mailing list page and sent in batches to the people who
+// agreed to get updates. The deliveries record who already has it, so nobody is
+// sent the same email twice.
+model MailingCampaign {
+  id          String            @id @default(cuid())
+  subject     String
+  body        String
+  buttonLabel String?
+  buttonUrl   String?
+  createdAt   DateTime          @default(now())
+  deliveries  MailingDelivery[]
+}
+
+model MailingDelivery {
+  id         String          @id @default(cuid())
+  campaignId String
+  campaign   MailingCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  contactId  String
+  createdAt  DateTime        @default(now())
+
+  @@unique([campaignId, contactId])
+}
+
 model CalendarEvent {
   id        String   @id @default(cuid())
   userId    String
