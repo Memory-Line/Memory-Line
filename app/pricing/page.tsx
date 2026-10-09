@@ -73,7 +73,7 @@ export default function PricingPage() {
 
             <StandardFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">14 of 17 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
@@ -108,7 +108,7 @@ export default function PricingPage() {
 
             <PremiumFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 16 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 17 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
