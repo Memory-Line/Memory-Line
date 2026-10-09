@@ -97,6 +97,20 @@ export default async function AccountPage() {
         <EmailUpdatesCard initiallySubscribed={onMailingList} />
       </Section>
 
+      <Section title="Terms and policies">
+        <div className="rounded-xl p-4 bg-card border border-line text-sm">
+          <ul className="space-y-1.5">
+            <li><a href="/terms" className="text-sageDeep underline font-semibold">Terms &amp; Conditions</a></li>
+            <li><a href="/privacy" className="text-sageDeep underline font-semibold">Privacy Policy</a></li>
+            <li><a href="/cookies" className="text-sageDeep underline font-semibold">Cookie Policy</a></li>
+          </ul>
+          <p className="text-xs text-inkSoft mt-3">
+            Activity Central Ltd · company number 17510590 · registered in England and Wales · 71-75 Shelton Street,
+            Covent Garden, London, WC2H 9JQ
+          </p>
+        </div>
+      </Section>
+
       <Section title="Suggestions">
         <p className="text-sm text-inkSoft mb-3">
           Got an idea for an activity, a category or something that would make the site better? Tell us. We read

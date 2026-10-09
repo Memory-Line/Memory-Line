@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
+import CookieNotice from "@/components/CookieNotice";
 
 export const metadata: Metadata = {
   title: "Activity Central – Engagement activities for care home staff",
@@ -20,6 +21,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-bg text-ink font-sans antialiased">
         <Providers>{children}</Providers>
+        <CookieNotice />
       </body>
     </html>
   );
