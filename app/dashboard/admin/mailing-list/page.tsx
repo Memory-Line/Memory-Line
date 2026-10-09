@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import AddFriendsForm from "./AddFriendsForm";
+import SendEmailForm from "./SendEmailForm";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,9 @@ const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: 
 export default async function MailingListPage() {
   const contacts = await prisma.mailingContact.findMany({ orderBy: { createdAt: "desc" } });
   const subscribed = contacts.filter((c) => !c.unsubscribedAt).length;
+  const campaigns = (
+    await prisma.mailingCampaign.findMany({ orderBy: { createdAt: "desc" }, take: 10, include: { _count: { select: { deliveries: true } } } })
+  ).map((c) => ({ id: c.id, subject: c.subject, createdAt: c.createdAt.toISOString(), sent: c._count.deliveries }));
 
   // Free-access accounts not yet on the list (unsubscribed people count as "on" so they're never offered again).
   const onList = new Set(contacts.map((c) => c.email));
@@ -41,6 +45,8 @@ export default async function MailingListPage() {
           Download as spreadsheet
         </a>
       </div>
+
+      <SendEmailForm subscribed={subscribed} campaigns={campaigns} />
 
       {friends.length > 0 && <AddFriendsForm people={friends} />}
 

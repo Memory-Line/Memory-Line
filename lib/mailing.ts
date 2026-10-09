@@ -42,3 +42,23 @@ export async function addAgreedContacts(people: { email: string; name: string | 
 export function subscribedContacts() {
   return prisma.mailingContact.findMany({ where: { unsubscribedAt: null }, orderBy: { createdAt: "asc" } });
 }
+
+const escHtml = (t: string) => t.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+// Turns the message the owner types (plain text, blank line between paragraphs)
+// into the email's body, with an optional button. The text is escaped, so
+// nothing typed can become HTML; the button must be a normal https address.
+export function buildBroadcast(message: string, buttonLabel: string, buttonUrl: string): { html: string; text: string } | { error: string } {
+  const paragraphs = message.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+  let html = paragraphs
+    .map((p) => `<p style="margin:0 0 14px;">${escHtml(p).replace(/\n/g, "<br>")}</p>`)
+    .join("");
+  let text = paragraphs.join("\n\n");
+  if (buttonLabel || buttonUrl) {
+    if (!buttonLabel || !buttonUrl) return { error: "For a button, fill in both the button words and its web address." };
+    if (!/^https:\/\/[^\s"'<>]+$/.test(buttonUrl)) return { error: "The button's web address must start with https://" };
+    html += `<p style="margin:22px 0;"><a href="${escHtml(buttonUrl)}" style="display:inline-block;background:#8BA888;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:10px;">${escHtml(buttonLabel)}</a></p>`;
+    text += `\n\n${buttonLabel}: ${buttonUrl}`;
+  }
+  return { html, text };
+}
