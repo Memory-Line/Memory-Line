@@ -22,12 +22,17 @@ const downloadStyle = {
 } as const;
 
 // Public and read-only. The random token in the address is the only key.
-export default async function SharedFilePage({ params }: { params: { token: string } }) {
+export default async function SharedFilePage({ params, searchParams }: { params: { token: string }; searchParams: { file?: string } }) {
   const link = await getLinkByToken(params.token);
   if (!link || link.items.length === 0) notFound();
 
   const base = `/api/f/${link.token}/file`;
   const many = link.items.length > 1;
+  // With several files the visitor first sees a menu of their names and taps the
+  // one they want (?file=<id>); with one file it is shown straight away.
+  const picked = many ? link.items.find((x) => x.id === searchParams.file) : undefined;
+  const menu = many && !picked;
+  const shown = menu ? [] : picked ? [picked] : link.items;
   // A care home is named after the home; a personal account's name stays private.
   const homeName = link.user.accountType === "care-home" ? link.user.name : null;
   const updated = link.updatedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -49,25 +54,50 @@ export default async function SharedFilePage({ params }: { params: { token: stri
             <p style={{ fontSize: 12, color: "#8A7A6B", margin: "2px 0 0" }}>Updated {updated}</p>
           </div>
 
-          {link.items.map((item, i) => {
+          {menu && (
+            <div style={{ display: "grid", gap: 10, margin: "0 6px 14px" }}>
+              <p style={{ fontSize: 14, color: "#6B5F57", margin: 0 }}>Tap what you would like to see.</p>
+              {link.items.map((item, i) => (
+                <Link
+                  key={item.id}
+                  href={`/f/${link.token}?file=${item.id}`}
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, background: "#FBF9F4", border: "1px solid #EAE4D6", borderRadius: 12, padding: "14px 16px", textDecoration: "none", color: "#3F3237", fontFamily: "Georgia, serif", fontSize: 19 }}
+                >
+                  <span>{item.name || `File ${i + 1}`}</span>
+                  <span style={{ color: "#B5714A", fontFamily: "Arial, sans-serif", fontSize: 14, fontWeight: 700 }}>View →</span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {shown.map((item) => {
+            const i = link.items.findIndex((x) => x.id === item.id);
+            const label = item.name || (many ? `File ${i + 1}` : link.title);
             const src = `${base}?item=${item.id}`;
             return (
               <section key={item.id} style={{ marginBottom: 18 }}>
                 {(many || link.allowDownload) && (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: "0 6px 8px" }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#8A7A6B" }}>{many ? `${i + 1} of ${link.items.length}` : ""}</span>
+                    {many ? (
+                      <Link href={`/f/${link.token}`} style={{ fontSize: 13.5, fontWeight: 700, color: "#B5714A", textDecoration: "none" }}>
+                        ← Back to all
+                      </Link>
+                    ) : (
+                      <span />
+                    )}
                     {link.allowDownload && (
                       <a href={`${src}&download=1`} style={downloadStyle}>
-                        Download{many ? ` ${i + 1}` : ""}
+                        Download
                       </a>
                     )}
                   </div>
                 )}
+                {many && <h2 style={{ fontFamily: "Georgia, serif", fontSize: 21, fontWeight: 400, margin: "0 6px 10px" }}>{label}</h2>}
                 {item.contentType === "application/pdf" ? (
                   <PdfViewer url={src} />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt={many ? `${link.title}, ${i + 1} of ${link.items.length}` : link.title} style={{ display: "block", width: "100%", height: "auto", borderRadius: 8 }} />
+                  <img src={src} alt={label} style={{ display: "block", width: "100%", height: "auto", borderRadius: 8 }} />
                 )}
               </section>
             );

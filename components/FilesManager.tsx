@@ -12,7 +12,7 @@ import {
 } from "@/lib/sharedFiles";
 import QrCodeButton from "@/components/QrCodeButton";
 
-type Item = { id: string; contentType: string; sizeBytes: number };
+type Item = { id: string; name: string | null; contentType: string; sizeBytes: number };
 type Link = { id: string; token: string; title: string; allowDownload: boolean; folderId: string | null; updatedAt: string; items: Item[] };
 type Folder = { id: string; name: string };
 
@@ -28,6 +28,7 @@ export default function FilesManager() {
   const [userId, setUserId] = useState<string | null>(null);
   const [view, setView] = useState<string>(ALL); // ALL, NONE or a folder id
   const [title, setTitle] = useState("");
+  const [itemName, setItemName] = useState("");
   const [allowDownload, setAllowDownload] = useState(false);
   const [picked, setPicked] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -106,6 +107,7 @@ export default function FilesManager() {
       blobUrl,
       title,
       allowDownload,
+      itemName,
       folderId: folders.some((f) => f.id === view) ? view : "",
     });
     setBusy(false);
@@ -113,6 +115,7 @@ export default function FilesManager() {
     if (!link) return;
     setLinks((prev) => [link, ...(prev ?? [])]);
     setTitle("");
+    setItemName("");
     setPicked(null);
     setAllowDownload(false);
     if (createInput.current) createInput.current.value = "";
@@ -169,8 +172,9 @@ export default function FilesManager() {
     setError(null);
     setWorking(id);
     const link = links?.find((l) => l.id === id);
+    const name = window.prompt("What should this file be called on the link? (for example Menu, Calendar or Complaints form)", file.name.replace(/\.[^.]+$/, "")) ?? "";
     const blobUrl = await uploadFile(file, link?.title ?? "file");
-    const data = blobUrl ? await send(`/api/shared-files/${id}/items`, "POST", { blobUrl }) : undefined;
+    const data = blobUrl ? await send(`/api/shared-files/${id}/items`, "POST", { blobUrl, name }) : undefined;
     setWorking(null);
     if (data?.file) setOne(data.file);
   }
@@ -186,6 +190,14 @@ export default function FilesManager() {
     const blobUrl = await uploadFile(file, link?.title ?? "file");
     const data = blobUrl ? await send(`/api/shared-files/${target.linkId}/items/${target.itemId}`, "PUT", { blobUrl }) : undefined;
     setWorking(null);
+    if (data?.file) setOne(data.file);
+  }
+
+  async function renameItem(l: Link, item: Item, n: number) {
+    const next = window.prompt("What should this file be called on the link?", item.name ?? `File ${n}`);
+    if (next === null) return;
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/items/${item.id}`, "PATCH", { name: next });
     if (data?.file) setOne(data.file);
   }
 
@@ -247,12 +259,17 @@ export default function FilesManager() {
           <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="file-pick">First file (PDF, JPG or PNG, up to {MAX_SHARED_FILE_MB}MB)</label>
           <input id="file-pick" ref={createInput} type="file" accept={accept} onChange={(e) => setPicked(e.target.files?.[0] ?? null)} className="text-sm" />
         </div>
+        <div>
+          <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="file-name">What visitors see this file called (optional)</label>
+          <input id="file-name" className={field} value={itemName} onChange={(e) => setItemName(e.target.value)} maxLength={100} placeholder="e.g. Menu, Calendar or Complaints form" />
+        </div>
         <label className="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" checked={allowDownload} onChange={(e) => setAllowDownload(e.target.checked)} />
           Let visitors download the files
         </label>
         <p className="text-xs text-inkSoft">
-          You can add up to {MAX_ITEMS_PER_LINK} files to each link once it's made, such as several photos of a room. Anyone with
+          Add up to {MAX_ITEMS_PER_LINK} files to each link once it's made and give each a name. With two or more, visitors see
+          a menu of the names and tap the one they want to view. Anyone with
           the link can see what's on it, so don't share residents' names or private details. Delete a link at any time.
         </p>
         {error && <p className="text-xs text-red-600">{error}</p>}
@@ -351,8 +368,11 @@ export default function FilesManager() {
                 {l.items.map((item, i) => (
                   <div key={item.id} className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-ink">
-                      {i + 1}. {kindLabel(item.contentType)} · {sizeLabel(item.sizeBytes)}
+                      {i + 1}. <b>{item.name || `File ${i + 1}`}</b> · {kindLabel(item.contentType)} · {sizeLabel(item.sizeBytes)}
                     </span>
+                    <button type="button" onClick={() => renameItem(l, item, i + 1)} className="text-sageDeep underline font-semibold">
+                      Name
+                    </button>
                     <button
                       type="button"
                       onClick={() => {

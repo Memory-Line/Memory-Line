@@ -134,6 +134,8 @@ model SharedFileItem {
   contentType  String     // application/pdf | image/jpeg | image/png
   sizeBytes    Int
   position     Int
+  // What the visitor sees on the link's menu (e.g. Menu, Calendar, Complaints form).
+  name         String?
   createdAt    DateTime   @default(now())
 
   @@index([sharedFileId])

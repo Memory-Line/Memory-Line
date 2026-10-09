@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_ITEMS_PER_LINK } from "@/lib/sharedFiles";
+import { MAX_ITEMS_PER_LINK, cleanTitle } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
 
 export const dynamic = "force-dynamic";
 
-// Add another file to a link (up to 10), already uploaded by the browser. JSON: { blobUrl }.
+// Add another file to a link (up to 10), already uploaded by the browser. JSON: { blobUrl, name }.
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -27,7 +27,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const position = link.items.reduce((max, i) => Math.max(max, i.position), -1) + 1;
     await prisma.sharedFileItem.create({
-      data: { sharedFileId: link.id, fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, position },
+      data: { sharedFileId: link.id, fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, position, name: cleanTitle(body?.name) || null },
     });
     await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
 

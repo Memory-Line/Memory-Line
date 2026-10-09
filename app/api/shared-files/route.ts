@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         title,
         allowDownload: body.allowDownload === true,
         folderId,
-        items: { create: { fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, position: 0 } },
+        items: { create: { fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, position: 0, name: cleanTitle(body.itemName) || null } },
       },
     });
     const link = await getOwnedLink(created.id, session.user.id);
