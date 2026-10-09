@@ -41,6 +41,8 @@ model User {
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
+  sharedFolders        SharedFolder[]
+  sharedFolders        SharedFolder[]
   calendarRotas        CalendarRota[]
   sharedForms          SharedForm[]
 }
@@ -88,8 +90,21 @@ model CalendarRota {
 // newsletter, room pictures), shown on a page with our branding. The token in
 // the address is the only key; deleting the row (and its files) switches the
 // link off. Files can be replaced, added or removed and the link stays the same.
-model SharedFile {
-  id            String   @id @default(cuid())
+// A named folder that groups a home's shared-file links on the Shared files page.
+// Only for tidying: deleting a folder never deletes its links, they just become
+// unfiled.
+model SharedFolder {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  files     SharedFile[]
+  createdAt DateTime     @default(now())
+
+  @@index([userId])
+}
+
+model SharedFile {  id            String   @id @default(cuid())
   userId        String
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   token         String   @unique
@@ -100,6 +115,8 @@ model SharedFile {
   contentType   String?
   sizeBytes     Int?
   allowDownload Boolean  @default(false)
+  folderId      String?
+  folder        SharedFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   items         SharedFileItem[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { put, del } from "@vercel/blob";
+import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { blobPathFor, checkUpload } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
+import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
 
 export const dynamic = "force-dynamic";
 
-// Replace one file on a link with a new one (the link stays the same). Multipart: file.
+// Replace one file on a link with a new one the browser has already uploaded (the
+// link stays the same). JSON: { blobUrl }.
 export async function PUT(req: Request, { params }: { params: { id: string; itemId: string } }) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,20 +20,13 @@ export async function PUT(req: Request, { params }: { params: { id: string; item
     const item = link?.items.find((i) => i.id === params.itemId);
     if (!link || !item) return NextResponse.json({ error: "File not found" }, { status: 404 });
 
-    const form = await req.formData().catch(() => null);
-    const file = form?.get("file");
-    if (!(file instanceof File)) return NextResponse.json({ error: "Choose a file to upload." }, { status: 400 });
-    const checked = await checkUpload(file);
+    const body = await req.json().catch(() => null);
+    const checked = await verifyUploadedBlob(body?.blobUrl, session.user.id);
     if ("error" in checked) return NextResponse.json({ error: checked.error }, { status: 400 });
 
-    const blob = await put(blobPathFor(session.user.id, link.title, checked.kind.ext), file, {
-      access: "public",
-      addRandomSuffix: true,
-      contentType: checked.kind.contentType,
-    });
     await prisma.sharedFileItem.update({
       where: { id: item.id },
-      data: { fileUrl: blob.url, contentType: checked.kind.contentType, sizeBytes: file.size },
+      data: { fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size },
     });
     await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
     await del(item.fileUrl).catch(() => {});
@@ -41,7 +35,7 @@ export async function PUT(req: Request, { params }: { params: { id: string; item
     return NextResponse.json({ file: updated ? publicShape(updated) : null });
   } catch (err) {
     console.error("Replacing a shared file failed:", err);
-    return NextResponse.json({ error: "That didn't save. Please try again." }, { status: 500 });
+    return NextResponse.json({ error: "That did not save. Please try again." }, { status: 500 });
   }
 }
 
