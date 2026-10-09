@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { CATEGORIES } from "@/lib/data";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Newspaper,
 } from "lucide-react";
 
 const ICONS: Record<string, any> = {
@@ -24,6 +24,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Newsletters: Newspaper,
   Sudoku: Grid2x2,
 };
 

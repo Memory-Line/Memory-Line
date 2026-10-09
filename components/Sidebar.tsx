@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
+  Briefcase, Calendar, CalendarDays, Newspaper, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -27,6 +27,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Newsletters: Newspaper,
   Sudoku: Grid2x2,
 };
 
@@ -49,6 +50,7 @@ const HOVER_COLORS: Record<string, string> = {
   "Sing-Alongs": "#2F7A63",
   "Communication Cards": "#A23B3B",
   "BSL Tools": "#3E6E4A",
+  Newsletters: "#B5714A",
   Services: "#8A6E52",
   Admin: "#8A3B3B",
 };

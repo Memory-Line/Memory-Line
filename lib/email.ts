@@ -114,9 +114,9 @@ export function planConfirmationEmail(to: string, name: string | null, plan: "st
   const planLine = label ? `You're now on the <b>${label}</b> plan.` : "Your subscription is now active.";
   const detail =
     plan === "premium"
-      ? "That includes all 16 categories, large print sheets, the Holidays &amp; Celebrations calendar and playing puzzles and games on screen."
+      ? "That includes all 17 categories, large print sheets, the Holidays &amp; Celebrations calendar and playing puzzles and games on screen."
       : plan === "standard"
-      ? "That includes 13 of the 16 categories, with every sheet ready to download and print."
+      ? "That includes 14 of the 17 categories, with every sheet ready to download and print."
       : "";
   return {
     to,
