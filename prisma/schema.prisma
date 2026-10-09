@@ -215,6 +215,20 @@ model Template {
   subcategory   String?
   createdAt     DateTime @default(now())
   completions   Completion[]
+  // The puzzle behind an occasion activity, for playing it online (see PlayData).
+  playData      PlayData?
+}
+
+// What the online players need for one calendar-occasion activity: the grid and
+// words of a word search, a crossword's grid and clues, a guess-the-word clue
+// and answer, a trivia quiz's questions, or a word bingo card and its caller's
+// words. Read out of the activity's own PDF by scripts/calendarpack/extract_pack.py
+// and loaded from the admin page, so what's played matches what's printed.
+model PlayData {
+  templateId String   @id
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  data       Json
+  updatedAt  DateTime @updatedAt
 }
 
 // Activities an account has marked as completed (the "completion-tracking"
