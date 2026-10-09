@@ -14,7 +14,7 @@ import QrCodeButton from "@/components/QrCodeButton";
 
 type Item = { id: string; contentType: string; sizeBytes: number };
 type Link = { id: string; token: string; title: string; allowDownload: boolean; folderId: string | null; updatedAt: string; items: Item[] };
-type Folder = { id: string; name: string };
+type Folder = { id: string; name: string; token: string | null };
 
 const ALL = "all";
 const NONE = "none"; // links that are not in any folder
@@ -52,6 +52,7 @@ export default function FilesManager() {
   }, []);
 
   const urlFor = (token: string) => `${window.location.origin}/f/${token}`;
+  const folderUrl = (token: string) => `${window.location.origin}/h/${token}`;
   const setOne = (link: Link) => setLinks((prev) => (prev ?? []).map((l) => (l.id === link.id ? link : l)));
 
   async function send(url: string, method: string, body?: FormData | Record<string, unknown>): Promise<any | undefined> {
@@ -202,9 +203,23 @@ export default function FilesManager() {
     setError(null);
     const data = await send("/api/shared-folders", "POST", { name });
     if (data?.folder) {
-      setFolders((prev) => [...prev, data.folder]);
+      setFolders((prev) => [...prev, { ...data.folder, token: null }]);
       setView(data.folder.id);
     }
+  }
+
+  async function shareFolder(f: Folder) {
+    setError(null);
+    const data = await send(`/api/shared-folders/${f.id}/share`, "POST");
+    if (data?.token) setFolders((prev) => prev.map((x) => (x.id === f.id ? { ...x, token: data.token } : x)));
+  }
+
+  async function stopSharingFolder(f: Folder) {
+    if (!window.confirm(`Switch off the page for "${f.name}"? Its link and QR code will stop working. Your links inside it are kept.`)) return;
+    setError(null);
+    const res = await fetch(`/api/shared-folders/${f.id}/share`, { method: "DELETE" });
+    if (!res.ok) return setError("That didn't work. Please try again.");
+    setFolders((prev) => prev.map((x) => (x.id === f.id ? { ...x, token: null } : x)));
   }
 
   async function renameFolder(f: Folder) {
@@ -291,9 +306,55 @@ export default function FilesManager() {
         )}
       </div>
       {currentFolder && (
-        <div className="flex gap-4 text-xs font-semibold mb-3">
-          <button type="button" onClick={() => renameFolder(currentFolder)} className="text-sageDeep underline">Rename folder</button>
-          <button type="button" onClick={() => deleteFolder(currentFolder)} className="text-red-600 underline">Delete folder</button>
+        <div className="rounded-xl p-4 mb-3 bg-card border border-line">
+          <p className="text-sm font-semibold">One link and QR code for this whole folder</p>
+          <p className="text-xs text-inkSoft mt-0.5">
+            Visitors scan one code and see a row of tabs, one for each link in this folder (for example Menu, Calendar and
+            Complaints form). Make a link inside the folder to add a tab, rename a link to rename its tab, and delete a link or
+            move it to another folder to remove its tab. Tabs show oldest first.
+          </p>
+          {currentFolder.token ? (
+            <>
+              <input
+                readOnly
+                value={folderUrl(currentFolder.token)}
+                onFocus={(e) => e.currentTarget.select()}
+                className="w-full rounded-lg border border-line px-2.5 py-1.5 text-xs bg-white mt-2"
+                aria-label="Folder link"
+              />
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs font-semibold">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(folderUrl(currentFolder.token!));
+                      setCopied(currentFolder.token);
+                    } catch {
+                      setCopied(null);
+                    }
+                  }}
+                  className="text-sageDeep underline"
+                >
+                  {copied === currentFolder.token ? "Copied" : "Copy link"}
+                </button>
+                <QrCodeButton url={folderUrl(currentFolder.token)} title={currentFolder.name} className="text-sageDeep underline" />
+                <a href={`/h/${currentFolder.token}`} target="_blank" rel="noreferrer" className="text-sageDeep">Open</a>
+                <button type="button" onClick={() => stopSharingFolder(currentFolder)} className="text-red-600 underline">Switch off</button>
+              </div>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => shareFolder(currentFolder)}
+              className="mt-2 rounded-lg bg-sage text-white px-4 py-2 font-semibold text-sm hover:bg-sageDeep transition-colors"
+            >
+              Make a link and QR code for this folder
+            </button>
+          )}
+          <div className="flex gap-4 text-xs font-semibold mt-3">
+            <button type="button" onClick={() => renameFolder(currentFolder)} className="text-sageDeep underline">Rename folder</button>
+            <button type="button" onClick={() => deleteFolder(currentFolder)} className="text-red-600 underline">Delete folder</button>
+          </div>
         </div>
       )}
 

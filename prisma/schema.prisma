@@ -93,6 +93,9 @@ model SharedFolder {
   userId    String
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   name      String
+  // Set when the folder has its own public page (one link and QR code, a tab for
+  // each link inside it). Clearing it switches that page off.
+  token     String?      @unique
   files     SharedFile[]
   createdAt DateTime     @default(now())
 
