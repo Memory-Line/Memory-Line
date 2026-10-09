@@ -21,17 +21,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     const form = await req.formData().catch(() => null);
     if (!form) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
 
-    const data: { title?: string; allowDownload?: boolean; folderId?: string | null } = {};
-    if (form.has("folderId")) {
-      const wanted = String(form.get("folderId") ?? "");
-      if (!wanted) {
-        data.folderId = null;
-      } else {
-        const folder = await prisma.sharedFolder.findFirst({ where: { id: wanted, userId: session.user.id }, select: { id: true } });
-        if (!folder) return NextResponse.json({ error: "Folder not found" }, { status: 400 });
-        data.folderId = folder.id;
-      }
-    }
+    const data: { title?: string; allowDownload?: boolean } = {};
     if (form.has("title")) {
       const title = cleanTitle(form.get("title"));
       if (!title) return NextResponse.json({ error: "Give the link a title." }, { status: 400 });

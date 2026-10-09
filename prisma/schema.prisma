@@ -41,7 +41,6 @@ model User {
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
-  sharedFolders        SharedFolder[]
   calendarRotas        CalendarRota[]
   sharedForms          SharedForm[]
 }
@@ -85,23 +84,6 @@ model CalendarRota {
   @@unique([userId, calendar])
 }
 
-// A named folder that groups a home's shared-file links on the Shared files page.
-// Only for tidying: deleting a folder never deletes its links, they just become
-// unfiled.
-model SharedFolder {
-  id        String       @id @default(cuid())
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name      String
-  // Set when the folder has its own public page (one link and QR code, a tab for
-  // each link inside it). Clearing it switches that page off.
-  token     String?      @unique
-  files     SharedFile[]
-  createdAt DateTime     @default(now())
-
-  @@index([userId])
-}
-
 // A public, read-only link to up to 10 files a care home has uploaded (a menu,
 // newsletter, room pictures), shown on a page with our branding. The token in
 // the address is the only key; deleting the row (and its files) switches the
@@ -118,13 +100,25 @@ model SharedFile {
   contentType   String?
   sizeBytes     Int?
   allowDownload Boolean  @default(false)
-  folderId      String?
-  folder        SharedFolder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
   items         SharedFileItem[]
+  categories    SharedCategory[]
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([userId])
+}
+
+// A named section on a shared link (Menu, Calendar, Complaints form). Visitors see
+// a row of these and tap the one they want; each holds that section's files.
+model SharedCategory {
+  id           String     @id @default(cuid())
+  sharedFileId String
+  sharedFile   SharedFile @relation(fields: [sharedFileId], references: [id], onDelete: Cascade)
+  name         String
+  position     Int
+  items        SharedFileItem[]
+
+  @@index([sharedFileId])
 }
 
 // One stored file (Vercel Blob) on a shared link. Its address is never shown to
@@ -137,6 +131,9 @@ model SharedFileItem {
   contentType  String     // application/pdf | image/jpeg | image/png
   sizeBytes    Int
   position     Int
+  // The section of the link this file is in; none = not in a section.
+  categoryId   String?
+  category     SharedCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   createdAt    DateTime   @default(now())
 
   @@index([sharedFileId])

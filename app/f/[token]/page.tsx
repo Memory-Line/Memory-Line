@@ -21,13 +21,27 @@ const downloadStyle = {
   background: "#fff",
 } as const;
 
-// Public and read-only. The random token in the address is the only key.
-export default async function SharedFilePage({ params }: { params: { token: string } }) {
+const OTHER = "other"; // files on a link that are not in any section
+
+// Public and read-only. The random token in the address is the only key. A link
+// with sections opens on a row of them (Menu, Calendar...) and shows the files of
+// the one tapped (the first to start with); a link without sections shows its files
+// one after another.
+export default async function SharedFilePage({ params, searchParams }: { params: { token: string }; searchParams: { s?: string } }) {
   const link = await getLinkByToken(params.token);
   if (!link || link.items.length === 0) notFound();
 
   const base = `/api/f/${link.token}/file`;
-  const many = link.items.length > 1;
+  const sections = link.categories
+    .map((c) => ({ id: c.id, name: c.name, items: link.items.filter((i) => i.categoryId === c.id) }))
+    .filter((s) => s.items.length > 0);
+  const loose = link.items.filter((i) => !i.categoryId || !link.categories.some((c) => c.id === i.categoryId));
+  if (loose.length > 0 && sections.length > 0) sections.push({ id: OTHER, name: "Other", items: loose });
+  const tabbed = sections.length > 0;
+  const current = tabbed ? sections.find((s) => s.id === searchParams.s) ?? sections[0] : null;
+  const items = tabbed ? current!.items : link.items;
+  const many = items.length > 1;
+
   // A care home is named after the home; a personal account's name stays private.
   const homeName = link.user.accountType === "care-home" ? link.user.name : null;
   const updated = link.updatedAt.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
@@ -49,13 +63,41 @@ export default async function SharedFilePage({ params }: { params: { token: stri
             <p style={{ fontSize: 12, color: "#8A7A6B", margin: "2px 0 0" }}>Updated {updated}</p>
           </div>
 
-          {link.items.map((item, i) => {
+          {tabbed && (
+            <nav aria-label="Choose what to view" style={{ display: "flex", flexWrap: "wrap", gap: 8, margin: "0 6px 16px" }}>
+              {sections.map((s) => {
+                const active = s.id === current!.id;
+                return (
+                  <Link
+                    key={s.id}
+                    href={`/f/${link.token}?s=${s.id}`}
+                    aria-current={active ? "page" : undefined}
+                    style={{
+                      padding: "11px 20px",
+                      borderRadius: 999,
+                      fontWeight: 700,
+                      fontSize: 16,
+                      textDecoration: "none",
+                      background: active ? "#B5714A" : "#FBF9F4",
+                      color: active ? "#fff" : "#3F3237",
+                      border: `1px solid ${active ? "#B5714A" : "#EAE4D6"}`,
+                    }}
+                  >
+                    {s.name}
+                  </Link>
+                );
+              })}
+            </nav>
+          )}
+
+          {items.map((item, i) => {
             const src = `${base}?item=${item.id}`;
+            const label = tabbed ? current!.name : link.title;
             return (
               <section key={item.id} style={{ marginBottom: 18 }}>
                 {(many || link.allowDownload) && (
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: "0 6px 8px" }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#8A7A6B" }}>{many ? `${i + 1} of ${link.items.length}` : ""}</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#8A7A6B" }}>{many ? `${i + 1} of ${items.length}` : ""}</span>
                     {link.allowDownload && (
                       <a href={`${src}&download=1`} style={downloadStyle}>
                         Download{many ? ` ${i + 1}` : ""}
@@ -67,7 +109,7 @@ export default async function SharedFilePage({ params }: { params: { token: stri
                   <PdfViewer url={src} />
                 ) : (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={src} alt={many ? `${link.title}, ${i + 1} of ${link.items.length}` : link.title} style={{ display: "block", width: "100%", height: "auto", borderRadius: 8 }} />
+                  <img src={src} alt={many ? `${label}, ${i + 1} of ${items.length}` : label} style={{ display: "block", width: "100%", height: "auto", borderRadius: 8 }} />
                 )}
               </section>
             );

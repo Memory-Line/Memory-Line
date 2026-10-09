@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { MAX_ITEMS_PER_CATEGORY } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
@@ -37,6 +38,30 @@ export async function PUT(req: Request, { params }: { params: { id: string; item
     console.error("Replacing a shared file failed:", err);
     return NextResponse.json({ error: "That did not save. Please try again." }, { status: 500 });
   }
+}
+
+// Move one file to another section of the link. JSON: { categoryId } (empty = not
+// in a section).
+export async function PATCH(req: Request, { params }: { params: { id: string; itemId: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
+  const link = await getOwnedLink(params.id, session.user.id);
+  const item = link?.items.find((i) => i.id === params.itemId);
+  if (!link || !item) return NextResponse.json({ error: "File not found" }, { status: 404 });
+  const body = await req.json().catch(() => ({}));
+  let categoryId: string | null = null;
+  if (typeof body?.categoryId === "string" && body.categoryId) {
+    const cat = link.categories.find((c) => c.id === body.categoryId);
+    if (!cat) return NextResponse.json({ error: "Section not found" }, { status: 400 });
+    categoryId = cat.id;
+  }
+  if (categoryId !== item.categoryId && link.items.filter((i) => i.categoryId === categoryId).length >= MAX_ITEMS_PER_CATEGORY) {
+    return NextResponse.json({ error: `A section can hold up to ${MAX_ITEMS_PER_CATEGORY} files.` }, { status: 400 });
+  }
+  await prisma.sharedFileItem.update({ where: { id: item.id }, data: { categoryId } });
+  await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
+  const updated = await getOwnedLink(link.id, session.user.id);
+  return NextResponse.json({ file: updated ? publicShape(updated) : null });
 }
 
 // Remove one file from a link. A link always keeps at least one file; to

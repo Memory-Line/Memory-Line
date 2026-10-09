@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { OWNER_SELECT, ownerIsPremium } from "@/lib/ownerAccess";
 
 const itemsInclude = { orderBy: { position: "asc" as const } };
+const categoriesInclude = { orderBy: { position: "asc" as const } };
 
 // Links made before a link could hold several files kept their one file on the
 // link itself. The first time such a link is read, move that file into the new
@@ -27,13 +28,13 @@ export async function listOwnedLinks(userId: string) {
   return prisma.sharedFile.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: { items: itemsInclude },
+    include: { items: itemsInclude, categories: categoriesInclude },
   });
 }
 
 export async function getOwnedLink(id: string, userId: string) {
   await migrateLegacy([id]);
-  return prisma.sharedFile.findFirst({ where: { id, userId }, include: { items: itemsInclude } });
+  return prisma.sharedFile.findFirst({ where: { id, userId }, include: { items: itemsInclude, categories: categoriesInclude } });
 }
 
 export async function getLinkByToken(token: string) {
@@ -42,7 +43,7 @@ export async function getLinkByToken(token: string) {
   await migrateLegacy([found.id]);
   const link = await prisma.sharedFile.findUnique({
     where: { token },
-    include: { items: itemsInclude, user: { select: OWNER_SELECT } },
+    include: { items: itemsInclude, categories: categoriesInclude, user: { select: OWNER_SELECT } },
   });
   // Shared files is a Premium feature: if the owner has moved to Standard (or
   // cancelled), the link stops working. It works again if they upgrade.
@@ -57,8 +58,8 @@ export function publicShape(link: Awaited<ReturnType<typeof getOwnedLink>> & {})
     token: link.token,
     title: link.title,
     allowDownload: link.allowDownload,
-    folderId: link.folderId,
     updatedAt: link.updatedAt,
-    items: link.items.map((i) => ({ id: i.id, contentType: i.contentType, sizeBytes: i.sizeBytes })),
+    categories: link.categories.map((c) => ({ id: c.id, name: c.name })),
+    items: link.items.map((i) => ({ id: i.id, categoryId: i.categoryId, contentType: i.contentType, sizeBytes: i.sizeBytes })),
   };
 }

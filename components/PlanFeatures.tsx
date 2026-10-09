@@ -58,7 +58,7 @@ export function PremiumFeatures() {
         </Tick>
         <Tick>
           <b>Shared files and QR codes</b> — upload a menu, newsletter or room photos and get a link or QR code for your
-          website or noticeboard. Up to 10 files on each link, and you can swap them without changing the link.
+          website or noticeboard. Split a link into sections you name yourself (menu, calendar, forms), with up to 10 files in each, and swap files without changing the link.
         </Tick>
         <Tick>
           <b>
