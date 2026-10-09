@@ -17,7 +17,7 @@ export async function GET() {
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const [links, folders] = await Promise.all([
     listOwnedLinks(session.user.id),
-    prisma.sharedFolder.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "asc" }, select: { id: true, name: true } }),
+    prisma.sharedFolder.findMany({ where: { userId: session.user.id }, orderBy: { createdAt: "asc" }, select: { id: true, name: true, token: true } }),
   ]);
   return NextResponse.json({ files: links.map(publicShape), folders, userId: session.user.id });
 }
