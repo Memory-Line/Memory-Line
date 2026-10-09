@@ -26,7 +26,7 @@ export default function TermsPage() {
       </Link>
 
       <h1 className="font-serif text-3xl text-ink mb-2">Terms &amp; Conditions</h1>
-      <p className="text-xs text-inkSoft mb-10">Last updated: 26 September 2026</p>
+      <p className="text-xs text-inkSoft mb-10">Last updated: 9 October 2026</p>
 
       <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
         <Section title="1. Who we are">
@@ -36,9 +36,7 @@ export default function TermsPage() {
             individuals supporting people living with dementia.
           </p>
           <p>
-            [Company name] (company number [XXXXXXX], registered office [address]) — to be
-            completed once the business is registered. Until registration is complete, Activity
-            Central is operated by Dominik Brygida as a sole trader.
+            Activity Central is run by Activity Central Ltd, a company registered in England and Wales (company number 17510590). Our registered office is 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ.
           </p>
         </Section>
 
@@ -46,7 +44,10 @@ export default function TermsPage() {
           <p>
             Activity Central gives subscribers access to a library of activity packs (word
             searches, trivia, bingo, sing-alongs, communication cards, and similar resources)
-            which can be viewed online or downloaded and printed for use in sessions.
+            which can be viewed online or downloaded and printed for use in sessions. Depending on
+            your plan, the service also includes a calendar, links and QR codes for sharing files,
+            and online questionnaires. See <Link href="/pricing" className="text-sageDeep underline">/pricing</Link> for
+            what each plan includes.
           </p>
           <p>
             Titles, descriptions, and linked videos are generated to closely match each activity,
@@ -102,7 +103,22 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="6. Intellectual property">
+        <Section title="6. Files, links and questionnaires you create">
+          <p>
+            If you upload files, make a shared link or QR code, or use an online questionnaire, you
+            are responsible for what you put on it. You must have the right to share it, and it
+            must not be unlawful or harmful.
+          </p>
+          <p>
+            Anyone who has a shared link or QR code can see what is on it. Please don't put
+            residents' names, photos or other private details on a shared link unless you have the
+            permission you need to do so. You can delete a link at any time. Shared links stop
+            working if your account moves to a plan that doesn't include them or is cancelled. We
+            may remove content, or switch off a link, that breaks these terms.
+          </p>
+        </Section>
+
+        <Section title="7. Intellectual property">
           <p>
             Activity Central owns (or holds the necessary rights to) all content in the library,
             including the activity packs, artwork, and text. Subscribing gives you a personal,
@@ -112,7 +128,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="7. Ending your subscription">
+        <Section title="8. Ending your subscription">
           <p>
             You can cancel your subscription at any time from your account. We may suspend or end
             your account if you breach these terms, if payment fails and isn't resolved within a
@@ -121,7 +137,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="8. Liability">
+        <Section title="9. Liability">
           <p>
             We provide the service as a helpful set of ready-made resources, not as a substitute
             for the professional judgement of activity coordinators, care staff, or medical
@@ -136,7 +152,7 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="9. Changes to these terms">
+        <Section title="10. Changes to these terms">
           <p>
             We may update these terms from time to time, for example to reflect changes to the
             service or to the law. We'll post the updated terms on this page with a new "last
@@ -145,14 +161,14 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="10. Governing law">
+        <Section title="11. Governing law">
           <p>
             These terms are governed by the laws of England and Wales, and any disputes will be
             handled by the courts of England and Wales.
           </p>
         </Section>
 
-        <Section title="11. Contact">
+        <Section title="12. Contact">
           <p>
             Questions about these terms can be sent to support@activitycentral.co.uk.
           </p>

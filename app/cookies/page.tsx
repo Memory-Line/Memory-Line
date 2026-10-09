@@ -24,7 +24,7 @@ export default function CookiesPage() {
       </Link>
 
       <h1 className="font-serif text-3xl text-ink mb-2">Cookie Policy</h1>
-      <p className="text-xs text-inkSoft mb-10">Last updated: 26 September 2026</p>
+      <p className="text-xs text-inkSoft mb-10">Last updated: 9 October 2026</p>
 
       <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
         <Section title="1. What are cookies?">
@@ -51,6 +51,11 @@ export default function CookiesPage() {
               through the payment step to subscribe, our payment processor, Stripe, sets its own
               cookies on its checkout pages to process your payment securely and prevent fraud.
               These are set and controlled by Stripe, not by us.
+            </li>
+            <li>
+              <span className="font-medium text-ink">Saved settings in your browser</span> — a few
+              choices, such as the notes you type under a calendar month, are kept on your own
+              device so they're still there next time. They aren't sent to us or used for tracking.
             </li>
           </ul>
           <p>

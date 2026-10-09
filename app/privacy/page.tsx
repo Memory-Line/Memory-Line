@@ -26,16 +26,15 @@ export default function PrivacyPage() {
       </Link>
 
       <h1 className="font-serif text-3xl text-ink mb-2">Privacy Policy</h1>
-      <p className="text-xs text-inkSoft mb-10">Last updated: 26 September 2026</p>
+      <p className="text-xs text-inkSoft mb-10">Last updated: 9 October 2026</p>
 
       <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
         <Section title="1. Who we are">
           <p>
             This policy explains how Activity Central collects and uses personal data when you
-            use our website and subscription service. The data controller is [Company name]
-            (company number [XXXXXXX], registered office [address]) — to be completed once the
-            business is registered. Until registration is complete, Activity Central is operated
-            by Dominik Brygida as a sole trader.
+            use our website and subscription service. The data controller is Activity Central
+            Ltd, a company registered in England and Wales (company number 17510590), whose
+            registered office is 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ.
           </p>
         </Section>
 
@@ -63,6 +62,20 @@ export default function PrivacyPage() {
               you've downloaded and which you've marked as completed, so the service can show your
               download and completion history.
             </li>
+            <li>
+              <span className="font-medium text-ink">Email list</span> — if you tick the box to
+              hear from us, your name, email address, the date you agreed and where you joined, so
+              we can send news and offers. You can leave the list at any time.
+            </li>
+            <li>
+              <span className="font-medium text-ink">Files, links and questionnaires</span> — files
+              you upload to a shared link are stored so the link works. Answers to an online
+              questionnaire are emailed to the care home that set it up and are not kept by us.
+            </li>
+            <li>
+              <span className="font-medium text-ink">Messages to us</span> — what you write when you
+              contact us through the support form or by email.
+            </li>
           </ul>
           <p>
             We use this data to run your account, provide the subscription and the activity
@@ -76,7 +89,8 @@ export default function PrivacyPage() {
             contract with you (providing the subscription you've signed up for). We process basic
             usage records (downloads and completions) on the basis of our legitimate interest in
             understanding how the library is used and keeping it useful, in a way that doesn't
-            override your own rights and interests.
+            override your own rights and interests. We send news and offers by email only if you
+            have agreed (your consent), and you can withdraw that at any time.
           </p>
         </Section>
 
@@ -86,7 +100,8 @@ export default function PrivacyPage() {
             period afterwards in case you wish to reactivate it or as needed to meet our legal and
             accounting obligations. If you ask us to delete your account, we'll remove your
             personal data except where we're required to keep limited records (for example,
-            billing records) for legal reasons.
+            billing records) for legal reasons. If you leave our email list we keep a note of that
+            so we never email you again by mistake.
           </p>
         </Section>
 
@@ -95,6 +110,8 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-1.5">
             <li>Our payment processor (Stripe), to take subscription payments and manage billing.</li>
             <li>Our hosting provider (Vercel) and our database provider, to run the website and store account data securely.</li>
+            <li>Our file storage provider (Vercel), to store files you upload to shared links.</li>
+            <li>Our email provider (Resend), to send account emails, support replies and, if you agreed, news and offers.</li>
           </ul>
           <p>
             We don't sell your personal data, and we don't share it with anyone for their own
@@ -118,6 +135,7 @@ export default function PrivacyPage() {
             <li>Ask us to delete your data, in certain circumstances.</li>
             <li>Ask us to provide your data in a portable format.</li>
             <li>Object to certain processing based on legitimate interest.</li>
+            <li>Withdraw your consent to news and offers emails at any time, using the unsubscribe link in every email or the choice in My account.</li>
           </ul>
           <p>
             To exercise any of these rights, contact us at support@activitycentral.co.uk. You
