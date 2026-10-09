@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { userHasFeature } from "@/lib/features";
 import CalendarView from "@/components/CalendarView";
+import { getHomeName } from "@/lib/homeName";
 
 export const dynamic = "force-dynamic";
 
@@ -17,5 +18,5 @@ export default async function ProfessionalCalendarPage() {
   if (!(await userHasFeature(session.user.id, "professional-calendar"))) {
     redirect("/dashboard");
   }
-  return <CalendarView variant="professional" />;
+  return <CalendarView variant="professional" homeName={await getHomeName(session.user.id)} />;
 }

@@ -67,6 +67,10 @@ export default function LoginPage() {
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 
+            <p className="text-xs text-right -mt-2">
+              <Link href="/forgot-password" className="text-sageDeep font-semibold">Forgot your password?</Link>
+            </p>
+
             <button
               type="submit"
               disabled={loading}
@@ -79,6 +83,8 @@ export default function LoginPage() {
           <p className="text-xs text-inkSoft text-center mt-5">
             Don&apos;t have an account?{" "}
             <Link href="/signup" className="text-sageDeep font-semibold">Sign up</Link>
+            {" · "}
+            <Link href="/support" className="text-sageDeep font-semibold">Need help?</Link>
           </p>
         </div>
       </div>

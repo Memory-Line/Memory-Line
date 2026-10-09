@@ -4,8 +4,11 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { occasionHref } from "@/lib/occasions";
+import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
+import MonthPrint from "@/components/MonthPrint";
+import RotaControl from "@/components/RotaControl";
+import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
 
 
 type CustomEvent = {
@@ -25,6 +28,7 @@ type DisplayEvent = {
   time?: string | null;
   link: string | null;
   custom: boolean;
+  rota?: boolean; // from the weekly rota layer: shown, but not editable here
   id?: string;
 };
 
@@ -58,6 +62,16 @@ const TAB_COLORS = [
   { bg: "#C9E6DD", text: "#295044" },
   { bg: "#D8E7CB", text: "#3B5A2A" },
   { bg: "#F2D6DA", text: "#7A3A44" },
+];
+
+// Font colours for the notes box.
+const NOTE_COLOURS = [
+  { name: "Black", value: "#3F3237" },
+  { name: "Red", value: "#C0392B" },
+  { name: "Orange", value: "#C9722B" },
+  { name: "Green", value: "#2F7A4B" },
+  { name: "Blue", value: "#2F5FA8" },
+  { name: "Purple", value: "#6B4A9B" },
 ];
 
 function getMonthGrid(year: number, monthIndex: number) {
@@ -98,7 +112,13 @@ const labelStyle: CSSProperties = {
 // are kept separate from the activity calendar's.
 export type CalendarVariant = "activity" | "professional";
 
-export default function CalendarView({ variant = "activity" }: { variant?: CalendarVariant }) {
+export default function CalendarView({
+  variant = "activity",
+}: {
+  variant?: CalendarVariant;
+  // Printed at the top of "Print dates": the care home's name, never a personal account's.
+  homeName?: string | null;
+}) {
   const { status } = useSession();
   const signedIn = status === "authenticated";
   const professional = variant === "professional";
@@ -115,6 +135,72 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
   const [formError, setFormError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // The notes box under the calendar: the text is kept for each month (and each
+  // calendar) on this computer, the colour and the print on/off choice for all.
+  const [notesText, setNotesText] = useState("");
+  const [notesColour, setNotesColour] = useState(NOTE_COLOURS[0].value);
+  const [notesInclude, setNotesInclude] = useState(true);
+  const notesKey = `cal-notes:${variant}:${year}-${monthIndex}`;
+  useEffect(() => {
+    try {
+      setNotesText(localStorage.getItem(notesKey) ?? "");
+      setNotesColour(localStorage.getItem("cal-notes-colour") ?? NOTE_COLOURS[0].value);
+      setNotesInclude(localStorage.getItem("cal-notes-include") !== "no");
+    } catch {}
+  }, [notesKey]);
+
+  function changeNotes(value: string) {
+    setNotesText(value);
+    try {
+      localStorage.setItem(notesKey, value);
+    } catch {}
+  }
+  function changeNotesColour(value: string) {
+    setNotesColour(value);
+    try {
+      localStorage.setItem("cal-notes-colour", value);
+    } catch {}
+  }
+  function changeNotesInclude(value: boolean) {
+    setNotesInclude(value);
+    try {
+      localStorage.setItem("cal-notes-include", value ? "yes" : "no");
+    } catch {}
+  }
+  // Puts a bullet on every line (or takes them all off if they all have one).
+  function toggleBullets() {
+    const lines = notesText.split("\n");
+    const filled = lines.filter((l) => l.trim() !== "");
+    if (filled.length === 0) {
+      changeNotes("• ");
+      return;
+    }
+    const allBulleted = filled.every((l) => l.startsWith("• "));
+    changeNotes(
+      lines
+        .map((l) => (l.trim() === "" ? l : allBulleted ? l.slice(2) : l.startsWith("• ") ? l : `• ${l}`))
+        .join("\n")
+    );
+  }
+  // Enter on a bulleted line starts a new bullet; Enter on an empty bullet ends the list.
+  function handleNotesKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key !== "Enter") return;
+    const el = e.currentTarget;
+    const pos = el.selectionStart;
+    const lineStart = notesText.lastIndexOf("\n", pos - 1) + 1;
+    const line = notesText.slice(lineStart, pos);
+    if (!line.startsWith("• ")) return;
+    e.preventDefault();
+    if (line === "• ") {
+      changeNotes(notesText.slice(0, lineStart) + notesText.slice(pos));
+      return;
+    }
+    changeNotes(notesText.slice(0, pos) + "\n• " + notesText.slice(el.selectionEnd));
+    requestAnimationFrame(() => {
+      el.selectionStart = el.selectionEnd = pos + 3;
+    });
+  }
 
   const month = { name: MONTH_NAMES[monthIndex] };
   const cells = getMonthGrid(year, monthIndex);
@@ -143,6 +229,25 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
     };
   }, [signedIn, year, variant]);
 
+  // The weekly rota (a repeating 4-week pattern shown as a layer on the calendar).
+  const [rota, setRota] = useState<RotaConfig | null>(null);
+  useEffect(() => {
+    if (!signedIn) {
+      setRota(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/calendar-rota?calendar=${variant}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!cancelled) setRota(data.rota ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [signedIn, variant]);
+
   const eventsByDay: Record<number, DisplayEvent[]> = {};
   const builtIn = professional ? [] : occasionsForYear(year).filter((e) => e.month === monthIndex);
   for (const e of builtIn) {
@@ -150,9 +255,19 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
       key: `built-in-${year}-${monthIndex}-${e.day}-${e.label}`,
       day: e.day,
       label: e.label,
-      link: occasionHref(e.occasion ?? e.label),
+      // Only dates that have activities link through to a page; the rest
+      // (bank holidays and so on) are just dates on the calendar.
+      link: OCCASIONS.some((o) => o.slug === occasionSlug(e.occasion ?? e.label)) ? occasionHref(e.occasion ?? e.label) : null,
       custom: false,
     });
+  }
+  if (rota) {
+    for (let d = 1; d <= daysInMonth; d++) {
+      const label = rotaLabelFor(rota, new Date(year, monthIndex, d));
+      if (label) {
+        (eventsByDay[d] ??= []).push({ key: `rota-${year}-${monthIndex}-${d}`, day: d, label, link: null, custom: false, rota: true });
+      }
+    }
   }
   for (const e of customEvents) {
     if (e.month !== monthIndex) continue;
@@ -245,19 +360,15 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
     }
   }
 
+  // Printing builds a separate sheet (components/MonthPrint.tsx) that fits every
+  // day's events and the notes box on the one page, rather than printing the
+  // on-screen calendar, which cut off days with several or long events.
+  const [printJob, setPrintJob] = useState<null | { size: "A4" | "A3" }>(null);
+  const [printNotice, setPrintNotice] = useState<string | null>(null);
   function handlePrint(size: "A4" | "A3") {
-    let styleEl = document.getElementById("dynamic-print-page");
-    if (!styleEl) {
-      styleEl = document.createElement("style");
-      styleEl.id = "dynamic-print-page";
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = `@page { size: ${size} landscape; margin: 10mm; }`;
-
-    const wrapper = document.getElementById("calendar-print-area");
-    if (wrapper) wrapper.setAttribute("data-print-size", size);
-
-    setTimeout(() => window.print(), 50);
+    if (printJob) return;
+    setPrintNotice(null);
+    setPrintJob({ size });
   }
 
   return (
@@ -265,7 +376,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
       <style>{`
         @media print {
           .cal-no-print { display: none !important; }
-          #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 0 !important; }
+          #calendar-print-area { background: #fff !important; min-height: auto !important; padding: 10mm !important; }
           body { background: #fff !important; }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
           /* The whole calendar (header + weekday row + day grid + footer) has to fit on a
@@ -287,6 +398,10 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           .cal-day-cell { height: 100% !important; min-height: 0 !important; }
           .cal-day-cell-inner { height: 100% !important; overflow: hidden !important; }
           .cal-event-tab-overflow { display: flex !important; }
+          .cal-notes { flex: 0 0 auto !important; margin-top: 3mm !important; border: 1px solid #EAE4D6 !important; border-radius: 3mm !important; background: #fff !important; padding: 2mm 3mm !important; }
+          .cal-notes[data-include="false"] { display: none !important; }
+          .cal-notes-print { display: block !important; }
+          [data-print-size="A3"] .cal-notes-print { font-size: 14pt !important; }
         }
         @media print {
           [data-print-size="A3"] .cal-eyebrow { font-size: 16px !important; }
@@ -299,6 +414,8 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; height: 274mm !important; max-height: 274mm !important; }
         }
+        /* The printed copy of the notes is only shown when printing. */
+        .cal-notes-print { display: none; }
         /* Short weekday names are only for phones (never printed). */
         .cal-wd-short { display: none; }
         /* Phones: stack the header, shorten weekday names and tighten the grid.
@@ -322,6 +439,20 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
           .cal-event-tab { font-size: 9.5px !important; padding: 2px 3px !important; line-height: 1.15 !important; overflow-wrap: anywhere; hyphens: auto; }
         }
       `}</style>
+      {printJob && (
+        <MonthPrint
+          size={printJob.size}
+          year={year}
+          monthIndex={monthIndex}
+          professional={professional}
+          eventsByDay={Object.fromEntries(
+            Object.entries(eventsByDay).map(([d, list]) => [d, list.map((e) => ({ label: e.label, time: e.time }))])
+          )}
+          notes={{ include: notesInclude, text: notesText, colour: notesColour }}
+          onDone={() => setPrintJob(null)}
+          onNotice={setPrintNotice}
+        />
+      )}
             <div className="cal-content-wrap" style={{ maxWidth: 980, margin: "0 auto" }}>
 
         {/* Header row: icon left, title centre, year pill right — grid keeps the centre column
@@ -386,19 +517,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         </div>
 
         {/* Print controls */}
-        <div className="cal-no-print cal-toolbar" style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
-          <button
-            onClick={() => handlePrint("A4")}
-            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#B5714A", color: "#fff", cursor: "pointer", fontWeight: 600 }}
-          >
-            Print (A4)
-          </button>
-          <button
-            onClick={() => handlePrint("A3")}
-            style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #B5714A", background: "#fff", color: "#B5714A", cursor: "pointer", fontWeight: 600 }}
-          >
-            Print Large (A3)
-          </button>
+        <div className="cal-no-print cal-toolbar" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", alignItems: "center", gap: 12, margin: "0 0 8px" }}>
           <button
             onClick={() => signedIn && openAddModal()}
             disabled={!signedIn}
@@ -406,15 +525,27 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
             style={{
               padding: "10px 18px",
               borderRadius: 10,
-              border: "1px dashed #B5714A",
-              background: "#FCEFE7",
-              color: "#B5714A",
+              border: "none",
+              background: "#B5714A",
+              color: "#fff",
               cursor: signedIn ? "pointer" : "not-allowed",
               fontWeight: 600,
               opacity: signedIn ? 1 : 0.55,
             }}
           >
             + Add event
+          </button>
+          <button
+            onClick={() => handlePrint("A4")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#CFE3F2", color: "#1F4E66", cursor: "pointer", fontWeight: 600 }}
+          >
+            Print (A4)
+          </button>
+          <button
+            onClick={() => handlePrint("A3")}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#C9E6DD", color: "#295044", cursor: "pointer", fontWeight: 600 }}
+          >
+            Print Large (A3)
           </button>
         </div>
         {!signedIn && status !== "loading" && (
@@ -424,12 +555,20 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
         )}
         {signedIn && (
           <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
-            Click a day's number to see its events — events you've added can be edited or deleted from there.
+            <b>To edit or delete an event you've added, click it.</b> Clicking a day's number shows all of that
+            day's events. The built-in dates can't be changed.
           </p>
         )}
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
           Large Print (A3) makes the calendar text and layout bigger, but you also need to set your printer to A3 paper size in its print settings for it to come out correctly.
         </p>
+        {printNotice && (
+          <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12.5, color: "#7A3A44", background: "#F2D6DA", borderRadius: 8, padding: "8px 12px", margin: "0 0 16px" }}>
+            {printNotice}
+          </p>
+        )}
+        {/* The weekly rota tick box sits just above the calendar (not printed). */}
+        <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} year={year} monthIndex={monthIndex} />
         {/* Weekday header pills */}
         <div className="cal-weekday-row" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
@@ -553,6 +692,25 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
                         <Link key={ev.key} href={ev.link} className={className} style={tabStyle}>
                           {inner}
                         </Link>
+                      ) : ev.custom ? (
+                        // Your own events open the day's list (with Edit and Delete) when clicked.
+                        <div
+                          key={ev.key}
+                          className={className}
+                          style={{ ...tabStyle, cursor: "pointer" }}
+                          role="button"
+                          tabIndex={0}
+                          title="Click to edit or delete"
+                          onClick={() => setOpenDay(isOpen ? null : day)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setOpenDay(isOpen ? null : day);
+                            }
+                          }}
+                        >
+                          {inner}
+                        </div>
                       ) : (
                         <div key={ev.key} className={className} style={tabStyle}>
                           {inner}
@@ -675,7 +833,7 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
                                 </span>
                               ) : (
                                 <span style={{ marginLeft: "auto", fontSize: 9, fontWeight: 700, opacity: 0.6, textTransform: "uppercase", letterSpacing: 0.4 }}>
-                                  Locked
+                                  {ev.rota ? "Rota" : ""}
                                 </span>
                               )}
                             </>
@@ -697,6 +855,89 @@ export default function CalendarView({ variant = "activity" }: { variant?: Calen
               </div>
             );
           })}
+        </div>
+
+        {/* Notes box: prints as part of the same page as the calendar. */}
+        <div
+          className="cal-notes"
+          data-include={notesInclude ? "true" : "false"}
+          style={{ marginTop: 14, border: "1px solid #EAE4D6", borderRadius: 12, background: "#fff", padding: "12px 14px" }}
+        >
+          <div className="cal-no-print">
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10, marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#B5714A", letterSpacing: 1 }}>NOTES</span>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }} role="group" aria-label="Font colour">
+                {NOTE_COLOURS.map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    onClick={() => changeNotesColour(c.value)}
+                    title={c.name}
+                    aria-label={`${c.name} text`}
+                    aria-pressed={notesColour === c.value}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      borderRadius: "50%",
+                      background: c.value,
+                      border: "2px solid #fff",
+                      outline: notesColour === c.value ? `2px solid ${c.value}` : "1px solid #EAE4D6",
+                      cursor: "pointer",
+                      padding: 0,
+                    }}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={toggleBullets}
+                style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #EAE4D6", background: "#FBF9F4", color: "#3F3237", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+              >
+                • Bullet points
+              </button>
+              <label style={{ marginLeft: "auto", fontSize: 12, color: "#8A7A6B", cursor: "pointer" }}>
+                <input type="checkbox" checked={notesInclude} onChange={(e) => changeNotesInclude(e.target.checked)} /> Print this box
+              </label>
+            </div>
+            <textarea
+              value={notesText}
+              onChange={(e) => changeNotes(e.target.value)}
+              onKeyDown={handleNotesKey}
+              rows={3}
+              maxLength={500}
+              placeholder={`Type notes for ${month.name} ${year}. They print under the calendar. Leave it empty to print blank lines to write on.`}
+              style={{ width: "100%", padding: "9px 11px", borderRadius: 8, border: "1px solid #EAE4D6", fontSize: 13.5, fontFamily: "inherit", background: "#FBF9F4", color: notesColour, resize: "vertical" }}
+            />
+            <p style={{ fontSize: 11, color: "#8A7A6B", margin: "4px 0 0" }}>
+              Saved on this computer for each month. Pick a colour above, or use Bullet points for a list.
+            </p>
+          </div>
+
+          <div
+            className="cal-notes-print"
+            style={{
+              color: notesColour,
+              fontSize: "10pt",
+              lineHeight: 1.35,
+              overflowWrap: "anywhere",
+              minHeight: "16mm",
+              ...(notesText.trim()
+                ? {}
+                : { backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, #D9D2C0 5.2mm, #D9D2C0 5.5mm)" }),
+            }}
+          >
+            <p style={{ margin: "0 0 1mm", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "1px", color: "#B5714A" }}>NOTES</p>
+            {notesText.split("\n").map((line, i) =>
+              line.startsWith("• ") ? (
+                <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
+                  <span>•</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
+                </div>
+              ) : (
+                <div key={i} style={{ minHeight: line === "" ? "1.3em" : undefined }}>{line}</div>
+              )
+            )}
+          </div>
         </div>
 
         {/* Footer */}

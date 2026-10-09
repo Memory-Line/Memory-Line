@@ -2,16 +2,21 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Check, PlayCircle,
+  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, PlayCircle,
+  CalendarDays, Share2, FileText, Newspaper,
 } from "lucide-react";
+import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 import { CATEGORIES } from "@/lib/data";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 
-// The free samples come from the database, so render on each request.
-export const dynamic = "force-dynamic";
+// The free samples come from the database, but they change rarely (only
+// when a new category's first upload changes), so the page is cached and
+// rebuilt at most every 10 minutes rather than hitting the database on
+// every single visit — the main thing making the homepage feel slow.
+export const revalidate = 600;
 
 // One free sample per category, offered on the homepage before sign-up:
 // the first activity (lowest number) in each of these categories. Every
@@ -44,6 +49,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Newsletters: Newspaper,
   Sudoku: Grid2x2,
 };
 
@@ -76,6 +82,7 @@ export default async function LandingPage() {
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
           <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
+          <Link href="/support" className="hidden sm:inline text-inkSoft hover:text-ink">Support</Link>
           <Link href="/login" className="whitespace-nowrap text-inkSoft hover:text-ink">Log in</Link>
           <Link
             href="/signup"
@@ -117,7 +124,7 @@ export default async function LandingPage() {
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">{CATEGORIES.length} categories, every session covered</h2>
         <p className="text-inkSoft text-center mb-10">
-          Each activity includes step-by-step facilitator notes, duration, and group size.
+          Every activity is a ready-to-print sheet, and the puzzles and games can be played on screen too.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
           {CATEGORIES.map((c) => {
@@ -140,9 +147,46 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* Tools beyond the library */}
+      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
+        <h2 className="font-serif text-2xl text-center mb-2">More than a library</h2>
+        <p className="text-inkSoft text-center mb-10">Tools that make planning, printing and sharing easier.</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[
+            {
+              Icon: CalendarDays,
+              title: "Holidays & Celebrations calendar",
+              plan: "Premium",
+              text: "Nearly 60 dates a year already filled in. Add your own events, then print a whole month or any week on A4 or A3, with a notes box and space to write.",
+            },
+            {
+              Icon: Share2,
+              title: "Share your calendar",
+              plan: "Premium",
+              text: "Get a link or QR code for your website, newsletter or noticeboard, so families can see what's coming up.",
+            },
+            {
+              Icon: FileText,
+              title: "Shared files",
+              plan: "Premium",
+              text: "Upload your menu, newsletter or room photos and get a link or QR code. Swap in next week's menu and the link stays the same.",
+            },
+          ].map(({ Icon, title, plan, text }) => (
+            <div key={title} className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3 bg-cardTint">
+                <Icon size={20} className="text-sageDeep" />
+              </div>
+              <p className="text-clay font-semibold text-[11px] tracking-wide uppercase mb-1">{plan}</p>
+              <h3 className="font-serif text-lg mb-1.5">{title}</h3>
+              <p className="text-inkSoft text-sm">{text}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Free samples (hidden if none of their categories has uploads yet) */}
       {freeSamples.length > 0 && (
-      <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
+      <section id="samples" className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">Try a few, free — no signup needed</h2>
         <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
         <div className="flex flex-wrap justify-center gap-4">
@@ -217,9 +261,11 @@ export default async function LandingPage() {
             <p className="font-serif text-5xl text-ink mb-1">
               £18<span className="text-lg text-inkSoft">/month</span>
             </p>
-            <p className="text-xs text-inkSoft mb-6">per care home, billed monthly, cancel anytime</p>
+            <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">13 of 16 categories</p>
+            <StandardFeatures />
+
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">14 of 17 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
@@ -246,33 +292,14 @@ export default async function LandingPage() {
             <p className="font-serif text-5xl text-ink mb-1">
               £28<span className="text-lg text-inkSoft">/month</span>
             </p>
-            <p className="text-xs text-inkSoft mb-2">per care home, billed monthly, cancel anytime</p>
+            <p className="text-xs text-inkSoft mb-2">per account, billed monthly, cancel anytime</p>
             <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
               Just £10/month more for the full experience
             </p>
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">Everything a care home actually needs</p>
-            <ul className="text-sm text-left space-y-2.5 mb-6">
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span><b>Large Print (A3)</b> for every activity — easier for residents with low vision</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span>
-                  The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in
-                  (Christmas, Halloween, Remembrance Sunday, Chinese New Year and more), each one linking straight
-                  to matching themed activities. Add your own events on top and remove them any time — it becomes
-                  your activity coordinator, with the day's session already planned when you open it.
-                </span>
-              </li>
-              <li className="flex items-start gap-2">
-                <Check size={16} className="text-sageDeep mt-0.5 shrink-0" />
-                <span><b>Play every activity on screen</b> — no printer needed for a spontaneous session</span>
-              </li>
-            </ul>
+            <PremiumFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 16 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 17 categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
@@ -302,7 +329,7 @@ export default async function LandingPage() {
       </section>
 
       <footer className="border-t border-line py-8 px-5 sm:px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
-        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams.</p>
+        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
         <p className="mt-4 flex items-center justify-center gap-2">
           <Link href="/terms" className="hover:text-ink">Terms</Link>

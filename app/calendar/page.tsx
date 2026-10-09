@@ -1,6 +1,7 @@
 import CalendarView from "@/components/CalendarView";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { getViewer } from "@/lib/viewer";
+import { getHomeName } from "@/lib/homeName";
 
 export const dynamic = "force-dynamic";
 
@@ -14,5 +15,5 @@ export default async function CalendarPage() {
       </div>
     );
   }
-  return <CalendarView variant="activity" />;
+  return <CalendarView variant="activity" homeName={await getHomeName(viewer.userId)} />;
 }

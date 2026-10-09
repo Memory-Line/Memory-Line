@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Shield, Menu, X,
+  Briefcase, Calendar, CalendarDays, Newspaper, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
 
@@ -27,6 +27,7 @@ const ICONS: Record<string, any> = {
   "Sing-Alongs": Music,
   "Communication Cards": Languages,
   "BSL Tools": Hand,
+  Newsletters: Newspaper,
   Sudoku: Grid2x2,
 };
 
@@ -49,6 +50,7 @@ const HOVER_COLORS: Record<string, string> = {
   "Sing-Alongs": "#2F7A63",
   "Communication Cards": "#A23B3B",
   "BSL Tools": "#3E6E4A",
+  Newsletters: "#B5714A",
   Services: "#8A6E52",
   Admin: "#8A3B3B",
 };
@@ -89,10 +91,13 @@ function NavItem({
 export default function Sidebar({
   isAdmin = false,
   professionalCalendar = false,
+  questionnaires = false,
 }: {
   isAdmin?: boolean;
   // Only for accounts with the professional calendar switched on.
   professionalCalendar?: boolean;
+  // Only for accounts with the questionnaires feature switched on.
+  questionnaires?: boolean;
 }) {
   const pathname = usePathname();
   // Phones: the menu is hidden behind a Menu button and slides in over the
@@ -134,6 +139,27 @@ export default function Sidebar({
           label="Services"
           active={pathname === "/dashboard/services"}
         />
+        <NavItem
+          href="/dashboard/files"
+          icon={FileText}
+          label="Shared files"
+          active={pathname === "/dashboard/files"}
+        />
+        {questionnaires && (
+          <NavItem
+            href="/dashboard/questionnaires"
+            icon={ClipboardList}
+            label="Questionnaires"
+            active={pathname === "/dashboard/questionnaires"}
+          />
+        )}
+        <NavItem
+          href="/dashboard/account"
+          icon={UserCircle}
+          label="My account"
+          active={pathname === "/dashboard/account"}
+        />
+        <NavItem href="/support" icon={LifeBuoy} label="Help & support" active={pathname === "/support"} />
       </div>
 
       {isAdmin && (
@@ -144,6 +170,24 @@ export default function Sidebar({
             icon={Shield}
             label="Admin"
             active={pathname === "/dashboard/admin/upload"}
+          />
+          <NavItem
+            href="/dashboard/admin/mailing-list"
+            icon={Mail}
+            label="Mailing list"
+            active={pathname === "/dashboard/admin/mailing-list"}
+          />
+          <NavItem
+            href="/dashboard/admin/forms"
+            icon={ClipboardList}
+            label="Questionnaires (admin)"
+            active={pathname === "/dashboard/admin/forms"}
+          />
+          <NavItem
+            href="/dashboard/admin/upload-calendar"
+            icon={Upload}
+            label="Upload calendar packs"
+            active={pathname === "/dashboard/admin/upload-calendar"}
           />
         </div>
       )}

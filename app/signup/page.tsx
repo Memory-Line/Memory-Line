@@ -14,6 +14,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  // Unticked by default: nobody is signed up to promotional emails unless they choose to be.
+  const [marketing, setMarketing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -31,7 +33,7 @@ export default function SignupPage() {
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, accountType }),
+      body: JSON.stringify({ name, email, password, accountType, marketing }),
     });
 
     if (!res.ok) {
@@ -68,7 +70,13 @@ export default function SignupPage() {
 
         <div className="rounded-2xl border border-line bg-card p-7">
           <h1 className="font-serif text-2xl mb-1">Create your account</h1>
-          <p className="text-inkSoft text-sm mb-6">No card needed to create your account — you'll choose a plan next.</p>
+          <p className="text-inkSoft text-sm mb-1">
+            Create your account, then choose a plan to unlock the activities.
+          </p>
+          <p className="text-inkSoft text-sm mb-6">
+            Want a look first? <Link href="/#samples" className="text-sageDeep font-semibold underline">Try the free samples</Link> on
+            the homepage, no account needed.
+          </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
@@ -145,6 +153,18 @@ export default function SignupPage() {
                 placeholder="Type it again"
               />
             </div>
+
+            <label className="flex items-start gap-2 text-xs text-inkSoft cursor-pointer">
+              <input
+                type="checkbox"
+                checked={marketing}
+                onChange={(e) => setMarketing(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                Send me occasional news, new activities and offers by email. You can unsubscribe at any time.
+              </span>
+            </label>
 
             {error && <p className="text-xs text-red-600">{error}</p>}
 
