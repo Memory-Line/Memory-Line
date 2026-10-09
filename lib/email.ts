@@ -60,25 +60,31 @@ export async function sendEmail(message: Message): Promise<boolean> {
   }
 }
 
-// The shared look: cream background, the site's green, plain words.
+// The shared look: a dark navy band with the logo, then plain white, no box.
+const NAVY = "#1D2B3A";
+
 function layout(title: string, bodyHtml: string, footerExtraHtml = "") {
-  return `<!doctype html><html><body style="margin:0;padding:0;background:#F5F0E4;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0E4;padding:24px 12px;">
+  const logo = `${siteUrl()}/email-logo.png`;
+  return `<!doctype html><html><head><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light only"></head><body style="margin:0;padding:0;background:#FFFFFF;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FFFFFF;">
 <tr><td align="center">
-<table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#FFFFFF;border-radius:14px;border:1px solid #E6DDC8;">
-<tr><td style="padding:28px 32px 8px;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:#657A68;">Activity Central</td></tr>
-<tr><td style="padding:8px 32px 28px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#2E2B24;">
-<h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:normal;color:#2E2B24;">${title}</h1>
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#FFFFFF;">
+<tr><td align="center" bgcolor="${NAVY}" style="background:${NAVY};padding:26px 24px;">
+<img src="${logo}" width="76" alt="" style="display:block;margin:0 auto;background:#FFFFFF;border-radius:50%;padding:8px;width:76px;height:auto;">
+<div style="font-family:Georgia,'Times New Roman',serif;font-size:20px;color:#FFFFFF;margin-top:10px;">Activity Central</div>
+</td></tr>
+<tr><td style="padding:28px 36px 24px;font-family:Helvetica,Arial,sans-serif;font-size:15px;line-height:1.6;color:#1D2B3A;">
+<h1 style="margin:0 0 14px;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:normal;color:#1D2B3A;">${title}</h1>
 ${bodyHtml}
 </td></tr>
-<tr><td style="padding:16px 32px 24px;border-top:1px solid #E6DDC8;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.5;color:#8A8371;">
-Questions? Just reply to this email or write to <a href="mailto:support@activitycentral.co.uk" style="color:#6D8C6A;">support@activitycentral.co.uk</a>.${footerExtraHtml}
+<tr><td style="padding:18px 36px 28px;border-top:1px solid #E3E6EA;font-family:Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#6A7785;">
+Questions? Just reply to this email or write to <a href="mailto:support@activitycentral.co.uk" style="color:${NAVY};">support@activitycentral.co.uk</a>.${footerExtraHtml}
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
 
 function button(href: string, label: string) {
-  return `<p style="margin:22px 0;"><a href="${href}" style="display:inline-block;background:#8BA888;color:#FFFFFF;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:10px;">${label}</a></p>`;
+  return `<p style="margin:22px 0;"><a href="${href}" style="display:inline-block;background:${NAVY};color:#FFFFFF;text-decoration:none;font-weight:bold;padding:13px 26px;border-radius:6px;">${label}</a></p>`;
 }
 
 export function welcomeEmail(to: string, name: string | null): Message {
@@ -93,7 +99,7 @@ export function welcomeEmail(to: string, name: string | null): Message {
       `<p>${hello}</p>
 <p>Thanks for creating your account. There's one step left to unlock the activities: choose a plan.</p>
 ${button(pricing, "Choose your plan")}
-<p>If you'd like another look first, you can <a href="${samples}" style="color:#6D8C6A;">try the free samples</a> on our website any time, no payment needed.</p>`
+<p>If you'd like another look first, you can <a href="${samples}" style="color:#1D2B3A;">try the free samples</a> on our website any time, no payment needed.</p>`
     ),
     text: `${name ? `Hello ${name},` : "Hello,"}
 
@@ -183,7 +189,7 @@ export function supportMessageEmail(input: {
     html: layout(
       `New ${label.toLowerCase()}`,
       `<p><b>From:</b> ${esc(name)} &lt;${esc(email)}&gt;<br><b>${esc(accountLine)}</b></p>
-<p style="white-space:pre-wrap;background:#F5F0E4;border-radius:10px;padding:14px;">${esc(message)}</p>
+<p style="white-space:pre-wrap;background:#F2F4F6;border-radius:6px;padding:14px;">${esc(message)}</p>
 <p style="font-size:13px;color:#8A8371;">Press Reply to answer ${esc(name)} directly.</p>`
     ),
     text: `From: ${name} <${email}>
@@ -216,7 +222,7 @@ export function promotionalEmail(
     html: layout(
       esc(subject),
       bodyHtml,
-      `<br><br>You're getting this because you asked for updates from Activity Central. <a href="${link}" style="color:#6D8C6A;">Unsubscribe</a> any time.`
+      `<br><br>You're getting this because you asked for updates from Activity Central. <a href="${link}" style="color:#1D2B3A;">Unsubscribe</a> any time.`
     ),
     text: `${bodyText}
 
