@@ -258,7 +258,7 @@ export default async function LandingPage() {
           <div className="flex-1 w-full flex flex-col rounded-2xl border-2 border-line bg-card p-6 sm:p-8 sm:mt-7">
             <p className="font-serif text-lg text-sageDeep mb-1">Standard</p>
             <p className="font-serif text-5xl text-ink mb-1">
-              £18<span className="text-lg text-inkSoft">/month</span>
+              £18<span className="text-lg text-inkSoft">/month + VAT</span>
             </p>
             <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
@@ -289,7 +289,7 @@ export default async function LandingPage() {
 
             <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
             <p className="font-serif text-5xl text-ink mb-1">
-              £28<span className="text-lg text-inkSoft">/month</span>
+              £28<span className="text-lg text-inkSoft">/month + VAT</span>
             </p>
             <p className="text-xs text-inkSoft mb-2">per account, billed monthly, cancel anytime</p>
             <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
