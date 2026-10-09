@@ -6,9 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
-import RangePrint from "@/components/RangePrint";
 import MonthPrint from "@/components/MonthPrint";
-import ShareCalendar from "@/components/ShareCalendar";
 import RotaControl from "@/components/RotaControl";
 import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
 
@@ -116,7 +114,6 @@ export type CalendarVariant = "activity" | "professional";
 
 export default function CalendarView({
   variant = "activity",
-  homeName = null,
 }: {
   variant?: CalendarVariant;
   // Printed at the top of "Print dates": the care home's name, never a personal account's.
@@ -550,8 +547,6 @@ export default function CalendarView({
           >
             Print Large (A3)
           </button>
-          <RangePrint variant={variant} professional={professional} signedIn={signedIn} homeName={homeName} />
-          <ShareCalendar variant={variant} signedIn={signedIn} defaultYear={year} defaultMonth={monthIndex} />
         </div>
         {!signedIn && status !== "loading" && (
           <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
