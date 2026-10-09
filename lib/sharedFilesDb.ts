@@ -57,6 +57,7 @@ export function publicShape(link: Awaited<ReturnType<typeof getOwnedLink>> & {})
     token: link.token,
     title: link.title,
     allowDownload: link.allowDownload,
+    folderId: link.folderId,
     updatedAt: link.updatedAt,
     items: link.items.map((i) => ({ id: i.id, contentType: i.contentType, sizeBytes: i.sizeBytes })),
   };
