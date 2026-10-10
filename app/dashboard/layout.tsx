@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { userHasFeature } from "@/lib/features";
 import { getViewer } from "@/lib/viewer";
 import Sidebar from "@/components/Sidebar";
+import { getCategories } from "@/lib/categories";
 import TopBar from "@/components/TopBar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -22,10 +23,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const viewer = await getViewer();
   const professionalCalendar = await userHasFeature(session.user.id, "professional-calendar");
   const questionnaires = await userHasFeature(session.user.id, "questionnaires");
+  const categories = (await getCategories()).map((c) => ({ key: c.key, slug: c.slug, icon: c.icon }));
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-bg">
-      <Sidebar isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} questionnaires={questionnaires} />
+      <Sidebar categories={categories} isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} questionnaires={questionnaires} />
       <div className="flex-1 min-w-0">
         <TopBar
           userName={session.user.name ?? session.user.email ?? "there"}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATEGORIES } from "@/lib/data";
+import { CATEGORIES, type Category } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
 import { FEATURES } from "@/lib/featureList";
@@ -21,7 +21,27 @@ type FileStatus = {
   error?: string;
 };
 
+// The categories on the site: the built-in ones plus any made on the Manage page, minus removed ones.
+function useCategories(): Category[] {
+  const [list, setList] = useState<Category[]>(CATEGORIES);
+  useEffect(() => {
+    fetch("/api/admin/categories")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!d?.categories) return;
+        setList(
+          d.categories
+            .filter((c: { removed: boolean }) => !c.removed)
+            .map((c: { name: string; slug?: string }) => CATEGORIES.find((b) => b.key === c.name) ?? { key: c.name, slug: c.slug ?? c.name, color: "#B5714A", tint: "#F3E3D6" })
+        );
+      })
+      .catch(() => {});
+  }, []);
+  return list;
+}
+
 export default function AdminUploadPage() {
+  const allCategories = useCategories();
   const [category, setCategory] = useState(CATEGORIES[0].key);
   // "" = the regular category library; otherwise a calendar occasion slug.
   const [occasion, setOccasion] = useState("");
@@ -45,10 +65,10 @@ export default function AdminUploadPage() {
     const o = params.get("occasion");
     const c = params.get("category");
     if (o && OCCASIONS.some((x) => x.slug === o)) setOccasion(o);
-    if (c && CATEGORIES.some((x) => x.key === c)) setCategory(c);
+    if (c) setCategory(c);
   }, []);
 
-  const categoryOptions = occasion ? THEMEABLE_CATEGORIES : CATEGORIES;
+  const categoryOptions = occasion ? THEMEABLE_CATEGORIES : allCategories;
   const isLanguageCategory = category === LANGUAGE_CATEGORY && !occasion;
   const levels = occasion ? undefined : subcategoriesFor(category);
 
@@ -380,7 +400,7 @@ export default function AdminUploadPage() {
         </div>
       )}
 
-      <RenumberSection />
+      <RenumberSection categories={allCategories} />
       <FreeAccessSection />
     </div>
   );
@@ -391,7 +411,7 @@ type RenumberChange = { id: string; from: string; to: string };
 // Closes gaps in a category's numbering (e.g. 12, 14 … 20, 23 → 1 … 20),
 // keeping the current order. Shows the changes first; nothing is saved
 // until "Apply" is clicked.
-function RenumberSection() {
+function RenumberSection({ categories }: { categories: Category[] }) {
   const [category, setCategory] = useState(CATEGORIES[0].key);
   const [preview, setPreview] = useState<RenumberChange[] | null>(null);
   const [busy, setBusy] = useState(false);
@@ -439,7 +459,7 @@ function RenumberSection() {
           }}
           className="flex-1 rounded-lg border border-line px-3 py-2 text-sm"
         >
-          {CATEGORIES.filter((c) => c.key !== LANGUAGE_CATEGORY && !subcategoriesFor(c.key)).map((c) => (
+          {categories.filter((c) => c.key !== LANGUAGE_CATEGORY && !subcategoriesFor(c.key)).map((c) => (
             <option key={c.slug} value={c.key}>
               {c.key}
             </option>

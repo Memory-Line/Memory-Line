@@ -120,9 +120,9 @@ export function planConfirmationEmail(to: string, name: string | null, plan: "st
   const planLine = label ? `You're now on the <b>${label}</b> plan.` : "Your subscription is now active.";
   const detail =
     plan === "premium"
-      ? "That includes all 17 categories, large print sheets, the Holidays &amp; Celebrations calendar and playing puzzles and games on screen."
+      ? "That includes every category, large print sheets, the Holidays &amp; Celebrations calendar and playing puzzles and games on screen."
       : plan === "standard"
-      ? "That includes 14 of the 17 categories, with every sheet ready to download and print."
+      ? "That includes every category except the three Premium-only ones, with every sheet ready to download and print."
       : "";
   return {
     to,

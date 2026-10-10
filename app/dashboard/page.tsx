@@ -2,7 +2,8 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CATEGORIES } from "@/lib/data";
+import { getCategories } from "@/lib/categories";
+import { customIcon } from "@/lib/categoryIcons";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Newspaper,
@@ -35,6 +36,7 @@ export default async function DashboardHome({
 }) {
   const session = await getServerSession(authOptions);
   const userId = session!.user.id;
+  const categories = await getCategories();
 
   // The last three downloads of activities that still exist (downloads of
   // the old sample activities are skipped).
@@ -141,8 +143,8 @@ export default async function DashboardHome({
               <p className="text-xs text-inkSoft">Nothing downloaded yet — browse a category to get started.</p>
             )}
             {recentDownloads.map((d) => {
-              const cat = CATEGORIES.find((c) => c.key === d.category);
-              const Icon = ICONS[d.category] ?? Footprints;
+              const cat = categories.find((c) => c.key === d.category);
+              const Icon = ICONS[d.category] ?? customIcon(cat?.icon);
               return (
                 <div key={d.id} className="flex items-center gap-3 rounded-lg p-2 bg-bg">
                   <div
@@ -166,8 +168,8 @@ export default async function DashboardHome({
           <p className="font-serif text-[15px] mb-2.5">Popular this month</p>
           <div className="grid grid-cols-2 gap-2">
             {popular.map((t) => {
-              const cat = CATEGORIES.find((c) => c.key === t.category);
-              const Icon = ICONS[t.category] ?? Footprints;
+              const cat = categories.find((c) => c.key === t.category);
+              const Icon = ICONS[t.category] ?? customIcon(cat?.icon);
               return (
                 <div key={t.id} className="rounded-lg p-2.5" style={{ background: cat?.tint }}>
                   <Icon size={14} color={cat?.color} />
@@ -183,8 +185,8 @@ export default async function DashboardHome({
       <div className="rounded-xl p-4 mt-5 bg-card border border-line">
         <p className="font-serif text-[15px] mb-2.5">Browse by category</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {CATEGORIES.map((c) => {
-            const Icon = ICONS[c.key];
+          {categories.map((c) => {
+            const Icon = ICONS[c.key] ?? customIcon(c.icon);
             return (
               <Link
                 key={c.slug}

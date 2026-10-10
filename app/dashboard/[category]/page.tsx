@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { categoryBySlug } from "@/lib/data";
+import { getCategoryBySlug } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
 import TemplateList from "@/components/TemplateList";
 import { subcategoriesFor } from "@/lib/subcategories";
@@ -31,7 +31,7 @@ export function generateStaticParams() {
 export const dynamic = "force-dynamic";
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
-  const category = categoryBySlug(params.category);
+  const category = await getCategoryBySlug(params.category);
   if (!category) notFound();
 
   // Categories split into sub-categories (e.g. Sudoku levels): pick one first.

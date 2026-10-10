@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { categoryBySlug } from "@/lib/data";
+import { getCategoryBySlug } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
 import { subcategoryBySlug } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
@@ -15,7 +15,7 @@ export default async function SubcategoryPage({
 }: {
   params: { category: string; sub: string };
 }) {
-  const category = categoryBySlug(params.category);
+  const category = await getCategoryBySlug(params.category);
   const sub = category && subcategoryBySlug(category.key, params.sub);
   if (!category || !sub) notFound();
 

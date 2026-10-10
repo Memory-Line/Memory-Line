@@ -34,7 +34,7 @@ export function StandardFeatures() {
   );
 }
 
-export function PremiumFeatures() {
+export function PremiumFeatures({ total = CATEGORIES.length }: { total?: number }) {
   return (
     <>
       <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">Everything in Standard, plus</p>
@@ -62,7 +62,7 @@ export function PremiumFeatures() {
         </Tick>
         <Tick>
           <b>
-            Play {PLAYABLE_CATEGORIES.size} of the {CATEGORIES.length} categories on screen
+            Play {PLAYABLE_CATEGORIES.size} of the {total} categories on screen
           </b>{" "}
           — the puzzles and games, no printer needed for a spontaneous session
         </Tick>

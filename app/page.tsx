@@ -6,7 +6,8 @@ import {
   CalendarDays, Share2, FileText, Newspaper,
 } from "lucide-react";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
-import { CATEGORIES } from "@/lib/data";
+import { getCategories } from "@/lib/categories";
+import { customIcon } from "@/lib/categoryIcons";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
@@ -22,13 +23,10 @@ export const revalidate = 600;
 // the first activity (lowest number) in each of these categories. Every
 // category gets one, so people can see exactly what they'd be getting
 // across the whole library, not just a handful of categories.
-const FREE_SAMPLE_CATEGORIES = CATEGORIES.map((c) => c.key);
 
 // Same source of truth the site's own Standard/Premium gating uses
 // (lib/plans.ts), so the pricing section can never drift out of sync with
 // what Standard accounts actually get.
-const PREMIUM_ONLY_CATEGORIES = Array.from(PREMIUM_ONLY_CATEGORIES_SET);
-const STANDARD_CATEGORIES = CATEGORIES.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
 
 const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
@@ -54,6 +52,12 @@ const ICONS: Record<string, any> = {
 };
 
 export default async function LandingPage() {
+  // The categories come from the database (so ones made or removed on the admin page show here
+  // within a few minutes, see revalidate above); the Premium-only list is lib/plans.ts.
+  const categories = await getCategories();
+  const FREE_SAMPLE_CATEGORIES = categories.map((c) => c.key);
+  const PREMIUM_ONLY_CATEGORIES = categories.map((c) => c.key).filter((k) => PREMIUM_ONLY_CATEGORIES_SET.has(k));
+  const STANDARD_CATEGORIES = categories.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
   const freeSamples = (
     await Promise.all(
       FREE_SAMPLE_CATEGORIES.map((category) =>
@@ -122,13 +126,13 @@ export default async function LandingPage() {
 
       {/* Categories */}
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
-        <h2 className="font-serif text-2xl text-center mb-2">{CATEGORIES.length} categories, every session covered</h2>
+        <h2 className="font-serif text-2xl text-center mb-2">{categories.length} categories, every session covered</h2>
         <p className="text-inkSoft text-center mb-10">
           Every activity is a ready-to-print sheet, and the puzzles and games can be played on screen too.
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-          {CATEGORIES.map((c) => {
-            const Icon = ICONS[c.key];
+          {categories.map((c) => {
+            const Icon = ICONS[c.key] ?? customIcon(c.icon);
             return (
               <div
                 key={c.key}
@@ -191,8 +195,8 @@ export default async function LandingPage() {
         <p className="text-inkSoft text-center mb-10">A small taste of the library, ready to download right now.</p>
         <div className="flex flex-wrap justify-center gap-4">
           {freeSamples.map((t) => {
-            const cat = CATEGORIES.find((c) => c.key === t.category);
-            const Icon = ICONS[t.category];
+            const cat = categories.find((c) => c.key === t.category);
+            const Icon = ICONS[t.category] ?? customIcon(cat?.icon);
             return (
               <div
                 key={t.id}
@@ -265,7 +269,7 @@ export default async function LandingPage() {
 
             <StandardFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">14 of 17 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">{STANDARD_CATEGORIES.length} of {categories.length} categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
@@ -297,9 +301,9 @@ export default async function LandingPage() {
               Just £10/month more for the full experience
             </p>
 
-            <PremiumFeatures />
+            <PremiumFeatures total={categories.length} />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 17 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All {categories.length} categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>

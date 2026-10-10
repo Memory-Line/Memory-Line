@@ -208,6 +208,24 @@ model MailingDelivery {
   @@unique([campaignId, contactId])
 }
 
+// Categories the admin has made (the built-in ones live in lib/data.ts) and built-in
+// ones the admin has removed. See lib/categories.ts.
+model CustomCategory {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  slug      String   @unique
+  icon      String   @default("Star")
+  color     String
+  tint      String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model RemovedCategory {
+  name      String   @id
+  createdAt DateTime @default(now())
+}
+
 model CalendarEvent {
   id        String   @id @default(cuid())
   userId    String

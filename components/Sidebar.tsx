@@ -7,9 +7,10 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Newspaper, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
+  Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES } from "@/lib/data";
+import { customIcon } from "@/lib/categoryIcons";
 
 const ICONS: Record<string, any> = {
   "Physical & Exercise": Footprints,
@@ -89,10 +90,12 @@ function NavItem({
 }
 
 export default function Sidebar({
+  categories = CATEGORIES.map((c) => ({ key: c.key, slug: c.slug, icon: undefined as string | undefined })),
   isAdmin = false,
   professionalCalendar = false,
   questionnaires = false,
 }: {
+  categories?: { key: string; slug: string; icon?: string }[];
   isAdmin?: boolean;
   // Only for accounts with the professional calendar switched on.
   professionalCalendar?: boolean;
@@ -123,11 +126,11 @@ export default function Sidebar({
             active={pathname === "/professional-calendar"}
           />
         )}
-        {CATEGORIES.map((c: any) => (
+        {categories.map((c) => (
           <NavItem
             key={c.slug}
             href={`/dashboard/${c.slug}`}
-            icon={ICONS[c.key]}
+            icon={ICONS[c.key] ?? customIcon(c.icon)}
             label={c.key}
             active={pathname === `/dashboard/${c.slug}` || pathname.startsWith(`/dashboard/${c.slug}/`)}
           />
@@ -182,6 +185,12 @@ export default function Sidebar({
             icon={ClipboardList}
             label="Questionnaires (admin)"
             active={pathname === "/dashboard/admin/forms"}
+          />
+          <NavItem
+            href="/dashboard/admin/manage"
+            icon={Settings2}
+            label="Manage activities"
+            active={pathname === "/dashboard/admin/manage"}
           />
           <NavItem
             href="/dashboard/admin/upload-calendar"
