@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Download, Play } from "lucide-react";
 import type { Template } from "@prisma/client";
 import { displayTitle } from "@/lib/titles";
+import { themeWords } from "@/lib/themes";
+import TemplateFilter from "@/components/TemplateFilter";
 import CompleteButton from "@/components/CompleteButton";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { PREMIUM_ONLY_CATEGORIES } from "@/lib/plans";
@@ -36,12 +38,17 @@ export default function TemplateList({
   const sorted = [...templates].sort(
     (a, b) => leadingNumber(a.fileName) - leadingNumber(b.fileName) || a.title.localeCompare(b.title)
   );
+  // Long lists get a search box and theme buttons; short ones don't need them.
+  const titles = sorted.map((t) => displayTitle(t));
+  const filterable = sorted.length >= 12;
   return (
+    <>
+    {filterable && <TemplateFilter themes={themeWords(titles)} total={sorted.length} />}
     <div className="space-y-3">
-      {sorted.map((t) => {
+      {sorted.map((t, i) => {
         const categoryLocked = !isPremium && PREMIUM_ONLY_CATEGORIES.has(t.category);
         return (
-        <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
+        <div key={t.id} data-template-row data-search={`${titles[i]} ${t.fileName}`.toLowerCase()} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
           <div>
             <p className="text-[15px] font-bold">{displayTitle(t)}</p>
             <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
@@ -88,5 +95,6 @@ export default function TemplateList({
         );
       })}
     </div>
+    </>
   );
 }
