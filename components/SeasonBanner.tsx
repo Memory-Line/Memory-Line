@@ -44,15 +44,15 @@ export default function SeasonBanner({ active }: { active: ActiveSeason }) {
   const row = Array.from({ length: 16 }, (_, i) => season.icons[i % season.icons.length]);
   return (
     <div className="cal-no-print" role="note" aria-label={`${season.label} message`}>
-      <div style={{ background: season.palette.topbar, color: "#fff" }} className="px-3 py-2 flex items-center justify-center gap-3 text-[13.5px] font-semibold text-center">
+      <div style={{ color: season.palette.topbar }} className="px-3 pt-2 pb-1 flex items-center justify-center gap-3 text-[14px] font-semibold text-center">
         <span className="hidden sm:block shrink-0">{icon(lead, 22)}</span>
         <span>{banner}</span>
         <span className="hidden sm:block shrink-0">{icon(trail, 22)}</span>
       </div>
-      {season.decoration === "lights" && <div style={{ background: season.palette.topbar }}><Lights /></div>}
-      {season.decoration === "bunting" && <div style={{ background: season.palette.bg }}><Bunting /></div>}
+      {season.decoration === "lights" && <Lights />}
+      {season.decoration === "bunting" && <Bunting />}
       {season.decoration === "icons" && (
-        <div style={{ background: season.palette.cardTint }} className="flex items-center justify-between px-4 py-1.5 overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-1 overflow-hidden">
           {row.map((n, i) => (
             <span key={i} className={i >= 8 ? "hidden md:block" : ""}>
               {icon(n, 26)}
