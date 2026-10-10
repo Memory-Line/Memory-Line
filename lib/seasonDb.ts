@@ -20,30 +20,13 @@ export const getSeasonRows = unstable_cache(
   { revalidate: 300, tags: ["seasons"] }
 );
 
-// Today's date in the UK as "YYYY-MM-DD".
-export function todayUK(now = new Date()) {
-  const parts = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/London", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now);
-  const get = (t: string) => parts.find((p) => p.type === t)!.value;
-  return `${get("year")}-${get("month")}-${get("day")}`;
-}
-
-type Row = { key: string; enabled: boolean; bannerText: string | null; startDate: string | null; endDate: string | null; yearly: boolean; forceNow: boolean };
-
-export function inWindow(row: Row, today: string) {
-  if (!row.startDate || !row.endDate) return false;
-  if (row.yearly) {
-    const md = today.slice(5);
-    const s = row.startDate.slice(-5);
-    const e = row.endDate.slice(-5);
-    return s <= e ? md >= s && md <= e : md >= s || md <= e; // a window can run over New Year
-  }
-  return today >= row.startDate && today <= row.endDate;
-}
+type Row = { key: string; bannerText: string | null; forceNow: boolean };
 
 export type ActiveSeason = { season: Season; banner: string };
 
-// The look to show right now, or null for the normal site. "Show now" wins, then any
-// season whose dates include today. An admin previewing (cookie) sees that one.
+// The look to show right now, or null for the normal site. A look is simply on or off
+// (the "forceNow" setting); only one can be on. An admin previewing (cookie) sees that
+// one on their own browser.
 export async function getActiveSeason(): Promise<ActiveSeason | null> {
   const rows = (await getSeasonRows()) as Row[];
   const bannerFor = (s: Season) => rows.find((r) => r.key === s.key)?.bannerText?.trim() || s.defaultBanner;
@@ -54,12 +37,6 @@ export async function getActiveSeason(): Promise<ActiveSeason | null> {
     if (s && (await requireAdmin())) return { season: s, banner: bannerFor(s) };
   }
 
-  const today = todayUK();
-  const forced = SEASONS.find((s) => rows.find((r) => r.key === s.key)?.forceNow);
-  if (forced) return { season: forced, banner: bannerFor(forced) };
-  const scheduled = SEASONS.find((s) => {
-    const r = rows.find((x) => x.key === s.key);
-    return !!r && r.enabled && inWindow(r, today);
-  });
-  return scheduled ? { season: scheduled, banner: bannerFor(scheduled) } : null;
+  const on = SEASONS.find((s) => rows.find((r) => r.key === s.key)?.forceNow);
+  return on ? { season: on, banner: bannerFor(on) } : null;
 }
