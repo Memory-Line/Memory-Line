@@ -226,6 +226,19 @@ model RemovedCategory {
   createdAt DateTime @default(now())
 }
 
+// The admin's settings for each seasonal look (lib/seasons.ts): whether it switches on
+// by itself between two dates, the banner message, or showing it right now.
+model SiteSeason {
+  key         String   @id
+  enabled     Boolean  @default(false) // use the dates below automatically
+  bannerText  String?
+  startDate   String?  // "YYYY-MM-DD", or "MM-DD" when yearly
+  endDate     String?
+  yearly      Boolean  @default(true)
+  forceNow    Boolean  @default(false) // show it now, whatever the dates
+  updatedAt   DateTime @updatedAt
+}
+
 model CalendarEvent {
   id        String   @id @default(cuid())
   userId    String

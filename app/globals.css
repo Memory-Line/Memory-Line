@@ -2,15 +2,30 @@
 @tailwind components;
 @tailwind utilities;
 
+/* The site's colours as "R G B" so Tailwind can add transparency. A seasonal look
+   overrides some of these on <body> (lib/seasons.ts). */
+:root {
+  --c-bg: 245 240 228;
+  --c-card: 255 255 255;
+  --c-cardTint: 241 233 216;
+  --c-ink: 46 43 36;
+  --c-inkSoft: 138 131 113;
+  --c-line: 230 221 200;
+  --c-sage: 139 168 136;
+  --c-sageDeep: 109 140 106;
+  --c-topbar: 31 29 25;
+  --c-clay: 176 137 104;
+}
+
 html {
   scroll-behavior: smooth;
 }
 
 * {
-  border-color: #E6DDC8;
+  border-color: rgb(var(--c-line));
 }
 
 :focus-visible {
-  outline: 2px solid #6D8C6A;
+  outline: 2px solid rgb(var(--c-sageDeep));
   outline-offset: 2px;
 }
