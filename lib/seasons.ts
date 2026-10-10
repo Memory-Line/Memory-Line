@@ -1,84 +1,91 @@
-// Seasonal looks for the whole site (Christmas, autumn/Halloween, Remembrance and VE
-// Day, Easter). Each has a palette (which recolours the site's buttons, backgrounds and
-// top bar), a banner message, a row of drawn icons and text for the home page band.
-// Which one shows, and when, is set on the admin page (lib/seasonDb.ts).
+// Seasonal looks for the whole site. Each has a palette (which recolours buttons, tints and
+// the top bar), a sky strip with a message and drawn artwork, a scene along the bottom of
+// the page, and gentle falling items. The artwork is in /public/season (icons) and
+// /public/season/scenes. Which look is on is set on the admin page (lib/seasonDb.ts).
 
-export type SeasonKey = "christmas" | "autumn" | "remembrance" | "ve-day" | "easter";
+export type SeasonKey = "christmas" | "autumn" | "ve-day" | "remembrance" | "easter" | "dementia";
 
 export type Season = {
   key: SeasonKey;
   label: string;
-  // Palette: used for the site's colour variables while the season is on.
+  art: string; // file prefix in /public/season/scenes
   palette: { bg: string; cardTint: string; line: string; sage: string; sageDeep: string; clay: string; topbar: string };
-  band: { bg: string; text: string; accent: string; heading: string }; // the dressed-up band on the home page
-  icons: string[]; // file names in /public/season
-  decoration: "lights" | "bunting" | "icons";
+  sky: { top: string; mid: string; text: string }; // the strip across the top and its message colour
+  bunting?: boolean; // a tile of bunting along the very top
+  mover: { seconds: number; height: number; top: number }; // the drifting artwork (sleigh, bats, planes...)
+  falling: { src?: string; kind?: "confetti"; count: number; min: number; max: number };
+  icons: string[]; // shown on the admin page
   defaultBanner: string;
-  heroTitle: string;
-  heroText: string;
-  // Suggested dates (month-day), repeated every year. Easter moves, so it has none.
-  suggested?: { start: string; end: string; yearly: boolean };
 };
 
 export const SEASONS: Season[] = [
   {
     key: "christmas",
     label: "Christmas",
-    palette: { bg: "#EFF3EA", cardTint: "#E1ECDC", line: "#D2E0CB", sage: "#2F7A4B", sageDeep: "#14472D", clay: "#B3272D", topbar: "#14472D" },
-    band: { bg: "#14472D", text: "#DDEBE0", accent: "#B3272D", heading: "#FFE9A8" },
+    art: "christmas",
+    palette: { bg: "#EAF2F8", cardTint: "#DDE9F2", line: "#CBDCE8", sage: "#B3272D", sageDeep: "#8E1D22", clay: "#2F6B4A", topbar: "#14472D" },
+    sky: { top: "#CFE2F1", mid: "#E4EFF7", text: "#B3272D" },
+    mover: { seconds: 75, height: 92, top: 26 },
+    falling: { src: "/season/snowflake.svg", count: 26, min: 14, max: 30 },
     icons: ["holly", "bauble", "star", "bell", "pine", "snowflake"],
-    decoration: "lights",
-    defaultBanner: "Merry Christmas from Activity Central. Festive activities are ready to print.",
-    heroTitle: "Merry Christmas from Activity Central",
-    heroText: "Carols, memories, crafts and festive favourites for your residents, ready to print.",
-    suggested: { start: "12-01", end: "12-31", yearly: true },
+    defaultBanner: "Merry Christmas from Activity Central",
   },
   {
     key: "autumn",
-    label: "Autumn and Halloween",
-    palette: { bg: "#F8EBDD", cardTint: "#F3DDC6", line: "#E8CDB1", sage: "#B85A18", sageDeep: "#7A3A0E", clay: "#4B3570", topbar: "#2B1F40" },
-    band: { bg: "#2B1F40", text: "#E2D8EE", accent: "#E8791D", heading: "#F8B15A" },
+    label: "Halloween",
+    art: "halloween",
+    palette: { bg: "#F6EADB", cardTint: "#F0DCC4", line: "#E4C9A8", sage: "#D9670F", sageDeep: "#8A3F0A", clay: "#4B3570", topbar: "#1B1410" },
+    sky: { top: "#171115", mid: "#3A1E12", text: "#F59E2E" },
+    mover: { seconds: 60, height: 80, top: 30 },
+    falling: { src: "/season/maple.svg", count: 22, min: 16, max: 30 },
     icons: ["bat", "pumpkin", "moon", "maple", "candle"],
-    decoration: "icons",
-    defaultBanner: "Autumn is here. Harvest, memories and Halloween fun for your residents.",
-    heroTitle: "Autumn and Halloween at Activity Central",
-    heroText: "Harvest memories, autumn crafts and gentle Halloween fun, ready to print.",
-    suggested: { start: "10-15", end: "11-01", yearly: true },
+    defaultBanner: "Happy Halloween from Activity Central",
+  },
+  {
+    key: "ve-day",
+    label: "VE Day (England)",
+    art: "ve-day",
+    palette: { bg: "#EAF2FB", cardTint: "#DCE8F5", line: "#C5D6EA", sage: "#012169", sageDeep: "#0B1F4A", clay: "#B3262E", topbar: "#012169" },
+    sky: { top: "#4E9BE6", mid: "#9CCBF2", text: "#012169" },
+    bunting: true,
+    mover: { seconds: 45, height: 92, top: 36 },
+    falling: { kind: "confetti", count: 28, min: 8, max: 16 },
+    icons: ["poppy", "star", "poppy"],
+    defaultBanner: "Remembering VE Day, 8 May 1945",
   },
   {
     key: "remembrance",
     label: "Remembrance",
-    palette: { bg: "#F1EEE8", cardTint: "#E8E3DA", line: "#D9D3C8", sage: "#1F3A5F", sageDeep: "#14284A", clay: "#A8232B", topbar: "#1F2B3D" },
-    band: { bg: "#1F2B3D", text: "#D5DBE5", accent: "#A8232B", heading: "#F2E6C9" },
+    art: "remembrance",
+    palette: { bg: "#EDF1F5", cardTint: "#E2E8EE", line: "#CFD8E1", sage: "#9E1F27", sageDeep: "#7A1219", clay: "#3C4A5E", topbar: "#1F2B3D" },
+    sky: { top: "#BFD7EE", mid: "#E3ECF4", text: "#7A1A20" },
+    mover: { seconds: 90, height: 70, top: 28 },
+    falling: { src: "/season/petal.svg", count: 18, min: 12, max: 22 },
     icons: ["poppy", "candle", "poppy"],
-    decoration: "icons",
-    defaultBanner: "We will remember them. Remembrance activities are ready to print.",
-    heroTitle: "We will remember them",
-    heroText: "Gentle, respectful activities for Remembrance, ready to print.",
-    suggested: { start: "11-02", end: "11-12", yearly: true },
-  },
-  {
-    key: "ve-day",
-    label: "VE Day",
-    palette: { bg: "#F2EEE6", cardTint: "#E6E3DE", line: "#D8D3CA", sage: "#1F3A5F", sageDeep: "#14284A", clay: "#B3262E", topbar: "#1F3A5F" },
-    band: { bg: "#1F3A5F", text: "#DCE3EE", accent: "#B3262E", heading: "#FFFFFF" },
-    icons: ["poppy", "star", "poppy"],
-    decoration: "bunting",
-    defaultBanner: "Remembering VE Day. Thank you to everyone who served.",
-    heroTitle: "Remembering VE Day",
-    heroText: "Memories, music and conversation from 1945, ready to print.",
-    suggested: { start: "05-04", end: "05-09", yearly: true },
+    defaultBanner: "We will remember them",
   },
   {
     key: "easter",
     label: "Easter and spring",
-    palette: { bg: "#FBF6E3", cardTint: "#F4EAC0", line: "#E8DDAD", sage: "#6E8F32", sageDeep: "#4A6420", clay: "#C9871C", topbar: "#4F6B26" },
-    band: { bg: "#4F6B26", text: "#EEF3DD", accent: "#C9871C", heading: "#FFF3B8" },
+    art: "easter",
+    palette: { bg: "#FBF8E6", cardTint: "#F3EDC8", line: "#E5DDAF", sage: "#5E9A2E", sageDeep: "#3F6A1E", clay: "#C9871C", topbar: "#4F6B26" },
+    sky: { top: "#8FCBF0", mid: "#CFEAF8", text: "#3F6A1E" },
+    bunting: true,
+    mover: { seconds: 80, height: 80, top: 44 },
+    falling: { src: "/season/blossom.svg", count: 20, min: 18, max: 34 },
     icons: ["egg", "daffodil", "blossom", "egg"],
-    decoration: "icons",
-    defaultBanner: "Happy Easter from Activity Central. Spring activities are ready to print.",
-    heroTitle: "Happy Easter from Activity Central",
-    heroText: "Spring flowers, crafts and memories, ready to print.",
+    defaultBanner: "Happy Easter from Activity Central",
+  },
+  {
+    key: "dementia",
+    label: "Dementia Awareness (September)",
+    art: "dementia",
+    palette: { bg: "#EEEDFA", cardTint: "#E2E0F5", line: "#D0CCEE", sage: "#5B4FC0", sageDeep: "#3B2F8F", clay: "#6B5FB0", topbar: "#3B2F8F" },
+    sky: { top: "#A9B8F0", mid: "#CBD6F6", text: "#3B2F8F" },
+    mover: { seconds: 85, height: 80, top: 40 },
+    falling: { src: "/season/forgetmenot.svg", count: 24, min: 14, max: 26 },
+    icons: ["blossom", "daffodil", "egg"],
+    defaultBanner: "World Alzheimer's Month: September. Remember me.",
   },
 ];
 

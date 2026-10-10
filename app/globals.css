@@ -29,3 +29,17 @@ html {
   outline: 2px solid rgb(var(--c-sageDeep));
   outline-offset: 2px;
 }
+
+/* Seasonal looks (components/SeasonScenes.tsx) */
+.season-ground { height: clamp(150px, 21vw, 250px); }
+.season-mover { animation: season-drift var(--drift, 70s) linear infinite; will-change: transform; }
+@keyframes season-drift { from { transform: translateX(-75vw); } to { transform: translateX(105vw); } }
+.season-fall { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 30; }
+.season-fall > * { position: absolute; top: -40px; animation-name: season-fall; animation-timing-function: linear; animation-iteration-count: infinite; }
+@keyframes season-fall { from { transform: translate3d(0, -6vh, 0) rotate(0deg); } to { transform: translate3d(var(--sway, 0px), 112vh, 0) rotate(var(--rot, 180deg)); } }
+@media (max-width: 520px) { .season-sky-art { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .season-mover { animation: none; transform: translateX(8vw); }
+  .season-fall { display: none; }
+}
+@media print { .season-sky, .season-ground, .season-fall { display: none !important; } }

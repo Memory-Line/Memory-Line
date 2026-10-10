@@ -3,8 +3,6 @@ import Link from "next/link";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
-import { getActiveSeason } from "@/lib/seasonDb";
-import SeasonHero from "@/components/SeasonHero";
 import { customIcon } from "@/lib/categoryIcons";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
@@ -39,7 +37,6 @@ export default async function DashboardHome({
   const session = await getServerSession(authOptions);
   const userId = session!.user.id;
   const categories = await getCategories();
-  const activeSeason = await getActiveSeason();
 
   // The last three downloads of activities that still exist (downloads of
   // the old sample activities are skipped).
@@ -106,7 +103,6 @@ export default async function DashboardHome({
     <div>
       <h1 className="font-serif text-2xl sm:text-3xl">Welcome Back, {firstName}</h1>
       <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
-      {activeSeason && <SeasonHero active={activeSeason} compact />}
 
       {searchParams?.billing && (
         <p className="mt-4 rounded-lg px-3 py-2 text-sm bg-cardTint text-ink">
