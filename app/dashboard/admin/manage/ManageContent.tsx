@@ -225,7 +225,7 @@ export default function ManageContent() {
                 Untick all
               </button>
               <span className="text-inkSoft">
-                {list.total} found · page {list.page} of {list.pages}
+                {list.total} found · page {page} of {pages}
               </span>
               <button
                 type="button"
@@ -252,12 +252,12 @@ export default function ManageContent() {
                 </label>
               ))}
             </div>
-            {list.pages > 1 && (
+            {pages > 1 && (
               <div className="flex gap-3 mt-3 text-xs font-semibold">
-                <button type="button" disabled={list.page <= 1} onClick={() => setPage(list.page - 1)} className="text-sageDeep underline disabled:opacity-40">
+                <button type="button" disabled={page <= 1} onClick={() => setPage(page - 1)} className="text-sageDeep underline disabled:opacity-40">
                   ← Previous 100
                 </button>
-                <button type="button" disabled={list.page >= list.pages} onClick={() => setPage(list.page + 1)} className="text-sageDeep underline disabled:opacity-40">
+                <button type="button" disabled={page >= pages} onClick={() => setPage(page + 1)} className="text-sageDeep underline disabled:opacity-40">
                   Next 100 →
                 </button>
               </div>
