@@ -187,6 +187,12 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/forms"}
           />
           <NavItem
+            href="/dashboard/admin/season"
+            icon={Calendar}
+            label="Seasonal looks"
+            active={pathname === "/dashboard/admin/season"}
+          />
+          <NavItem
             href="/dashboard/admin/manage"
             icon={Settings2}
             label="Manage activities"
