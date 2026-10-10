@@ -39,10 +39,10 @@ export function SeasonSky({ active }: { active: ActiveSeason }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img alt="" src={scene(art, "mover")} style={{ height: "100%", width: "auto", maxWidth: "none" }} />
       </div>
-      <p className="relative z-10 px-3 pt-2.5 text-center text-[14px] sm:text-[15px] font-bold" style={{ color: season.sky.text }}>
+      <p className={`relative z-10 px-3 ${season.bunting ? "pt-[52px]" : "pt-2.5"} text-center text-[14px] sm:text-[15px] font-bold`} style={{ color: season.sky.text }}>
         {banner}
       </p>
-      <div className="h-[104px] sm:h-[124px]" />
+      <div className={season.bunting ? "h-[96px] sm:h-[116px]" : "h-[104px] sm:h-[124px]"} />
     </div>
   );
 }
