@@ -16,7 +16,8 @@ export default function TemplateFilter({ themes, total }: { themes: string[]; to
     document.querySelectorAll<HTMLElement>("[data-template-row]").forEach((row) => {
       const text = row.getAttribute("data-search") ?? "";
       const match = words.every((w) => text.includes(w));
-      row.hidden = !match;
+      // (not the hidden attribute: the row's own "flex" style would override it)
+      row.style.display = match ? "" : "none";
       if (match) count++;
     });
     setShown(count);
