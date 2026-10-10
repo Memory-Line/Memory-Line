@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import UpgradePrompt from "@/components/UpgradePrompt";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
-import { CATEGORIES } from "@/lib/data";
+import { getCategories } from "@/lib/categories";
 import { displayTitle } from "@/lib/titles";
 import { subcategoryBySlug } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
@@ -43,7 +43,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
         }))
       : false;
   const number = parseInt(template.fileName.split(/[\/]/).pop()?.match(/^(\d+)/)?.[1] ?? "", 10);
-  const category = CATEGORIES.find((c) => c.key === template.category);
+  const category = (await getCategories()).find((c) => c.key === template.category);
   const common = {
     templateId: template.id,
     tracking,

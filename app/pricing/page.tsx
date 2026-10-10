@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -11,10 +11,22 @@ import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 
 // Same source of truth the site's own Standard/Premium gating uses, so this
 // page can't drift out of sync with what Standard accounts actually get.
-const PREMIUM_ONLY_CATEGORIES = Array.from(PREMIUM_ONLY_CATEGORIES_SET);
-const STANDARD_CATEGORIES = CATEGORIES.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
 
 export default function PricingPage() {
+  // The category names come from the site (so ones made or removed on the admin page show here);
+  // the built-in list is only what shows before that loads.
+  const [cats, setCats] = useState({
+    all: CATEGORIES.map((c) => c.key),
+    premium: Array.from(PREMIUM_ONLY_CATEGORIES_SET) as string[],
+  });
+  useEffect(() => {
+    fetch("/api/categories")
+      .then((r) => r.json())
+      .then((d) => d?.categories && setCats({ all: d.categories, premium: d.premiumOnly ?? [] }))
+      .catch(() => {});
+  }, []);
+  const PREMIUM_ONLY_CATEGORIES = cats.premium;
+  const STANDARD_CATEGORIES = cats.all.filter((k) => !cats.premium.includes(k));
   const { data: session, status } = useSession();
   const router = useRouter();
   const [loadingPlan, setLoadingPlan] = useState<PlanKey | null>(null);
@@ -73,7 +85,7 @@ export default function PricingPage() {
 
             <StandardFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">14 of 17 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">{STANDARD_CATEGORIES.length} of {cats.all.length} categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
@@ -106,9 +118,9 @@ export default function PricingPage() {
               Just £10/month more for the full experience
             </p>
 
-            <PremiumFeatures />
+            <PremiumFeatures total={cats.all.length} />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All 17 categories</p>
+            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All {cats.all.length} categories</p>
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
