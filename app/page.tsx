@@ -7,8 +7,6 @@ import {
 } from "lucide-react";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 import { getCategories } from "@/lib/categories";
-import { getActiveSeason } from "@/lib/seasonDb";
-import SeasonHero from "@/components/SeasonHero";
 import { customIcon } from "@/lib/categoryIcons";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
@@ -56,7 +54,6 @@ const ICONS: Record<string, any> = {
 export default async function LandingPage() {
   // The categories come from the database (so ones made or removed on the admin page show here
   // within a few minutes, see revalidate above); the Premium-only list is lib/plans.ts.
-  const active = await getActiveSeason();
   const categories = await getCategories();
   const FREE_SAMPLE_CATEGORIES = categories.map((c) => c.key);
   const PREMIUM_ONLY_CATEGORIES = categories.map((c) => c.key).filter((k) => PREMIUM_ONLY_CATEGORIES_SET.has(k));
@@ -99,12 +96,6 @@ export default async function LandingPage() {
           </Link>
         </div>
       </header>
-
-      {active && (
-        <div className="px-4 sm:px-8">
-          <SeasonHero active={active} cta={{ href: "#samples", label: "Try the free samples" }} />
-        </div>
-      )}
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-14 sm:pb-20 text-center">

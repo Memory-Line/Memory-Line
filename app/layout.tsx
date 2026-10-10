@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
 import CookieNotice from "@/components/CookieNotice";
-import SeasonBanner from "@/components/SeasonBanner";
+import { SeasonSky, SeasonGround, SeasonFalling } from "@/components/SeasonScenes";
 import { getActiveSeason } from "@/lib/seasonDb";
 import { seasonVars } from "@/lib/seasons";
 
@@ -26,9 +26,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           rel="stylesheet"
         />
       </head>
-      <body className="bg-bg text-ink font-sans antialiased" style={active ? (seasonVars(active.season) as React.CSSProperties) : undefined}>
-        {active && <SeasonBanner active={active} />}
-        <Providers>{children}</Providers>
+      <body
+        className={`bg-bg text-ink font-sans antialiased${active ? " flex flex-col min-h-screen" : ""}`}
+        style={active ? (seasonVars(active.season) as React.CSSProperties) : undefined}
+      >
+        {active && <SeasonSky active={active} />}
+        <Providers>{active ? <div className="flex-1 flex flex-col">{children}</div> : children}</Providers>
+        {active && <SeasonGround active={active} />}
+        {active && <SeasonFalling active={active} />}
         <CookieNotice />
       </body>
     </html>
