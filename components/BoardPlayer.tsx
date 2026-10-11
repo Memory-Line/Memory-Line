@@ -29,9 +29,9 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
   );
 }
 
-export default function BoardPlayer({ board }: { board: Board }) {
-  const [mode, setMode] = useState<Mode>("both");
-  const [other, setOther] = useState<LangCode>("pl");
+export default function BoardPlayer({ board, lang, back }: { board: Board; lang?: string; back?: { href: string; label: string } }) {
+  const [mode, setMode] = useState<Mode>(lang === "en" ? "en" : "both");
+  const [other, setOther] = useState<LangCode>(lang === "ur" ? "ur" : "pl");
   const [voice, setVoice] = useState<Voice>("female");
   const [speed, setSpeed] = useState<Speed>("slow");
   const [chosen, setChosen] = useState<BoardAnswer | null>(null);
@@ -144,7 +144,7 @@ export default function BoardPlayer({ board }: { board: Board }) {
             <div style={{ fontFamily: "Georgia, serif", fontSize: 20 }}>Activity Central</div>
             <div style={{ font: "700 12px Arial", letterSpacing: 1, color: CLAY }}>COMMUNICATION BOARD · {board.area.toUpperCase()} · {board.code}</div>
           </div>
-          <Link href="/boards" style={{ color: SAGED, font: "700 14px Arial" }}>All boards</Link>
+          <Link href={back?.href ?? "/boards"} style={{ color: SAGED, font: "700 14px Arial" }}>{back?.label ?? "All boards"}</Link>
         </div>
 
         <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
