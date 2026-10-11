@@ -14,6 +14,10 @@ type Voice = "female" | "male";
 type Speed = "slow" | "normal";
 type Person = "man" | "woman";
 
+// Keeps long words (e.g. Polish ones) inside their box: wraps anywhere if needed and shrinks the type a little.
+const FIT: React.CSSProperties = { overflowWrap: "anywhere", wordBreak: "break-word", hyphens: "auto", minWidth: 0, maxWidth: "100%", lineHeight: 1.15 };
+const fs = (text: string, big: number, small: number) => (text.length > 16 ? small : text.length > 11 ? Math.round((big + small) / 2) : big);
+
 // Polish words that change for a man or a woman (the data keeps the slash form).
 function forPerson(text: string, lang: LangCode, person: Person | null) {
   if (lang !== "pl" || !person) return text;
@@ -196,35 +200,35 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderLeft: `10px solid ${SAGE}`, borderRadius: 22, padding: "20px 24px", marginBottom: 14, display: needPerson ? "none" : "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <button type="button" onClick={readQuestion} aria-label="Read the question aloud" style={{ flex: "none", width: 58, height: 58, borderRadius: "50%", background: SAGED, color: "#fff", border: 0, fontSize: 26, cursor: "pointer" }}>🔊</button>
           <div style={{ flex: 1, minWidth: 200 }}>
-          {showEn && <div style={{ fontFamily: "Georgia, serif", fontSize: "clamp(26px,5vw,42px)", lineHeight: 1.15 }}>{board.question.en}</div>}
-          {showOther && <div style={{ fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(17px,3vw,25px)" : "clamp(26px,5vw,42px)", color: showEn ? "#6B6252" : INK, marginTop: showEn ? 6 : 0 }}>{secondary(board.question)}</div>}
+          {showEn && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: "clamp(24px,5vw,42px)" }}>{board.question.en}</div>}
+          {showOther && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(17px,3vw,25px)" : "clamp(24px,5vw,42px)", color: showEn ? "#6B6252" : INK, marginTop: showEn ? 6 : 0 }}>{secondary(board.question)}</div>}
           </div>
         </div>
 
         {chosen && (
           <div style={{ background: SAGED, color: "#fff", borderRadius: 18, padding: "16px 20px", marginBottom: 14, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }} aria-live="polite">
             <div style={{ flex: 1, minWidth: 170 }}>
-              {showEn && <div style={{ fontFamily: "Georgia, serif", fontSize: "clamp(20px,3.5vw,28px)", fontWeight: 700 }}>{chosen.say.en}</div>}
-              {showOther && <div style={{ fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(15px,2.5vw,19px)" : "clamp(20px,3.5vw,28px)", fontWeight: showEn ? 600 : 700, opacity: showEn ? 0.92 : 1, marginTop: 2 }}>{secondary(chosen.say)}</div>}
+              {showEn && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: "clamp(20px,3.5vw,28px)", fontWeight: 700 }}>{chosen.say.en}</div>}
+              {showOther && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(15px,2.5vw,19px)" : "clamp(20px,3.5vw,28px)", fontWeight: showEn ? 600 : 700, opacity: showEn ? 0.92 : 1, marginTop: 2 }}>{secondary(chosen.say)}</div>}
             </div>
             <button type="button" onClick={() => speak([chosen.say])} style={{ background: "#fff", color: SAGED, border: 0, borderRadius: 12, padding: "12px 18px", font: "700 16px Arial", cursor: "pointer" }}>▶ {UI.playAgain.en}</button>
             <button type="button" onClick={() => { stop(); setChosen(null); }} style={{ background: "transparent", color: "#fff", border: "2px solid #fff", borderRadius: 12, padding: "10px 16px", font: "700 15px Arial", cursor: "pointer" }}>Clear</button>
           </div>
         )}
 
-        <div style={{ display: needPerson ? "none" : "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 14, marginBottom: 18 }}>
+        <div style={{ display: needPerson ? "none" : "grid", gridTemplateColumns: "repeat(auto-fill,minmax(170px,1fr))", gap: 14, marginBottom: 18 }}>
           {board.answers.map((a, i) => {
             const sel = chosen ? chosen.id === a.id : null;
             const col = LEAF[i % LEAF.length];
             return (
               <button key={a.id} type="button" onClick={() => choose(a)} aria-pressed={sel === true}
-                style={{ position: "relative", background: sel ? "#EEF3EC" : "#fff", border: sel ? `4px solid ${SAGED}` : `2px solid ${LINE}`, borderRadius: 20, padding: "0 10px 12px", textAlign: "center", overflow: "hidden", cursor: "pointer", opacity: sel === false ? 0.45 : 1, color: INK }}>
+                style={{ position: "relative", minWidth: 0, background: sel ? "#EEF3EC" : "#fff", border: sel ? `4px solid ${SAGED}` : `2px solid ${LINE}`, borderRadius: 20, padding: "0 10px 12px", textAlign: "center", overflow: "hidden", cursor: "pointer", opacity: sel === false ? 0.45 : 1, color: INK }}>
                 <div style={{ height: 8, background: col, margin: "0 -10px 10px" }} />
                 {sel && <div style={{ position: "absolute", right: 10, top: 14, width: 30, height: 30, borderRadius: "50%", background: SAGED, color: "#fff", font: "700 19px Arial", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</div>}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/boards/icons/${a.id}.svg`} alt="" width={110} height={110} style={{ display: "block", margin: "0 auto 4px" }} />
-                {showEn && <div style={{ font: "700 24px Georgia,serif" }}>{a.label.en}</div>}
-                {showOther && <div style={{ font: showEn ? "600 17px Arial" : "700 24px Georgia,serif", color: showEn ? "#6B6252" : INK, marginTop: 2 }}>{secondary(a.label)}</div>}
+                {showEn && <div style={{ ...FIT, font: `700 ${fs(a.label.en, 24, 18)}px Georgia,serif` }}>{a.label.en}</div>}
+                {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other], 17, 14)}px Arial` : `700 ${fs(a.label[other], 24, 18)}px Georgia,serif`, color: showEn ? "#6B6252" : INK, marginTop: 2 }}>{secondary(a.label)}</div>}
               </button>
             );
           })}
@@ -233,9 +237,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ font: "700 13px Arial", letterSpacing: 0.8, color: "#8A7A6B", margin: "0 0 8px" }}>{UI.always.en.toUpperCase()}</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
           {ALWAYS.map((a) => (
-            <button key={a.id} type="button" onClick={() => choose(a)} style={{ flex: "1 1 110px", background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
-              {showEn && <div style={{ font: "700 21px Georgia,serif" }}>{a.label.en}</div>}
-              {showOther && <div style={{ font: showEn ? "600 15px Arial" : "700 21px Georgia,serif", opacity: 0.92 }}>{secondary(a.label)}</div>}
+            <button key={a.id} type="button" onClick={() => choose(a)} style={{ flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
+              {showEn && <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>}
+              {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other], 15, 13)}px Arial` : `700 ${fs(a.label[other], 21, 16)}px Georgia,serif`, opacity: 0.92 }}>{secondary(a.label)}</div>}
             </button>
           ))}
         </div>
@@ -264,12 +268,12 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           {board.answers.map((a, i) => {
             const col = LEAF[i % LEAF.length];
             return (
-              <div key={a.id} style={{ border: `3px solid ${col}`, borderRadius: 22, padding: "0 6px 9px", textAlign: "center", background: "#fff", overflow: "hidden", breakInside: "avoid" }}>
+              <div key={a.id} style={{ minWidth: 0, border: `3px solid ${col}`, borderRadius: 22, padding: "0 6px 9px", textAlign: "center", background: "#fff", overflow: "hidden", breakInside: "avoid" }}>
                 <div style={{ height: 9, background: col, margin: "0 -6px 8px" }} />
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/boards/icons/${a.id}.svg`} alt="" width={100} height={100} style={{ display: "block", margin: "0 auto 2px" }} />
-                <div style={{ font: "700 24px Georgia,serif" }}>{a.label.en}</div>
-                <div style={{ font: "600 17px Arial", color: "#444", marginTop: 1 }}>{secondary(a.label)}</div>
+                <div style={{ ...FIT, font: `700 ${fs(a.label.en, 24, 18)}px Georgia,serif` }}>{a.label.en}</div>
+                <div style={{ ...FIT, font: `600 ${fs(a.label[other], 17, 14)}px Arial`, color: "#444", marginTop: 1 }}>{secondary(a.label)}</div>
               </div>
             );
           })}
@@ -277,9 +281,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ font: "700 13px Arial", letterSpacing: 0.8, color: "#777", margin: "0 0 6px" }}>YOU CAN ALWAYS POINT TO</div>
         <div style={{ display: "flex", gap: 8 }}>
           {ALWAYS.map((a) => (
-            <div key={a.id} style={{ flex: 1, border: `3px solid ${a.colour}`, color: a.colour, borderRadius: 14, padding: "9px 4px", textAlign: "center" }}>
-              <div style={{ font: "700 21px Georgia,serif" }}>{a.label.en}</div>
-              <div style={{ font: "600 15px Arial" }}>{secondary(a.label)}</div>
+            <div key={a.id} style={{ flex: 1, minWidth: 0, border: `3px solid ${a.colour}`, color: a.colour, borderRadius: 14, padding: "9px 4px", textAlign: "center" }}>
+              <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>
+              <div style={{ ...FIT, font: `600 ${fs(a.label[other], 15, 13)}px Arial` }}>{secondary(a.label)}</div>
             </div>
           ))}
         </div>
