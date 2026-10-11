@@ -5,7 +5,10 @@ import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { requireAdmin } from "@/lib/admin";
-import { BOARD_LANGS, BOARDS } from "@/lib/boards";
+import { BOARD_LANGS, BOARDS, slug } from "@/lib/boards";
+import { categoryBySlug } from "@/lib/data";
+import RememberLanguage from "@/components/RememberLanguage";
+import { MessageCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +33,8 @@ export default async function CommunicationCardsLanguagePage({
 
   return (
     <div>
-      <Link href="/dashboard/communication-cards" className="text-xs text-inkSoft">
+      <RememberLanguage slug={language.slug} />
+      <Link href="/dashboard/communication-cards?change=1" className="text-xs text-inkSoft">
         ← All languages
       </Link>
       <h1 className="font-serif text-[26px] mt-1">
@@ -41,11 +45,18 @@ export default async function CommunicationCardsLanguagePage({
       </p>
 
       {showBoards && (
-        <Link href={`/dashboard/communication-cards/${language.slug}/boards`} className="block rounded-xl p-4 mb-5 bg-card border border-line">
-          <span className="text-[11px] font-bold tracking-wide text-clay">NEW · ONLY YOU CAN SEE THIS</span>
-          <div className="font-serif text-[20px]">Talking boards (tap to answer, read aloud)</div>
-          <div className="text-xs text-inkSoft">{BOARDS.length} boards so far</div>
-        </Link>
+        <div className="rounded-xl p-4 mb-5 bg-card border border-line">
+          <div className="text-[11px] font-bold tracking-wide text-clay mb-2">NEW TALKING BOARDS · ONLY YOU CAN SEE THIS</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {Array.from(new Set(BOARDS.map((b) => b.area))).map((a) => (
+              <Link key={a} href={`/dashboard/communication-cards/${language.slug}/boards/${slug(a)}`} className="flex items-center gap-2 rounded-lg p-3" style={{ background: categoryBySlug("communication-cards")!.tint }}>
+                <MessageCircle size={16} color={categoryBySlug("communication-cards")!.color} />
+                <span className="text-sm font-semibold">{a}</span>
+                <span className="ml-auto text-xs text-inkSoft">{BOARDS.filter((b) => b.area === a).length}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       )}
 
       {cards.length > 0 ? (
