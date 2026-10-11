@@ -175,7 +175,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
 
         <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
           <Seg<Mode> label="Language" value={mode} onChange={setMode} options={[["en", "English"], ["other", otherInfo.name], ["both", "Both"]]} />
-          <Seg<LangCode> label="Other language" value={other} onChange={setOther} options={OTHER_LANGS.map((l) => [l.code, l.name] as [LangCode, string])} />
+          {!lang && <Seg<LangCode> label="Other language" value={other} onChange={setOther} options={OTHER_LANGS.map((l) => [l.code, l.name] as [LangCode, string])} />}
           {showOther && other === "pl" && (
             <Seg<Person> label="Who is it for?" value={(person ?? "") as Person} onChange={pickPerson} options={[["man", "A man"], ["woman", "A woman"]]} />
           )}
