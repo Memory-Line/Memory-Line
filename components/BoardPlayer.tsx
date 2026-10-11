@@ -12,6 +12,15 @@ const importFromCdn = new Function("url", "return import(url)") as (url: string)
 type Mode = "en" | "other" | "both";
 type Voice = "female" | "male";
 type Speed = "slow" | "normal";
+type Person = "man" | "woman";
+
+// Polish words that change for a man or a woman (the data keeps the slash form).
+function forPerson(text: string, lang: LangCode, person: Person | null) {
+  if (lang !== "pl" || !person) return text;
+  return text
+    .replace("Pan/Pani", person === "man" ? "Pan" : "Pani")
+    .replace("głodny/głodna", person === "man" ? "głodny" : "głodna");
+}
 
 function Seg<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
   return (
@@ -35,6 +44,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const [voice, setVoice] = useState<Voice>("female");
   const [speed, setSpeed] = useState<Speed>("slow");
   const [chosen, setChosen] = useState<BoardAnswer | null>(null);
+  const [person, setPerson] = useState<Person | null>(null);
   const [printSize, setPrintSize] = useState<"a4" | "a3">("a4");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const runId = useRef(0);
@@ -78,7 +88,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
     for (const item of items) {
       for (const lang of langs()) {
         if (id !== runId.current) return;
-        await playOne(lang, item[lang], id);
+        await playOne(lang, forPerson(item[lang], lang, person), id);
         await new Promise((r) => setTimeout(r, 250));
       }
     }
@@ -88,9 +98,20 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
     setChosen(a);
     speak([a.say]);
   };
+  const readQuestion = () => speak([board.question]);
   const readChoices = () => speak([board.question, ...board.answers.map((a) => a.label)]);
 
   useEffect(() => () => stop(), []);
+  useEffect(() => {
+    try {
+      const p = localStorage.getItem("board-person");
+      if (p === "man" || p === "woman") setPerson(p);
+    } catch {}
+  }, []);
+  const pickPerson = (p: Person) => {
+    setPerson(p);
+    try { localStorage.setItem("board-person", p); } catch {}
+  };
 
   // QR code for the printout: drawn in the browser, nothing stored.
   useEffect(() => {
@@ -117,8 +138,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const showOther = mode !== "en";
   const rtl = otherInfo.rtl;
   const secondary = (t: Text3) => (
-    <span dir={rtl ? "rtl" : "ltr"}>{t[other]}</span>
+    <span dir={rtl ? "rtl" : "ltr"}>{forPerson(t[other], other, person)}</span>
   );
+  const needPerson = showOther && other === "pl" && !person;
 
   function print(size: "a4" | "a3") {
     setPrintSize(size);
@@ -150,6 +172,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
           <Seg<Mode> label="Language" value={mode} onChange={setMode} options={[["en", "English"], ["other", otherInfo.name], ["both", "Both"]]} />
           <Seg<LangCode> label="Other language" value={other} onChange={setOther} options={OTHER_LANGS.map((l) => [l.code, l.name] as [LangCode, string])} />
+          {showOther && other === "pl" && (
+            <Seg<Person> label="Who is it for?" value={(person ?? "") as Person} onChange={pickPerson} options={[["man", "A man"], ["woman", "A woman"]]} />
+          )}
           <Seg<Voice> label="Voice" value={voice} onChange={setVoice} options={[["female", "Female"], ["male", "Male"]]} />
           <Seg<Speed> label="Speed" value={speed} onChange={setSpeed} options={[["slow", "Slow"], ["normal", "Normal"]]} />
           <button type="button" onClick={readChoices} style={{ marginLeft: "auto", background: CLAY, color: "#fff", border: 0, borderRadius: 12, padding: "13px 18px", font: "700 15px Arial", cursor: "pointer" }}>
@@ -157,9 +182,23 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           </button>
         </div>
 
-        <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderLeft: `10px solid ${SAGE}`, borderRadius: 22, padding: "20px 24px", marginBottom: 14 }}>
+        {needPerson && (
+          <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 22, padding: "22px 24px", marginBottom: 14, textAlign: "center" }}>
+            <div style={{ fontFamily: "Georgia, serif", fontSize: 26, marginBottom: 4 }}>Who is this board for?</div>
+            <div style={{ fontSize: 14, color: "#6B6252", marginBottom: 14 }}>Polish wording is different for a man and a woman. Choose first.</div>
+            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+              <button type="button" onClick={() => pickPerson("man")} style={{ background: SAGED, color: "#fff", border: 0, borderRadius: 14, padding: "16px 34px", font: "700 20px Georgia,serif", cursor: "pointer" }}>A man</button>
+              <button type="button" onClick={() => pickPerson("woman")} style={{ background: SAGED, color: "#fff", border: 0, borderRadius: 14, padding: "16px 34px", font: "700 20px Georgia,serif", cursor: "pointer" }}>A woman</button>
+            </div>
+          </div>
+        )}
+
+        <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderLeft: `10px solid ${SAGE}`, borderRadius: 22, padding: "20px 24px", marginBottom: 14, display: needPerson ? "none" : "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <button type="button" onClick={readQuestion} aria-label="Read the question aloud" style={{ flex: "none", width: 58, height: 58, borderRadius: "50%", background: SAGED, color: "#fff", border: 0, fontSize: 26, cursor: "pointer" }}>🔊</button>
+          <div style={{ flex: 1, minWidth: 200 }}>
           {showEn && <div style={{ fontFamily: "Georgia, serif", fontSize: "clamp(26px,5vw,42px)", lineHeight: 1.15 }}>{board.question.en}</div>}
           {showOther && <div style={{ fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(17px,3vw,25px)" : "clamp(26px,5vw,42px)", color: showEn ? "#6B6252" : INK, marginTop: showEn ? 6 : 0 }}>{secondary(board.question)}</div>}
+          </div>
         </div>
 
         {chosen && (
@@ -173,7 +212,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 14, marginBottom: 18 }}>
+        <div style={{ display: needPerson ? "none" : "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 14, marginBottom: 18 }}>
           {board.answers.map((a, i) => {
             const sel = chosen ? chosen.id === a.id : null;
             const col = LEAF[i % LEAF.length];
