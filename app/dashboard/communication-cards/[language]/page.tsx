@@ -5,7 +5,10 @@ import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { requireAdmin } from "@/lib/admin";
-import { BOARD_LANGS, BOARDS } from "@/lib/boards";
+import { BOARD_LANGS } from "@/lib/boards";
+import { getBoardsFor } from "@/lib/boardsDb";
+import { categoryBySlug } from "@/lib/data";
+import { MessageCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +26,15 @@ export default async function CommunicationCardsLanguagePage({
     orderBy: { fileName: "asc" },
   });
   const showBoards = !!BOARD_LANGS[language.slug] && !!(await requireAdmin());
+  const areaMap = new Map<string, { slug: string; name: string; count: number }>();
+  if (showBoards) {
+    for (const b of await getBoardsFor(BOARD_LANGS[language.slug])) {
+      const e = areaMap.get(b.areaSlug) ?? { slug: b.areaSlug, name: b.area, count: 0 };
+      e.count++;
+      areaMap.set(b.areaSlug, e);
+    }
+  }
+  const areas = Array.from(areaMap.values());
   const viewer = await getViewer();
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, cards.map((t) => t.id))
@@ -41,11 +53,19 @@ export default async function CommunicationCardsLanguagePage({
       </p>
 
       {showBoards && (
-        <Link href={`/dashboard/communication-cards/${language.slug}/boards`} className="block rounded-xl p-4 mb-5 bg-card border border-line">
-          <span className="text-[11px] font-bold tracking-wide text-clay">NEW · ONLY YOU CAN SEE THIS</span>
-          <div className="font-serif text-[20px]">Talking boards (tap to answer, read aloud)</div>
-          <div className="text-xs text-inkSoft">{BOARDS.length} boards so far</div>
-        </Link>
+        <div className="rounded-xl p-4 mb-5 bg-card border border-line">
+          <div className="text-[11px] font-bold tracking-wide text-clay mb-2">NEW TALKING BOARDS · ONLY YOU CAN SEE THIS</div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            {areas.map((a) => (
+              <Link key={a.slug} href={`/dashboard/communication-cards/${language.slug}/boards/${a.slug}`} className="flex items-center gap-2 rounded-lg p-3" style={{ background: categoryBySlug("communication-cards")!.tint }}>
+                <MessageCircle size={16} color={categoryBySlug("communication-cards")!.color} />
+                <span className="text-sm font-semibold">{a.name}</span>
+                <span className="ml-auto text-xs text-inkSoft">{a.count}</span>
+              </Link>
+            ))}
+          </div>
+          {areas.length === 0 && <p className="text-sm text-inkSoft">No boards loaded yet. Load them from Communication boards in the admin menu.</p>}
+        </div>
       )}
 
       {cards.length > 0 ? (

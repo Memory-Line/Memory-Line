@@ -301,3 +301,22 @@ model Completion {
 
   @@unique([userId, templateId])
 }
+
+// Communication boards (the talking boards): one row per question board. The
+// text for every language lives inside the JSON (question: { en, pl, ... },
+// answers: [{ id, label: {..}, say: {..}, staff, escalate, icon }]) so a new
+// language is just more text, not more tables.
+model Board {
+  id       String  @id
+  code     String  @unique
+  area     String
+  areaSlug String
+  priority Int
+  signOff  Boolean @default(false)
+  note     String  @default("")
+  position Int
+  question Json
+  answers  Json
+
+  @@index([areaSlug])
+}
