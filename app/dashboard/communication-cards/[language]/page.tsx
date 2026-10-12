@@ -8,7 +8,6 @@ import { requireAdmin } from "@/lib/admin";
 import { BOARD_LANGS } from "@/lib/boards";
 import { getBoardsFor } from "@/lib/boardsDb";
 import { categoryBySlug } from "@/lib/data";
-import RememberLanguage from "@/components/RememberLanguage";
 import { MessageCircle } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -43,8 +42,7 @@ export default async function CommunicationCardsLanguagePage({
 
   return (
     <div>
-      <RememberLanguage slug={language.slug} />
-      <Link href="/dashboard/communication-cards?change=1" className="text-xs text-inkSoft">
+      <Link href="/dashboard/communication-cards" className="text-xs text-inkSoft">
         ← All languages
       </Link>
       <h1 className="font-serif text-[26px] mt-1">
