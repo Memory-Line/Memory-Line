@@ -17,7 +17,7 @@ type Person = "man" | "woman";
 
 // Best device voice for a language and a male or female choice (used only when we have no recording).
 const FEMALE_RE = /zira|hazel|susan|sonia|libby|female|woman|samantha|zofia|ewa|agnieszka|paulina|uzma|heera|kalpana|katja|helena|laura|paola/i;
-const MALE_RE = /david|mark|george|ryan|male|man\b|daniel|marek|adam|jacek|asad|hemant|pablo|stefan|guy/i;
+const MALE_RE = /david|mark|george|ryan|(?<!fe)male|(?<![a-z])man\b|daniel|marek|adam|jacek|asad|hemant|pablo|stefan|guy/i;
 function pickDeviceVoice(lang: LangCode, voice: "female" | "male") {
   if (typeof window === "undefined" || !window.speechSynthesis) return null;
   const prefix = lang === "en" ? "en" : lang === "pl" ? "pl" : "ur";
