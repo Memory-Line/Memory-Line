@@ -15,6 +15,18 @@ type Voice = "female" | "male";
 type Speed = "slow" | "normal";
 type Person = "man" | "woman";
 
+// Best device voice for a language and a male or female choice (used only when we have no recording).
+const FEMALE_RE = /zira|hazel|susan|sonia|libby|female|woman|samantha|zofia|ewa|agnieszka|paulina|uzma|heera|kalpana|katja|helena|laura|paola/i;
+const MALE_RE = /david|mark|george|ryan|male|man\b|daniel|marek|adam|jacek|asad|hemant|pablo|stefan|guy/i;
+function pickDeviceVoice(lang: LangCode, voice: "female" | "male") {
+  if (typeof window === "undefined" || !window.speechSynthesis) return null;
+  const prefix = lang === "en" ? "en" : lang === "pl" ? "pl" : "ur";
+  const list = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(prefix));
+  if (list.length === 0) return null;
+  const want = voice === "female" ? FEMALE_RE : MALE_RE;
+  return list.find((v) => want.test(v.name)) ?? list[0];
+}
+
 // Keeps long words (e.g. Polish ones) inside their box: wraps anywhere if needed and shrinks the type a little.
 const FIT: React.CSSProperties = { overflowWrap: "anywhere", wordBreak: "break-word", hyphens: "auto", minWidth: 0, maxWidth: "100%", lineHeight: 1.15 };
 const fs = (text: string, big: number, small: number) => (text.length > 16 ? small : text.length > 11 ? Math.round((big + small) / 2) : big);
@@ -49,6 +61,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const [speed, setSpeed] = useState<Speed>("slow");
   const [chosen, setChosen] = useState<BoardAnswer | null>(null);
   const [person, setPerson] = useState<Person | null>(null);
+  const [deviceNote, setDeviceNote] = useState<string>("");
   const [printSize, setPrintSize] = useState<"a4" | "a3">("a4");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const runId = useRef(0);
@@ -71,6 +84,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
       if (src) {
         const a = audioRef.current ?? (audioRef.current = new Audio());
         a.src = src;
+        setDeviceNote("");
         a.playbackRate = speed === "slow" ? 0.8 : 1;
         a.onended = () => resolve();
         a.onerror = () => resolve();
@@ -78,6 +92,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
       } else if (window.speechSynthesis) {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = lang === "en" ? "en-GB" : lang === "pl" ? "pl-PL" : "ur-PK";
+        const dv = pickDeviceVoice(lang, voice);
+        if (dv) u.voice = dv;
+        setDeviceNote(dv ? `No recording yet for this board, so this device's ${dv.name} voice is reading it. Male and female voices only switch where we have recordings.` : `No recording yet for this board and this device has no ${lang === "pl" ? "Polish" : lang === "ur" ? "Urdu" : "English"} voice, so it may stay silent.`);
         u.rate = speed === "slow" ? 0.75 : 1;
         u.onend = () => resolve();
         u.onerror = () => resolve();
@@ -187,6 +204,8 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
             🔊 {UI.readChoices.en}{showOther && showEn ? "" : ""}
           </button>
         </div>
+
+        {deviceNote && <div style={{ background: "#FFF8E1", border: `2px solid ${LINE}`, borderRadius: 12, padding: "10px 14px", marginBottom: 14, font: "14px Arial", color: "#6B5A2A" }}>{deviceNote}</div>}
 
         {needPerson && (
           <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 22, padding: "22px 24px", marginBottom: 14, textAlign: "center" }}>
