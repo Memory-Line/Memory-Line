@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ALWAYS, AUDIO, OTHER_LANGS, UI, type Board, type BoardAnswer, type LangCode, type Text3 } from "@/lib/boards";
+import BoardIcon from "@/components/BoardIcon";
 
 const LEAF = ["#3E6E96", "#6B4A9B", "#A6822C", "#A05A6A", "#2F7A63", "#B5714A", "#5B8A9E", "#8A6E52"];
 const CREAM = "#F5F0E4", LINE = "#E6DDC8", INK = "#2E2B24", SAGE = "#8BA888", SAGED = "#4C6B4A", CLAY = "#B08968";
@@ -92,7 +93,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
     for (const item of items) {
       for (const lang of langs()) {
         if (id !== runId.current) return;
-        await playOne(lang, forPerson(item[lang], lang, person), id);
+        const text = item[lang];
+        if (!text) continue;
+        await playOne(lang, forPerson(text, lang, person), id);
         await new Promise((r) => setTimeout(r, 250));
       }
     }
@@ -142,7 +145,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const showOther = lang !== "en";
   const rtl = otherInfo.rtl;
   const secondary = (t: Text3) => (
-    <span dir={rtl ? "rtl" : "ltr"}>{forPerson(t[other], other, person)}</span>
+    <span dir={rtl ? "rtl" : "ltr"}>{forPerson(t[other] ?? "", other, person)}</span>
   );
   const needPerson = showOther && other === "pl" && !person;
 
@@ -225,10 +228,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
                 style={{ position: "relative", minWidth: 0, background: sel ? "#EEF3EC" : "#fff", border: sel ? `4px solid ${SAGED}` : `2px solid ${LINE}`, borderRadius: 20, padding: "0 10px 12px", textAlign: "center", overflow: "hidden", cursor: "pointer", opacity: sel === false ? 0.45 : 1, color: INK }}>
                 <div style={{ height: 8, background: col, margin: "0 -10px 10px" }} />
                 {sel && <div style={{ position: "absolute", right: 10, top: 14, width: 30, height: 30, borderRadius: "50%", background: SAGED, color: "#fff", font: "700 19px Arial", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</div>}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/boards/icons/${a.id}.svg`} alt="" width={110} height={110} style={{ display: "block", margin: "0 auto 4px" }} />
+                <div style={{ marginBottom: 4 }}><BoardIcon icon={a.icon} colour={col} size={104} /></div>
                 {showEn && <div style={{ ...FIT, font: `700 ${fs(a.label.en, 24, 18)}px Georgia,serif` }}>{a.label.en}</div>}
-                {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other], 17, 14)}px Arial` : `700 ${fs(a.label[other], 24, 18)}px Georgia,serif`, color: showEn ? "#6B6252" : INK, marginTop: 2 }}>{secondary(a.label)}</div>}
+                {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other] ?? "", 17, 14)}px Arial` : `700 ${fs(a.label[other] ?? "", 24, 18)}px Georgia,serif`, color: showEn ? "#6B6252" : INK, marginTop: 2 }}>{secondary(a.label)}</div>}
               </button>
             );
           })}
@@ -239,7 +241,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           {ALWAYS.map((a) => (
             <button key={a.id} type="button" onClick={() => choose(a)} style={{ flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
               {showEn && <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>}
-              {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other], 15, 13)}px Arial` : `700 ${fs(a.label[other], 21, 16)}px Georgia,serif`, opacity: 0.92 }}>{secondary(a.label)}</div>}
+              {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other] ?? "", 15, 13)}px Arial` : `700 ${fs(a.label[other] ?? "", 21, 16)}px Georgia,serif`, opacity: 0.92 }}>{secondary(a.label)}</div>}
             </button>
           ))}
         </div>
@@ -270,10 +272,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
             return (
               <div key={a.id} style={{ minWidth: 0, border: `3px solid ${col}`, borderRadius: 22, padding: "0 6px 9px", textAlign: "center", background: "#fff", overflow: "hidden", breakInside: "avoid" }}>
                 <div style={{ height: 9, background: col, margin: "0 -6px 8px" }} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`/boards/icons/${a.id}.svg`} alt="" width={100} height={100} style={{ display: "block", margin: "0 auto 2px" }} />
+                <div style={{ marginBottom: 2 }}><BoardIcon icon={a.icon} colour={col} size={92} /></div>
                 <div style={{ ...FIT, font: `700 ${fs(a.label.en, 24, 18)}px Georgia,serif` }}>{a.label.en}</div>
-                <div style={{ ...FIT, font: `600 ${fs(a.label[other], 17, 14)}px Arial`, color: "#444", marginTop: 1 }}>{secondary(a.label)}</div>
+                <div style={{ ...FIT, font: `600 ${fs(a.label[other] ?? "", 17, 14)}px Arial`, color: "#444", marginTop: 1 }}>{secondary(a.label)}</div>
               </div>
             );
           })}
@@ -283,7 +284,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           {ALWAYS.map((a) => (
             <div key={a.id} style={{ flex: 1, minWidth: 0, border: `3px solid ${a.colour}`, color: a.colour, borderRadius: 14, padding: "9px 4px", textAlign: "center" }}>
               <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>
-              <div style={{ ...FIT, font: `600 ${fs(a.label[other], 15, 13)}px Arial` }}>{secondary(a.label)}</div>
+              <div style={{ ...FIT, font: `600 ${fs(a.label[other] ?? "", 15, 13)}px Arial` }}>{secondary(a.label)}</div>
             </div>
           ))}
         </div>

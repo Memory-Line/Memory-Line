@@ -199,6 +199,12 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/manage"}
           />
           <NavItem
+            href="/dashboard/admin/boards"
+            icon={Settings2}
+            label="Communication boards"
+            active={pathname === "/dashboard/admin/boards"}
+          />
+          <NavItem
             href="/dashboard/admin/upload-calendar"
             icon={Upload}
             label="Upload calendar packs"
