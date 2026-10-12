@@ -19,12 +19,11 @@ type Person = "man" | "woman";
 const FIT: React.CSSProperties = { overflowWrap: "anywhere", wordBreak: "break-word", hyphens: "auto", minWidth: 0, maxWidth: "100%", lineHeight: 1.15 };
 const fs = (text: string, big: number, small: number) => (text.length > 16 ? small : text.length > 11 ? Math.round((big + small) / 2) : big);
 
-// Polish words that change for a man or a woman (the data keeps the slash form).
+// Words that change for a man or a woman are written as a pair (for example Pan/Pani or głodny/głodna).
+// The board shows the side that matches who it is for.
 function forPerson(text: string, lang: LangCode, person: Person | null) {
-  if (lang !== "pl" || !person) return text;
-  return text
-    .replace("Pan/Pani", person === "man" ? "Pan" : "Pani")
-    .replace("głodny/głodna", person === "man" ? "głodny" : "głodna");
+  if (lang === "en" || !person) return text;
+  return text.replace(/([\p{L}]+)\/([\p{L}]+)/gu, (_m, man: string, woman: string) => (person === "man" ? man : woman));
 }
 
 function Seg<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
