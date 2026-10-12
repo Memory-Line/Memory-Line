@@ -55,7 +55,7 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
 }
 
 export default function BoardPlayer({ board, lang, back }: { board: Board; lang?: string; back?: { href: string; label: string } }) {
-  const [mode, setMode] = useState<Mode>(lang === "en" ? "en" : "both");
+  const [mode, setMode] = useState<Mode>("en");
   const [other, setOther] = useState<LangCode>(lang === "ur" ? "ur" : "pl");
   const [voice, setVoice] = useState<Voice>("female");
   const [speed, setSpeed] = useState<Speed>("slow");
