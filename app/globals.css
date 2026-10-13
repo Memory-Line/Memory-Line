@@ -44,30 +44,28 @@ html {
 }
 @media print { .season-sky, .season-ground, .season-fall { display: none !important; } }
 
-/* "Easy to see" view for the on-screen games (components/EasyView.tsx): black on white, larger,
-   thick outlines, yellow for the main buttons. The game colours that carry meaning (right and
-   wrong squares, the colouring palette) are left alone. */
-.easy-view {
+/* Dementia friendly mode (components/EasyView.tsx): black on white, a little larger, thick outlines,
+   yellow highlights, for the whole dashboard. Colours that carry meaning in the games are left alone. */
+.dementia-friendly {
   --c-bg: 255 255 255;
   --c-card: 255 255 255;
   --c-cardTint: 255 210 63;
   --c-ink: 26 26 26;
   --c-inkSoft: 26 26 26;
   --c-line: 26 26 26;
-  --c-sage: 255 210 63;
+  --c-sage: 26 26 26;
   --c-sageDeep: 26 26 26;
   --c-clay: 26 26 26;
-  zoom: 1.15;
   background: #fff;
   color: #1a1a1a;
-  border: 3px solid #1a1a1a;
-  border-radius: 16px;
-  padding: 18px 14px;
 }
-.easy-view .border { border-width: 2px; }
-.easy-view button, .easy-view a { font-weight: 700; }
-.easy-view p, .easy-view span { color: inherit; }
-.easy-view button:focus-visible, .easy-view a:focus-visible { outline: 4px solid #1a1a1a; outline-offset: 3px; }
+@media (min-width: 640px) { .dementia-friendly { zoom: 1.12; } }
+@media print { .dementia-friendly { zoom: 1; } }
+.dementia-friendly .border { border-width: 2px; }
+.dementia-friendly button, .dementia-friendly a { font-weight: 700; }
+.dementia-friendly :focus-visible { outline: 4px solid #1a1a1a; outline-offset: 3px; }
+/* A game in Dementia friendly mode sits in a white card with a thick black outline. */
+.easy-game { background: #fff; border: 3px solid #1a1a1a; border-radius: 16px; padding: 18px 14px; color: #1a1a1a; }
 
 /* Favourites tab (components/FavouriteTabs.tsx): in the Favourites view, hide the activities that are not starred. */
 [data-fav-view="favs"] [data-template-row]:not([data-fav="1"]) { display: none !important; }
