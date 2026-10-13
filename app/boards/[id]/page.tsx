@@ -11,7 +11,7 @@ export default async function BoardPage({ params, searchParams }: { params: { id
   const isAdmin = !!(await requireAdmin());
   const board = await getBoard(params.id);
   if (!board) notFound();
-  const lang = (["pl", "ur", "ro", "pt", "es", "fr", "hi", "pa", "bn", "gu", "ar"] as const).find((c) => c === searchParams.lang) ?? "en";
+  const lang = (["pl", "ur", "ro", "pt", "es", "fr", "hi", "pa", "bn", "gu", "ar", "fa"] as const).find((c) => c === searchParams.lang) ?? "en";
   // Everyone but the admin can only open a board in a language that has been opened up.
   if (!isAdmin && (lang === "en" || !(await canUseBoardCode(lang)))) notFound();
   // If this board has not been translated yet, show it in English only.
