@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // "Dementia friendly" mode for the whole dashboard: black on white, a little larger, thick outlines,
 // yellow highlights. The choice belongs to the account (User.dementiaFriendly), so it follows the
@@ -13,6 +13,12 @@ export const useEasyView = () => useContext(Ctx).on;
 
 export function DementiaProvider({ initial, className, children }: { initial: boolean; className?: string; children: React.ReactNode }) {
   const [on, setOn] = useState(initial);
+
+  // The sky strip, scene and falling items sit outside this wrapper, so the page body carries the flag too.
+  useEffect(() => {
+    document.body.classList.toggle("dementia-on", on);
+    return () => document.body.classList.remove("dementia-on");
+  }, [on]);
 
   function set(v: boolean) {
     setOn(v);

@@ -79,3 +79,6 @@ html {
   .play-two-col > .play-board { grid-column: 1; grid-row: 1 / span 14; }
   .play-two-col > .play-wide { grid-column: 1 / -1; }
 }
+
+/* Dementia friendly mode keeps the page plain: no sky strip, scene or falling items. */
+body.dementia-on .season-sky, body.dementia-on .season-ground, body.dementia-on .season-fall, body.dementia-on .festive-banner { display: none !important; }

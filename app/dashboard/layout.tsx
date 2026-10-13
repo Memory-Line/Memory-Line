@@ -4,6 +4,9 @@ import Sidebar from "@/components/Sidebar";
 import { getCategories } from "@/lib/categories";
 import TopBar from "@/components/TopBar";
 import { DementiaProvider } from "@/components/EasyView";
+import { SeasonSky, SeasonGround } from "@/components/SeasonScenes";
+import { getActiveSeason } from "@/lib/seasonDb";
+import { EVERYDAY } from "@/lib/seasons";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -19,13 +22,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   // The checks below used to run one after another (five separate database trips); now at once, and shared with the page.
-  const [viewer, siteCategories] = await Promise.all([getViewer(), getCategories()]);
+  const [viewer, siteCategories, active] = await Promise.all([getViewer(), getCategories(), getActiveSeason()]);
   const professionalCalendar = viewer.ownFeatures.includes("professional-calendar");
   const questionnaires = viewer.ownFeatures.includes("questionnaires");
   const categories = siteCategories.map((c) => ({ key: c.key, slug: c.slug, icon: c.icon }));
 
+  // On an occasion the sky strip, scene and falling items come from the root layout; on an ordinary day the
+  // dashboard shows the same design in the everyday look.
+  const everyday = active ? null : { season: EVERYDAY, banner: EVERYDAY.defaultBanner };
+
   return (
-    <DementiaProvider initial={viewer.dementiaFriendly} className="flex flex-col md:flex-row min-h-screen bg-bg">
+    <>
+    {everyday && <SeasonSky active={everyday} />}
+    <DementiaProvider initial={viewer.dementiaFriendly} className="flex flex-col md:flex-row min-h-[55vh] bg-bg">
       <Sidebar categories={categories} isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} questionnaires={questionnaires} />
       <div className="flex-1 min-w-0">
         <TopBar
@@ -39,5 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </p>
       </div>
     </DementiaProvider>
+    {everyday && <SeasonGround active={everyday} />}
+    </>
   );
 }
