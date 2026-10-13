@@ -18,6 +18,7 @@ export type Season = {
   defaultBanner: string;
   greeting: string; // the dashboard welcome ("Happy Halloween"); the name is added after it
   sub: string; // the line under it
+  occasion: string; // the calendar date whose activities the dashboard link opens (a label from lib/packDates.ts)
 };
 
 export const SEASONS: Season[] = [
@@ -33,6 +34,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "Merry Christmas from Activity Central",
     greeting: "Merry Christmas",
     sub: "Carols, crafts and quizzes for the season",
+    occasion: "Christmas Day",
   },
   {
     key: "autumn",
@@ -46,6 +48,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "Happy Halloween from Activity Central",
     greeting: "Happy Halloween",
     sub: "Spooky activities for this week",
+    occasion: "Halloween",
   },
   {
     key: "ve-day",
@@ -60,6 +63,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "Remembering VE Day, 8 May 1945",
     greeting: "Remembering VE Day",
     sub: "8 May 1945. Songs, stories and memories",
+    occasion: "VE Day",
   },
   {
     key: "remembrance",
@@ -73,6 +77,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "We will remember them",
     greeting: "We will remember them",
     sub: "A quiet, respectful week of remembrance",
+    occasion: "Remembrance Sunday",
   },
   {
     key: "easter",
@@ -87,6 +92,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "Happy Easter from Activity Central",
     greeting: "Happy Easter",
     sub: "Spring is here. Bright ideas for the week",
+    occasion: "Easter Sunday",
   },
   {
     key: "dementia",
@@ -100,6 +106,7 @@ export const SEASONS: Season[] = [
     defaultBanner: "World Alzheimer's Month: September. Remember me.",
     greeting: "World Alzheimer's Month",
     sub: "September. Remember me",
+    occasion: "World Alzheimer's Day",
   },
 ];
 
@@ -118,6 +125,7 @@ export const EVERYDAY: Season = {
   defaultBanner: "Welcome to Activity Central",
   greeting: "Welcome back",
   sub: "Your library of engagement activities is ready to use",
+  occasion: "",
 };
 
 export const seasonByKey = (key: string | null | undefined) => SEASONS.find((s) => s.key === key);
