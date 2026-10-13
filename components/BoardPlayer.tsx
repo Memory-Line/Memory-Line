@@ -20,7 +20,7 @@ const FEMALE_RE = /zira|hazel|susan|sonia|libby|female|woman|samantha|zofia|ewa|
 const MALE_RE = /david|mark|george|ryan|(?<!fe)male|(?<![a-z])man\b|daniel|marek|adam|jacek|asad|hemant|pablo|stefan|guy/i;
 function pickDeviceVoice(lang: LangCode, voice: "female" | "male") {
   if (typeof window === "undefined" || !window.speechSynthesis) return null;
-  const prefix = lang === "en" ? "en" : lang === "pl" ? "pl" : "ur";
+  const prefix = lang;
   const list = window.speechSynthesis.getVoices().filter((v) => v.lang.toLowerCase().startsWith(prefix));
   if (list.length === 0) return null;
   const want = voice === "female" ? FEMALE_RE : MALE_RE;
@@ -56,7 +56,7 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
 
 export default function BoardPlayer({ board, lang, back }: { board: Board; lang?: string; back?: { href: string; label: string } }) {
   const [mode, setMode] = useState<Mode>("en");
-  const [other, setOther] = useState<LangCode>(lang === "ur" ? "ur" : "pl");
+  const [other, setOther] = useState<LangCode>(lang && lang !== "en" ? (lang as LangCode) : "pl");
   const [voice, setVoice] = useState<Voice>("female");
   const [speed, setSpeed] = useState<Speed>("slow");
   const [chosen, setChosen] = useState<BoardAnswer | null>(null);
@@ -80,10 +80,10 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   function deviceSpeak(lang: LangCode, text: string, resolve: () => void) {
     if (!window.speechSynthesis) return resolve();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang === "en" ? "en-GB" : lang === "pl" ? "pl-PL" : "ur-PK";
+    u.lang = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR" }[lang];
     const dv = pickDeviceVoice(lang, voice);
     if (dv) u.voice = dv;
-    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${lang === "pl" ? "Polish" : lang === "ur" ? "Urdu" : "English"} voice, so it may stay silent.`);
+    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${{ en: "English", pl: "Polish", ur: "Urdu", ro: "Romanian", pt: "Portuguese", es: "Spanish", fr: "French" }[lang]} voice, so it may stay silent.`);
     u.rate = speed === "slow" ? 0.75 : 1;
     u.onend = () => resolve();
     u.onerror = () => resolve();
@@ -174,7 +174,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const secondary = (t: Text3) => (
     <span dir={rtl ? "rtl" : "ltr"}>{forPerson(t[other] ?? "", other, person)}</span>
   );
-  const needPerson = showOther && other === "pl" && !person;
+  const needPerson = showOther && !person;
 
   function print(size: "a4" | "a3") {
     setPrintSize(size);
@@ -206,7 +206,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
           {lang !== "en" && <Seg<Mode> label="Read aloud in" value={mode} onChange={setMode} options={[["en", "English"], ["other", otherInfo.name], ["both", "Both"]]} />}
           {!lang && <Seg<LangCode> label="Other language" value={other} onChange={setOther} options={OTHER_LANGS.map((l) => [l.code, l.name] as [LangCode, string])} />}
-          {showOther && other === "pl" && (
+          {showOther && (
             <Seg<Person> label="Who is it for?" value={(person ?? "") as Person} onChange={pickPerson} options={[["man", "A man"], ["woman", "A woman"]]} />
           )}
           <Seg<Voice> label="Voice" value={voice} onChange={setVoice} options={[["female", "Female"], ["male", "Male"]]} />
