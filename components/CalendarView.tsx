@@ -569,6 +569,12 @@ export default function CalendarView({
         )}
         {/* The weekly rota tick box sits just above the calendar (not printed). */}
         <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} year={year} monthIndex={monthIndex} />
+        {!professional && (
+          <p className="cal-no-print" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 8, textAlign: "center", fontSize: 12.5, color: "#6B5F57", margin: "0 0 10px" }}>
+            <span style={{ display: "inline-block", fontWeight: 700, fontSize: 10, padding: "2.5px 8px", borderRadius: 6, background: "#F1D2BE", color: "#6B3F24", boxShadow: "inset 0 0 0 2px #6B3F24" }}>Outlined</span>
+            <span>dates have activities ready. Click one to see them.</span>
+          </p>
+        )}
         {/* Weekday header pills */}
         <div className="cal-weekday-row" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
           {WEEKDAYS.map((w, i) => (
@@ -677,7 +683,8 @@ export default function CalendarView({
                         whiteSpace: "normal" as const,
                         overflowWrap: "break-word" as const,
                         background: bg,
-                        boxShadow: "0 1px 1px rgba(63,50,55,0.08)",
+                        // A date that has activities ready is outlined in its own colour.
+                        boxShadow: ev.link ? `inset 0 0 0 2px ${text}, 0 1px 1px rgba(63,50,55,0.08)` : "0 1px 1px rgba(63,50,55,0.08)",
                         textDecoration: "none",
                         flexShrink: 0,
                       };
@@ -784,6 +791,7 @@ export default function CalendarView({
                             gap: 6,
                             marginBottom: 6,
                             textDecoration: "none",
+                            boxShadow: ev.link ? `inset 0 0 0 2px ${text}` : undefined,
                           };
                           const rowContent = (
                             <>
