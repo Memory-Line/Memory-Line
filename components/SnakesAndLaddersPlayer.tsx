@@ -14,6 +14,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import type { SnakesAndLaddersMove } from "@/lib/snakesAndLadders";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours for up to 4 counters (rust, blue, green, purple — echoing the
 // ladders and snakes drawn on the sheets themselves).
@@ -249,6 +250,7 @@ export default function SnakesAndLaddersPlayer({
     setBusy(false);
   }
 
+  const ev = useEasyView();
   const DiceIcon = dice ? DICE_ICONS[dice - 1] : Dices;
 
   return (
@@ -284,31 +286,47 @@ export default function SnakesAndLaddersPlayer({
                 transform: `translate(-50%, -50%) translate(${(i % 2) * 10 - 5}px, ${
                   (Math.floor(i / 2) * 10) - 5
                 }px)`,
-                width: 22,
-                height: 22,
+                width: ev ? 30 : 22,
+                height: ev ? 30 : 22,
                 borderRadius: "50%",
                 background: PLAYER_COLORS[i],
-                border: "2px solid white",
+                border: ev ? "3px solid #1a1a1a" : "2px solid white",
                 boxShadow: "0 1px 3px rgba(0,0,0,0.35)",
                 transition: `left ${STEP_MS}ms linear, top ${STEP_MS}ms linear`,
                 zIndex: 2,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 14,
               }}
-            />
+            >
+              {ev ? i + 1 : null}
+            </div>
           );
         })}
       </div>
 
       <div className="max-w-[340px]">
+        {ev && (
+          <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 12px" }}>
+            <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>{winner !== null ? "WELL DONE" : "YOUR TURN"}</p>
+            <p className="font-bold" style={{ fontSize: 22, lineHeight: 1.25, color: "#1a1a1a" }}>
+              {winner !== null ? `${names[winner]} reached the end!` : <>{names[turn]} is on square <span style={{ fontSize: 32 }}>{Math.max(1, positions[turn] || 1)}</span></>}
+            </p>
+          </div>
+        )}
         <div className="mb-4">
-          <p className="text-xs font-semibold text-inkSoft mb-2">Players</p>
+          <p className={ev ? "font-bold mb-2" : "text-xs font-semibold text-inkSoft mb-2"} style={ev ? { fontSize: 18 } : undefined}>Players</p>
           <div className="flex gap-2 mb-3">
             {[1, 2, 3, 4].map((n) => (
               <button
                 key={n}
                 onClick={() => setPlayerCount(n)}
                 disabled={started}
-                className="rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-40"
-                style={{
+                className={ev ? "rounded-xl px-4 py-2 text-xl font-bold border-[3px] border-black disabled:opacity-40" : "rounded-lg px-3 py-1.5 text-sm font-semibold disabled:opacity-40"}
+                style={ev ? { background: playerCount === n ? "#FFD23F" : "#fff", color: "#1a1a1a" } : {
                   background: playerCount === n ? "#b5714a" : "#f7f3ea",
                   color: playerCount === n ? "#fff" : INK,
                 }}
@@ -331,7 +349,7 @@ export default function SnakesAndLaddersPlayer({
               <input
                 value={names[i]}
                 onChange={(e) => setName(i, e.target.value)}
-                className="w-full rounded-lg border border-line px-2.5 py-1.5 text-sm"
+                className={ev ? "w-full rounded-lg border-[3px] border-black px-3 py-2 text-lg font-bold" : "w-full rounded-lg border border-line px-2.5 py-1.5 text-sm"}
                 maxLength={20}
               />
               {winner === i && <Check size={16} color="#2f7a63" />}
@@ -342,21 +360,21 @@ export default function SnakesAndLaddersPlayer({
         <button
           onClick={rollDice}
           disabled={busy || winner !== null}
-          className="w-full flex items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-bold text-white disabled:opacity-50"
-          style={{ background: "#b5714a" }}
+          className={ev ? "w-full flex items-center justify-center gap-3 rounded-xl px-5 py-5 text-2xl font-bold disabled:opacity-50" : "w-full flex items-center justify-center gap-2 rounded-xl px-5 py-4 text-lg font-bold text-white disabled:opacity-50"}
+          style={ev ? { background: "#FFD23F", color: "#1a1a1a", border: "3px solid #1a1a1a" } : { background: "#b5714a" }}
         >
           <DiceIcon size={26} />
           {winner !== null ? "Game over" : `Roll the dice (${names[turn]})`}
         </button>
 
         {message && (
-          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: "#e4eee2", color: "#2f7a63" }}>
+          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: "#2f7a63" }}>
             {message}
           </p>
         )}
 
         <div className="flex flex-wrap gap-2 mt-4">
-          <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
             <RotateCcw size={14} /> Start again
           </button>
         </div>

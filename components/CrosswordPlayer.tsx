@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Eye, Heart, Lightbulb, Printer, RotateCcw } from "lucide-react";
 import type { CrosswordClue } from "@/lib/crossword";
+import { useEasyView } from "@/components/EasyView";
 
 const MAX_LIVES = 3;
 
@@ -197,17 +198,24 @@ export default function CrosswordPlayer({
 
   const current = selected ? clueAt(selected[0], selected[1], direction) : undefined;
   const inCurrent = new Set(current ? cellsOf(current, direction).map(([r, c]) => `${r},${c}`) : []);
-  const cell = `min(40px, calc((100vw - 72px) / ${cols}))`;
+  const ev = useEasyView();
+  const cell = `min(${ev ? 46 : 40}px, calc((100vw - 72px) / ${cols}))`;
 
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div>
-        <p className="mb-3 rounded-lg px-3 py-2 text-sm min-h-[40px]" style={{ background: WORD_TINT, color: INK }}>
+        <p
+          className={ev ? "mb-3 rounded-2xl px-4 py-3 min-h-[40px] text-center" : "mb-3 rounded-lg px-3 py-2 text-sm min-h-[40px]"}
+          style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 22, fontWeight: 700, lineHeight: 1.25 } : { background: WORD_TINT, color: INK }}
+        >
           {current ? (
             <>
-              <span className="font-bold">
-                {current.num} {direction}:
-              </span>{" "}
+              {ev && <span className="block text-sm" style={{ color: "#444" }}>{current.num} {direction.toUpperCase()}</span>}
+              {!ev && (
+                <span className="font-bold">
+                  {current.num} {direction}:
+                </span>
+              )}{" "}
               {current.clue} ({current.lengths})
             </>
           ) : (
@@ -245,7 +253,7 @@ export default function CrosswordPlayer({
           <div role="grid" aria-label="Crossword grid" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cell})`, gap: 2 }}>
             {solution.flatMap((row, r) =>
               row.split("").map((sol, c) => {
-                if (sol === ".") return <div key={`${r}-${c}`} style={{ width: cell, height: cell, background: "transparent" }} />;
+                if (sol === ".") return <div key={`${r}-${c}`} style={{ width: cell, height: cell, background: ev ? "#1a1a1a" : "transparent" }} />;
                 const typed = letters[r][c] !== " " ? letters[r][c] : "";
                 const shown = typed || (revealed ? sol : "");
                 const wrong = !!typed && typed !== sol;
@@ -261,11 +269,14 @@ export default function CrosswordPlayer({
                     style={{
                       width: cell,
                       height: cell,
-                      border: `1.5px solid ${BLOCK}`,
-                      background: isSel ? SELECTED : inCurrent.has(`${r},${c}`) ? WORD_TINT : "#fff",
-                      fontSize: `calc(${cell} * 0.5)`,
+                      border: ev ? "2px solid #1a1a1a" : `1.5px solid ${BLOCK}`,
+                      background: ev ? (isSel ? "#FFD23F" : inCurrent.has(`${r},${c}`) ? "#FFF4C2" : "#fff") : isSel ? SELECTED : inCurrent.has(`${r},${c}`) ? WORD_TINT : "#fff",
+                      outline: ev && isSel ? "4px solid #1a1a1a" : undefined,
+                      outlineOffset: -4,
+                      fontSize: `calc(${cell} * 0.55)`,
                       fontWeight: 700,
-                      color: wrong ? WRONG_INK : typed ? ANSWER : "#b9ad9c",
+                      color: ev ? "#1a1a1a" : wrong ? WRONG_INK : typed ? ANSWER : "#b9ad9c",
+                      textDecoration: ev && wrong ? "underline wavy #1a1a1a" : undefined,
                       fontFamily: "Helvetica, Arial, sans-serif",
                     }}
                   >
@@ -284,18 +295,31 @@ export default function CrosswordPlayer({
       </div>
 
       <div className="max-w-[360px] flex-1 min-w-[260px]">
-        <p className="text-sm text-inkSoft mb-3">
-          Tap a square and type. Tap the same square again to switch between across and down.
-          Wrong letters show in red.
-        </p>
-        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
-          {Array.from({ length: MAX_LIVES }, (_, i) => (
-            <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
-          ))}
-        </div>
+        {ev ? (
+          <>
+            <p className="mb-3 font-bold" style={{ fontSize: 18, lineHeight: 1.3, color: "#1a1a1a" }}>
+              Tap a square and type. Tap the same square again to switch between across and down. A wrong letter is underlined with a wavy line.
+            </p>
+            <p className="font-bold mb-3" style={{ fontSize: 20, color: "#1a1a1a" }}>
+              Lives left: <span style={{ fontSize: 30 }}>{lives}</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-inkSoft mb-3">
+              Tap a square and type. Tap the same square again to switch between across and down.
+              Wrong letters show in red.
+            </p>
+            <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
+              {Array.from({ length: MAX_LIVES }, (_, i) => (
+                <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
+              ))}
+            </div>
+          </>
+        )}
         {(["across", "down"] as Direction[]).map((dir) => (
           <div key={dir} className="mb-4">
-            <p className="font-serif text-lg capitalize mb-1">{dir}</p>
+            <p className={ev ? "font-bold capitalize mb-1" : "font-serif text-lg capitalize mb-1"} style={ev ? { fontSize: 22 } : undefined}>{dir}</p>
             <ul className="space-y-1">
               {clues[dir].map((e) => {
                 const isCurrent = current === e && direction === dir;
@@ -304,11 +328,13 @@ export default function CrosswordPlayer({
                   <li key={e.num}>
                     <button
                       onClick={() => selectClue(e, dir)}
-                      className="text-left text-sm rounded-md px-2 py-1 w-full"
+                      className={ev ? "text-left rounded-md px-2 py-1.5 w-full" : "text-left text-sm rounded-md px-2 py-1 w-full"}
                       style={{
-                        background: isCurrent ? WORD_TINT : "transparent",
-                        color: done ? "#8a7a6b" : INK,
+                        background: isCurrent ? (ev ? "#FFD23F" : WORD_TINT) : "transparent",
+                        color: ev ? "#1a1a1a" : done ? "#8a7a6b" : INK,
                         textDecoration: done ? "line-through" : "none",
+                        fontSize: ev ? 17 : undefined,
+                        border: ev && isCurrent ? "3px solid #1a1a1a" : ev ? "2px solid transparent" : undefined,
                       }}
                     >
                       <span className="font-bold">{e.num}.</span> {done && "✓ "}
@@ -322,19 +348,19 @@ export default function CrosswordPlayer({
         ))}
 
         <div className="flex flex-wrap gap-2">
-          <button onClick={revealWord} disabled={!current} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50">
+          <button onClick={revealWord} disabled={!current} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold disabled:opacity-50" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
             <Lightbulb size={14} /> Reveal this word
           </button>
-          <button onClick={() => setRevealed((v) => !v)} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={() => setRevealed((v) => !v)} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
             <Eye size={14} /> {revealed ? "Hide answers" : "Show answers"}
           </button>
-          <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
             <RotateCcw size={14} /> Start again
           </button>
         </div>
 
         {message && (
-          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: "#e4eee2", color: ANSWER }}>
+          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: ANSWER }}>
             {message}
           </p>
         )}

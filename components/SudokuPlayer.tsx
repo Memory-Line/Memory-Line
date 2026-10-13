@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Eraser, Heart, Printer, RotateCcw } from "lucide-react";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours from the printed sheets, so on screen matches paper.
 const INK = "#3f3237";
@@ -174,6 +175,7 @@ export default function SudokuPlayer({
   const cellPx = size === 4 ? 96 : size === 6 ? 72 : 52;
   // On a phone the squares shrink so the whole grid fits the screen.
   const cell = `min(${cellPx}px, calc((100vw - 72px) / ${size}))`;
+  const ev = useEasyView();
   const selectedValue = selected !== null ? values[selected] : 0;
   // A number is "all in" once every one of it is in its right square; its
   // button below is then crossed out. Wrong entries never count.
@@ -195,7 +197,7 @@ export default function SudokuPlayer({
           style={{
             display: "grid",
             gridTemplateColumns: `repeat(${size}, ${cell})`,
-            border: `3px solid ${INK}`,
+            border: `3px solid ${ev ? "#1a1a1a" : INK}`,
           }}
         >
           {values.map((v, i) => {
@@ -205,7 +207,15 @@ export default function SudokuPlayer({
             const isGiven = !!given[i];
             // A number that doesn't belong in this square shows in red straight away.
             const isWrong = !isGiven && !!v && v !== Number(solution[i]);
-            const background = wrong.has(i)
+            const background = ev
+              ? selected === i
+                ? "#FFD23F"
+                : v && selectedValue && v === selectedValue
+                ? "#FFF4C2"
+                : isGiven
+                ? "#ECECEC"
+                : "#fff"
+              : wrong.has(i)
               ? WRONG
               : selected === i
               ? SELECTED
@@ -224,13 +234,13 @@ export default function SudokuPlayer({
                   width: cell,
                   height: cell,
                   background,
-                  borderRight: c === size - 1 ? "none" : `${(c + 1) % boxCols === 0 ? 2.5 : 1}px solid ${(c + 1) % boxCols === 0 ? INK : LINE}`,
-                  borderBottom: r === size - 1 ? "none" : `${(r + 1) % boxRows === 0 ? 2.5 : 1}px solid ${(r + 1) % boxRows === 0 ? INK : LINE}`,
-                  outline: selected === i ? `3px solid #b5714a` : "none",
+                  borderRight: c === size - 1 ? "none" : `${(c + 1) % boxCols === 0 ? (ev ? 4 : 2.5) : 1}px solid ${(c + 1) % boxCols === 0 ? (ev ? "#1a1a1a" : INK) : ev ? "#777" : LINE}`,
+                  borderBottom: r === size - 1 ? "none" : `${(r + 1) % boxRows === 0 ? (ev ? 4 : 2.5) : 1}px solid ${(r + 1) % boxRows === 0 ? (ev ? "#1a1a1a" : INK) : ev ? "#777" : LINE}`,
+                  outline: ev ? (selected === i ? "4px solid #1a1a1a" : isWrong ? "3px dashed #1a1a1a" : "none") : selected === i ? `3px solid #b5714a` : "none",
                   outlineOffset: -3,
                   fontSize: `calc(${cell} * 0.55)`,
-                  fontWeight: isGiven || isWrong ? 700 : 500,
-                  color: isGiven ? INK : isWrong ? WRONG_INK : ANSWER,
+                  fontWeight: ev || isGiven || isWrong ? 700 : 500,
+                  color: ev ? "#1a1a1a" : isGiven ? INK : isWrong ? WRONG_INK : ANSWER,
                   cursor: isGiven ? "default" : "pointer",
                   fontFamily: "Helvetica, Arial, sans-serif",
                 }}
@@ -243,22 +253,38 @@ export default function SudokuPlayer({
       </div>
 
       <div className="max-w-[320px]">
-        <p className="text-sm text-inkSoft mb-3">
-          Tap an empty square, then a number. Every row, column and outlined box needs the
-          numbers 1 to {size} once each. A wrong number shows in red, and a number is crossed
-          out below once all of it is in place.
-        </p>
-        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${maxLives} lives left`}>
-          {Array.from({ length: maxLives }, (_, i) => (
-            <Heart
-              key={i}
-              size={20}
-              color={WRONG_INK}
-              fill={i < lives ? WRONG_INK : "none"}
-              strokeWidth={2}
-            />
-          ))}
-        </div>
+        {ev ? (
+          <>
+            <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "10px 12px" }}>
+              <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>YOUR TURN</p>
+              <p className="font-bold" style={{ fontSize: 20, lineHeight: 1.25, color: "#1a1a1a" }}>
+                Tap an empty square, then a number. Use each number 1 to {size} once in every row, column and thick box.
+              </p>
+            </div>
+            <p className="font-bold mb-3" style={{ fontSize: 20, color: "#1a1a1a" }}>
+              Lives left: <span style={{ fontSize: 30 }}>{lives}</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-inkSoft mb-3">
+              Tap an empty square, then a number. Every row, column and outlined box needs the
+              numbers 1 to {size} once each. A wrong number shows in red, and a number is crossed
+              out below once all of it is in place.
+            </p>
+            <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${maxLives} lives left`}>
+              {Array.from({ length: maxLives }, (_, i) => (
+                <Heart
+                  key={i}
+                  size={20}
+                  color={WRONG_INK}
+                  fill={i < lives ? WRONG_INK : "none"}
+                  strokeWidth={2}
+                />
+              ))}
+            </div>
+          </>
+        )}
         <div className="flex flex-wrap gap-2 mb-3">
           {Array.from({ length: size }, (_, k) => k + 1).map((n) => {
             const done = allIn.has(n);
@@ -269,8 +295,8 @@ export default function SudokuPlayer({
                 disabled={done}
                 aria-label={done ? `${n}, all placed` : String(n)}
                 title={done ? `All the ${n}s are in` : undefined}
-                className="relative rounded-full text-lg font-bold"
-                style={{ width: 56, height: 48, background: PILLS[n - 1], color: INK, opacity: done ? 0.45 : 1 }}
+                className={ev ? "relative rounded-xl text-2xl font-bold" : "relative rounded-full text-lg font-bold"}
+                style={ev ? { width: 64, height: 56, background: "#fff", border: "3px solid #1a1a1a", color: "#1a1a1a", opacity: done ? 0.4 : 1 } : { width: 56, height: 48, background: PILLS[n - 1], color: INK, opacity: done ? 0.45 : 1 }}
               >
                 {n}
                 {done && (
@@ -285,19 +311,19 @@ export default function SudokuPlayer({
           })}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => place(0)} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={() => place(0)} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
             <Eraser size={14} /> Clear square
           </button>
-          <button onClick={check} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white" style={{ background: ANSWER }}>
+          <button onClick={check} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : { background: ANSWER }}>
             <Check size={14} /> Check my answers
           </button>
-          <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
             <RotateCcw size={14} /> Start again
           </button>
         </div>
 
         {message && (
-          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: "#e4eee2", color: ANSWER }}>
+          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: ANSWER }}>
             {message}
           </p>
         )}
