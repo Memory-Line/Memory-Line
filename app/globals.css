@@ -68,3 +68,6 @@ html {
 .easy-view button, .easy-view a { font-weight: 700; }
 .easy-view p, .easy-view span { color: inherit; }
 .easy-view button:focus-visible, .easy-view a:focus-visible { outline: 4px solid #1a1a1a; outline-offset: 3px; }
+
+/* Favourites tab (components/FavouriteTabs.tsx): in the Favourites view, hide the activities that are not starred. */
+[data-fav-view="favs"] [data-template-row]:not([data-fav="1"]) { display: none !important; }

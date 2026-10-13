@@ -6,6 +6,10 @@ import { themeWords } from "@/lib/themes";
 import TemplateFilter from "@/components/TemplateFilter";
 import CompleteButton from "@/components/CompleteButton";
 import UpgradePrompt from "@/components/UpgradePrompt";
+import FavouriteStar from "@/components/FavouriteStar";
+import FavouriteTabs from "@/components/FavouriteTabs";
+import { prisma } from "@/lib/prisma";
+import { getViewer } from "@/lib/viewer";
 import { PREMIUM_ONLY_CATEGORIES } from "@/lib/plans";
 
 // The number a file name starts with ("001-…", "23. …"), ignoring any
@@ -21,7 +25,7 @@ function leadingNumber(fileName: string): number {
 // category pages, the calendar occasion pages and the language pages.
 // For accounts with those features, rows also get "Play online" (Sudoku)
 // and a Completed button (pass the ids already completed to switch it on).
-export default function TemplateList({
+export default async function TemplateList({
   templates,
   completedIds,
   playable = false,
@@ -35,6 +39,13 @@ export default function TemplateList({
   isPremium?: boolean;
 }) {
   const done = completedIds ? new Set(completedIds) : null;
+  // Which of these the signed-in person has starred.
+  const viewer = await getViewer();
+  const starred = new Set(
+    viewer.userId
+      ? (await prisma.favourite.findMany({ where: { userId: viewer.userId, templateId: { in: templates.map((t) => t.id) } }, select: { templateId: true } })).map((f) => f.templateId)
+      : []
+  );
   const sorted = [...templates].sort(
     (a, b) => leadingNumber(a.fileName) - leadingNumber(b.fileName) || a.title.localeCompare(b.title)
   );
@@ -42,16 +53,20 @@ export default function TemplateList({
   const titles = sorted.map((t) => displayTitle(t));
   const filterable = sorted.length >= 12;
   return (
-    <>
+    <div data-fav-scope data-fav-view="all">
+    {viewer.userId && <FavouriteTabs />}
     {filterable && <TemplateFilter themes={themeWords(titles)} total={sorted.length} />}
     <div className="space-y-3">
       {sorted.map((t, i) => {
         const categoryLocked = !isPremium && PREMIUM_ONLY_CATEGORIES.has(t.category);
         return (
-        <div key={t.id} data-template-row data-search={`${titles[i]} ${t.fileName}`.toLowerCase()} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
-          <div>
-            <p className="text-[15px] font-bold">{displayTitle(t)}</p>
-            <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
+        <div key={t.id} data-template-row data-fav={starred.has(t.id) ? "1" : "0"} data-search={`${titles[i]} ${t.fileName}`.toLowerCase()} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
+          <div className="flex items-start gap-2 min-w-0">
+            {viewer.userId && <FavouriteStar templateId={t.id} initially={starred.has(t.id)} />}
+            <div className="min-w-0">
+              <p className="text-[15px] font-bold">{displayTitle(t)}</p>
+              <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
+            </div>
           </div>
           <div className="flex flex-wrap sm:justify-end gap-2 shrink-0 sm:max-w-[65%]">
             {categoryLocked ? (
@@ -95,6 +110,6 @@ export default function TemplateList({
         );
       })}
     </div>
-    </>
+    </div>
   );
 }
