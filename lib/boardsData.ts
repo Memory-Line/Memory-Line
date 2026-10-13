@@ -417,7 +417,8 @@ export const ALWAYS_DATA = [
    "ar": "نعم",
    "fa": "بله",
    "tr": "Evet",
-   "zh": "是"
+   "zh": "是",
+   "yue": "係"
   },
   "say": {
    "en": "Yes.",
@@ -434,7 +435,8 @@ export const ALWAYS_DATA = [
    "ar": "نعم.",
    "fa": "بله.",
    "tr": "Evet.",
-   "zh": "是的。"
+   "zh": "是的。",
+   "yue": "係。"
   },
   "colour": "#4C6B4A"
  },
@@ -455,7 +457,8 @@ export const ALWAYS_DATA = [
    "ar": "لا",
    "fa": "نه",
    "tr": "Hayır",
-   "zh": "不"
+   "zh": "不",
+   "yue": "唔係"
   },
   "say": {
    "en": "No.",
@@ -472,7 +475,8 @@ export const ALWAYS_DATA = [
    "ar": "لا.",
    "fa": "نه.",
    "tr": "Hayır.",
-   "zh": "不是。"
+   "zh": "不是。",
+   "yue": "唔係。"
   },
   "colour": "#A8553A"
  },
@@ -493,7 +497,8 @@ export const ALWAYS_DATA = [
    "ar": "لست متأكدًا/متأكدة",
    "fa": "مطمئن نیستم",
    "tr": "Emin değilim",
-   "zh": "不确定"
+   "zh": "不确定",
+   "yue": "唔肯定"
   },
   "say": {
    "en": "I am not sure.",
@@ -510,7 +515,8 @@ export const ALWAYS_DATA = [
    "ar": "لست متأكدًا/متأكدة.",
    "fa": "مطمئن نیستم.",
    "tr": "Emin değilim.",
-   "zh": "我不确定。"
+   "zh": "我不确定。",
+   "yue": "我唔肯定。"
   },
   "colour": "#7A6E5E"
  },
@@ -531,7 +537,8 @@ export const ALWAYS_DATA = [
    "ar": "توقّف",
    "fa": "توقف",
    "tr": "Dur",
-   "zh": "停"
+   "zh": "停",
+   "yue": "停"
   },
   "say": {
    "en": "Please stop.",
@@ -548,7 +555,8 @@ export const ALWAYS_DATA = [
    "ar": "من فضلك توقّف.",
    "fa": "لطفاً توقف کنید.",
    "tr": "Lütfen durun.",
-   "zh": "请停下。"
+   "zh": "请停下。",
+   "yue": "請停低。"
   },
   "colour": "#8A3A4A"
  },
@@ -569,7 +577,8 @@ export const ALWAYS_DATA = [
    "ar": "مساعدة",
    "fa": "کمک",
    "tr": "Yardım",
-   "zh": "帮助"
+   "zh": "帮助",
+   "yue": "幫手"
   },
   "say": {
    "en": "I need help.",
@@ -586,7 +595,8 @@ export const ALWAYS_DATA = [
    "ar": "أحتاج إلى مساعدة.",
    "fa": "به کمک نیاز دارم.",
    "tr": "Yardıma ihtiyacım var.",
-   "zh": "我需要帮助。"
+   "zh": "我需要帮助。",
+   "yue": "我需要幫手。"
   },
   "colour": "#B5851F"
  }
@@ -607,7 +617,8 @@ export const UI_TEXT = {
    "ar": "اقرأ الخيارات",
    "fa": "خواندن گزینه‌ها",
    "tr": "Seçenekleri oku",
-   "zh": "朗读选项"
+   "zh": "朗读选项",
+   "yue": "讀出選項"
  },
  "playAgain": {
   "en": "Play again",
@@ -624,7 +635,8 @@ export const UI_TEXT = {
    "ar": "أعد التشغيل",
    "fa": "پخش دوباره",
    "tr": "Tekrar oynat",
-   "zh": "重新播放"
+   "zh": "重新播放",
+   "yue": "重新播放"
  },
  "always": {
   "en": "Always available",
@@ -641,7 +653,8 @@ export const UI_TEXT = {
    "ar": "متاح دائمًا",
    "fa": "همیشه در دسترس",
    "tr": "Her zaman kullanılabilir",
-   "zh": "随时可用"
+   "zh": "随时可用",
+   "yue": "隨時可用"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
