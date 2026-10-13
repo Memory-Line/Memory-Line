@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireAdmin } from "@/lib/admin";
+import { canSeeBoards } from "@/lib/boardsAccess";
 import { languageBySlug } from "@/lib/languages";
 import { BOARD_LANGS } from "@/lib/boards";
 import { getBoardsFor } from "@/lib/boardsDb";
@@ -8,10 +8,10 @@ import BoardList from "./BoardList";
 
 export const dynamic = "force-dynamic";
 
-// Topic page: every card in the topic, with a search box. Pilot: admin only.
+// Topic page: every card in the topic, with a search box. Admin, plus Premium accounts for the languages listed in lib/boardsAccess.ts.
 export default async function BoardTopic({ params }: { params: { language: string; area: string } }) {
   const language = languageBySlug(params.language);
-  if (!language || !BOARD_LANGS[language.slug] || !(await requireAdmin())) notFound();
+  if (!language || !BOARD_LANGS[language.slug] || !(await canSeeBoards(language.slug))) notFound();
   const code = BOARD_LANGS[language.slug];
   const inArea = (await getBoardsFor(code)).filter((b) => b.areaSlug === params.area);
   if (inArea.length === 0) notFound();
