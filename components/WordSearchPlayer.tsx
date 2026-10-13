@@ -173,7 +173,7 @@ export default function WordSearchPlayer({
 
   const ev = useEasyView();
   const foundCount = Object.keys(found).length;
-  const cell = `min(${ev ? 40 : 34}px, calc((100vw - 72px) / ${size}))`;
+  const cell = `min(${ev ? 32 : 34}px, calc((100vw - 72px) / ${size}))`;
 
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
@@ -211,7 +211,7 @@ export default function WordSearchPlayer({
         </div>
       </div>
 
-      <div className="max-w-[340px]">
+      <div className={ev ? "max-w-[300px]" : "max-w-[340px]"}>
         {ev ? (
           <>
             <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "10px 12px" }}>

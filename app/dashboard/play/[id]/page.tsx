@@ -186,7 +186,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
 
   // The whole page sits in a centred column, and each game is centred in it (the games keep their own design).
   return (
-    <div className="max-w-[900px] mx-auto">
+    <div className="max-w-[980px] mx-auto">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <Link href={back.href} className="text-xs text-inkSoft">
           ← {back.label}

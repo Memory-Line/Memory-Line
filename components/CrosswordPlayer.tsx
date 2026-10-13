@@ -199,7 +199,7 @@ export default function CrosswordPlayer({
   const current = selected ? clueAt(selected[0], selected[1], direction) : undefined;
   const inCurrent = new Set(current ? cellsOf(current, direction).map(([r, c]) => `${r},${c}`) : []);
   const ev = useEasyView();
-  const cell = `min(${ev ? 46 : 40}px, calc((100vw - 72px) / ${cols}))`;
+  const cell = `min(40px, calc((100vw - 72px) / ${cols}))`;
 
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
