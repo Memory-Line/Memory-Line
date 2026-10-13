@@ -470,7 +470,7 @@ export default function ColouringPlayer({
   const chosenName = tool === "eraser" ? "Eraser" : COLOUR_NAMES[PALETTE.indexOf(colour)] ?? "";
 
   return (
-    <div className="max-w-[760px]">
+    <div className="max-w-[760px] lg:max-w-[980px] play-two-col" style={{ ["--panel" as string]: "340px" }}>
       {ev ? (
         <>
           <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
@@ -492,7 +492,7 @@ export default function ColouringPlayer({
 
       {/* Palette: 2 columns wide on narrow phones so the swatches stay big
           and easy to tap; wraps to more columns as the screen gets wider. */}
-      <div className="grid grid-cols-2 sm:grid-cols-8 gap-2 mb-3" role="group" aria-label="Colour palette">
+      <div className="grid grid-cols-2 sm:grid-cols-8 lg:grid-cols-3 gap-2 mb-3" role="group" aria-label="Colour palette">
         {PALETTE.map((hex) => (
           <button
             key={hex}
@@ -527,7 +527,7 @@ export default function ColouringPlayer({
         <button
           onClick={() => setTool("eraser")}
           aria-pressed={tool === "eraser"}
-          className="flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold col-span-2 sm:col-span-8"
+          className="flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold col-span-2 sm:col-span-8 lg:col-span-3"
           style={ev ? {
             height: 58,
             fontSize: 18,
@@ -565,7 +565,7 @@ export default function ColouringPlayer({
         </button>
       </div>
 
-      <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block", touchAction: "none", border: ev ? "4px solid #1a1a1a" : undefined }}>
+      <div className="rounded-xl bg-white p-3 border border-line play-board" style={{ display: "inline-block", touchAction: "none", border: ev ? "4px solid #1a1a1a" : undefined }}>
         {status === "loading" && <p className="text-sm text-inkSoft p-6">Loading your picture…</p>}
         {status === "error" && (
           <p className="text-sm text-inkSoft p-6 max-w-[420px]">
@@ -610,7 +610,7 @@ export default function ColouringPlayer({
         </button>
       </div>
 
-      <div className="mt-6 pt-4 border-t border-line">
+      <div className="mt-6 pt-4 border-t border-line play-wide">
         <p className="text-xs font-semibold text-inkSoft mb-2">Prefer paper?</p>
         <div className="flex flex-wrap gap-2">
           <a

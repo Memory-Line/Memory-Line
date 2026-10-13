@@ -190,7 +190,7 @@ export default function MatchingPairsPlayer({
   const allFound = deck.length > 0 && foundPairs === totalPairs;
 
   return (
-    <div className="max-w-[560px]">
+    <div className="max-w-[560px] lg:max-w-[980px] play-two-col" style={{ ["--panel" as string]: "300px" }}>
       {easyView ? (
         <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
           <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE PAIRS</p>
@@ -236,7 +236,7 @@ export default function MatchingPairsPlayer({
           {images === null ? (
             <p className="text-sm text-inkSoft">Getting the picture cards ready…</p>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 play-board">
               {deck.map((card, i) => {
                 const isFaceUp = card.matched || faceUp.includes(i);
                 return (
@@ -304,7 +304,7 @@ export default function MatchingPairsPlayer({
         </>
       )}
 
-      <div className="mt-6 pt-4 border-t border-line">
+      <div className="mt-6 pt-4 border-t border-line play-wide">
         <p className="text-xs font-semibold text-inkSoft mb-2">Prefer paper?</p>
         <div className="flex flex-wrap gap-2">
           <a
