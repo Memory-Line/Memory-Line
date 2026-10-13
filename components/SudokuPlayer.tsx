@@ -184,7 +184,7 @@ export default function SudokuPlayer({
   );
 
   return (
-    <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div
         role="grid"
         aria-label="Sudoku grid"
