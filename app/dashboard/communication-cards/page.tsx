@@ -32,14 +32,13 @@ export default async function CommunicationCardsPage() {
             style={{ background: CARD_COLOURS[i % CARD_COLOURS.length] }}
           >
             <div
-              className="font-serif text-[28px] leading-tight"
+              className="font-serif text-[24px] leading-tight"
               dir={RTL_LANGUAGES.includes(l.slug) ? "rtl" : "ltr"}
-              lang={undefined}
             >
               {NATIVE_NAMES[l.slug] ?? l.label}
             </div>
-            <div className="text-sm mt-0.5">{l.label}</div>
-            <div className="text-xs mt-3 opacity-90">{countFor(l.slug)} cards &nbsp;›</div>
+            <div className="text-[22px] font-semibold mt-1 leading-tight">{l.label}</div>
+            <div className="text-sm mt-3 opacity-90">{countFor(l.slug)} cards &nbsp;›</div>
           </Link>
         ))}
       </div>
