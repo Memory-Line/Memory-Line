@@ -77,29 +77,40 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   }
 
   // Plays one phrase and resolves when it ends. Falls back to the device voice if the recording is missing.
+  function deviceSpeak(lang: LangCode, text: string, resolve: () => void) {
+    if (!window.speechSynthesis) return resolve();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang === "en" ? "en-GB" : lang === "pl" ? "pl-PL" : "ur-PK";
+    const dv = pickDeviceVoice(lang, voice);
+    if (dv) u.voice = dv;
+    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${lang === "pl" ? "Polish" : lang === "ur" ? "Urdu" : "English"} voice, so it may stay silent.`);
+    u.rate = speed === "slow" ? 0.75 : 1;
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+    window.speechSynthesis.speak(u);
+  }
+
+  // Plays one phrase and resolves when it ends. Pilot phrases have saved recordings; every other phrase
+  // is made on first use by the speech service and saved. The device voice is the last resort.
   function playOne(lang: LangCode, text: string, id: number): Promise<void> {
     return new Promise((resolve) => {
       if (id !== runId.current) return resolve();
-      const src = AUDIO[`${lang}|${voice}|${text}`];
-      if (src) {
-        const a = audioRef.current ?? (audioRef.current = new Audio());
-        a.src = src;
-        setDeviceNote("");
-        a.playbackRate = speed === "slow" ? 0.8 : 1;
-        a.onended = () => resolve();
-        a.onerror = () => resolve();
-        a.play().catch(() => resolve());
-      } else if (window.speechSynthesis) {
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang === "en" ? "en-GB" : lang === "pl" ? "pl-PL" : "ur-PK";
-        const dv = pickDeviceVoice(lang, voice);
-        if (dv) u.voice = dv;
-        setDeviceNote(dv ? `No recording yet for this board, so this device's ${dv.name} voice is reading it. Male and female voices only switch where we have recordings.` : `No recording yet for this board and this device has no ${lang === "pl" ? "Polish" : lang === "ur" ? "Urdu" : "English"} voice, so it may stay silent.`);
-        u.rate = speed === "slow" ? 0.75 : 1;
-        u.onend = () => resolve();
-        u.onerror = () => resolve();
-        window.speechSynthesis.speak(u);
-      } else resolve();
+      const saved = AUDIO[`${lang}|${voice}|${text}`];
+      const src = saved ?? `/api/boards/speak?lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
+      const a = audioRef.current ?? (audioRef.current = new Audio());
+      a.src = src;
+      a.playbackRate = speed === "slow" ? 0.8 : 1;
+      a.onended = () => resolve();
+      let failed = false;
+      const fallback = () => {
+        if (failed) return;
+        failed = true;
+        if (saved) resolve();
+        else deviceSpeak(lang, text, resolve);
+      };
+      a.onerror = fallback;
+      setDeviceNote("");
+      a.play().catch(fallback);
     });
   }
 
