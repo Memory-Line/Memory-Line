@@ -54,34 +54,65 @@ export default function BingoCaller() {
     }
   }
 
-  // Plays one phrase with the natural voice (made on first use, then saved). If that cannot load,
-  // the device's own voice steps in. Resolves when it has finished.
+  // Recordings are fetched all at once for a call and kept (in flight or done), so the wait is one
+  // recording's time, not one after another. The next number is chosen in advance and prepared while
+  // the current one is being said, so most calls start straight away.
+  const audioCache = useRef(new Map<string, Promise<string | null>>());
+  const upcoming = useRef<number | null>(null);
+
+  const urlFor = (lang: string, text: string) =>
+    `/api/boards/speak?use=bingo&lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
+
+  function phrasesFor(n: number): { lang: string; text: string }[] {
+    const list = [{ lang: "en", text: `${bingoLetter(n)}. ${n}.` }];
+    if (showCalls && BINGO_CALLS[n]) list.push({ lang: "en", text: `${BINGO_CALLS[n]}.` });
+    for (const code of langs) list.push({ lang: code, text: String(n) });
+    return list;
+  }
+
+  function fetchAudio(url: string) {
+    let p = audioCache.current.get(url);
+    if (!p) {
+      p = fetch(url)
+        .then((r) => (r.ok ? r.blob() : null))
+        .then((blob) => (blob ? URL.createObjectURL(blob) : null))
+        .catch(() => null);
+      audioCache.current.set(url, p);
+    }
+    return p;
+  }
+
+  // Plays one phrase (from the prepared recording; the device voice steps in if there isn't one).
   function playPhrase(lang: string, text: string, id: number): Promise<void> {
     return new Promise((resolve) => {
       if (id !== runRef.current) return resolve();
-      const a = audioRef.current ?? (audioRef.current = new Audio());
-      let done = false;
-      const finish = () => {
-        if (!done) {
-          done = true;
-          resolve();
-        }
-      };
-      const fallback = () => {
-        if (done) return;
-        if (!window.speechSynthesis) return finish();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = lang === "en" ? "en-GB" : BINGO_LANGS.find((l) => l.code === lang)?.locale ?? lang;
-        u.rate = 0.85;
-        u.onend = finish;
-        u.onerror = finish;
-        window.speechSynthesis.speak(u);
-      };
-      a.src = `/api/boards/speak?use=bingo&lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
-      a.playbackRate = 0.92;
-      a.onended = finish;
-      a.onerror = fallback;
-      a.play().catch(fallback);
+      fetchAudio(urlFor(lang, text)).then((made) => {
+        if (id !== runRef.current) return resolve();
+        const a = audioRef.current ?? (audioRef.current = new Audio());
+        let done = false;
+        const finish = () => {
+          if (!done) {
+            done = true;
+            resolve();
+          }
+        };
+        const fallback = () => {
+          if (done) return;
+          if (!window.speechSynthesis) return finish();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = lang === "en" ? "en-GB" : BINGO_LANGS.find((l) => l.code === lang)?.locale ?? lang;
+          u.rate = 0.85;
+          u.onend = finish;
+          u.onerror = finish;
+          window.speechSynthesis.speak(u);
+        };
+        if (!made) return fallback();
+        a.src = made;
+        a.playbackRate = 0.92;
+        a.onended = finish;
+        a.onerror = fallback;
+        a.play().catch(fallback);
+      });
     });
   }
 
@@ -91,38 +122,44 @@ export default function BingoCaller() {
     const id = ++runRef.current;
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();
-    await playPhrase("en", `${bingoLetter(n)}. ${n}.`, id);
-    if (showCalls && BINGO_CALLS[n]) await playPhrase("en", `${BINGO_CALLS[n]}.`, id);
-    for (const code of langs) {
+    const list = phrasesFor(n);
+    list.forEach((p) => fetchAudio(urlFor(p.lang, p.text))); // start them all now
+    for (let i = 0; i < list.length; i++) {
       if (id !== runRef.current) return;
-      await new Promise((r) => setTimeout(r, 250));
-      await playPhrase(code, String(n), id);
+      if (i > 0 && list[i].lang !== list[i - 1].lang) await new Promise((r) => setTimeout(r, 200));
+      await playPhrase(list[i].lang, list[i].text, id);
     }
   }
 
-  // Gets the numbers ready in the background when Read aloud is on, so a call starts straight away.
+  // Choose the next number now and get its recordings ready.
   useEffect(() => {
-    if (!speak) return;
-    let cancelled = false;
-    const urls: string[] = [];
-    for (let n = 1; n <= 75; n++) {
-      urls.push(`/api/boards/speak?use=bingo&lang=en&voice=${voice}&text=${encodeURIComponent(`${bingoLetter(n)}. ${n}.`)}`);
-      for (const code of langs) urls.push(`/api/boards/speak?use=bingo&lang=${code}&voice=${voice}&text=${encodeURIComponent(String(n))}`);
+    audioCache.current.clear();
+  }, [voice, langs]);
+  useEffect(() => {
+    const left = Array.from({ length: 75 }, (_, k) => k + 1).filter((n) => !called.includes(n));
+    if (left.length === 0) {
+      upcoming.current = null;
+      return;
     }
-    let next = 0;
-    const worker = async () => {
-      while (next < urls.length && !cancelled) await fetch(urls[next++]).then((r) => r.arrayBuffer()).catch(() => {});
-    };
-    const t = setTimeout(() => { worker(); worker(); }, 800);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [speak, voice, langs]);
+    if (upcoming.current === null || called.includes(upcoming.current)) {
+      const pick = new Uint32Array(1);
+      crypto.getRandomValues(pick);
+      upcoming.current = left[pick[0] % left.length];
+    }
+    if (speak) phrasesFor(upcoming.current).forEach((p) => fetchAudio(urlFor(p.lang, p.text)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [called, speak, voice, langs, showCalls]);
 
   function callNext() {
     const left = Array.from({ length: 75 }, (_, k) => k + 1).filter((n) => !called.includes(n));
     if (left.length === 0) return;
-    const pick = new Uint32Array(1);
-    crypto.getRandomValues(pick);
-    const n = left[pick[0] % left.length];
+    let n = upcoming.current;
+    if (n === null || called.includes(n)) {
+      const pick = new Uint32Array(1);
+      crypto.getRandomValues(pick);
+      n = left[pick[0] % left.length];
+    }
+    upcoming.current = null;
     const next = [...called, n];
     setCalled(next);
     persist({ called: next });
