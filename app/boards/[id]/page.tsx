@@ -10,7 +10,7 @@ export default async function BoardPage({ params, searchParams }: { params: { id
   if (!(await requireAdmin())) notFound();
   const board = await getBoard(params.id);
   if (!board) notFound();
-  const lang = searchParams.lang === "pl" || searchParams.lang === "ur" ? searchParams.lang : "en";
+  const lang = (["pl", "ur", "ro", "pt", "es", "fr"] as const).find((c) => c === searchParams.lang) ?? "en";
   // If this board has not been translated yet, show it in English only.
   const shown = lang !== "en" && !hasLanguage(board, lang) ? "en" : lang;
   const back = searchParams.back?.startsWith("/dashboard/communication-cards/") ? { href: searchParams.back, label: "← Back to the list" } : undefined;

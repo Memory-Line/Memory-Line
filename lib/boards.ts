@@ -1,6 +1,6 @@
 import { ALWAYS_DATA, UI_TEXT, AUDIO_FILES } from "@/lib/boardsData";
 
-export type LangCode = "en" | "pl" | "ur";
+export type LangCode = "en" | "pl" | "ur" | "ro" | "pt" | "es" | "fr";
 export type Text3 = Partial<Record<LangCode, string>> & { en: string };
 export type BoardAnswer = { id: string; label: Text3; say: Text3; colour?: string; icon?: string; staff?: string; escalate?: boolean };
 export type Board = {
@@ -15,10 +15,14 @@ export const AUDIO = AUDIO_FILES;
 export const OTHER_LANGS: { code: LangCode; name: string; rtl: boolean }[] = [
   { code: "pl", name: "Polski", rtl: false },
   { code: "ur", name: "اردو", rtl: true },
+  { code: "ro", name: "Română", rtl: false },
+  { code: "pt", name: "Português", rtl: false },
+  { code: "es", name: "Español", rtl: false },
+  { code: "fr", name: "Français", rtl: false },
 ];
 
 // Languages that have boards so far. The page language chosen sets the other language.
-export const BOARD_LANGS: Record<string, LangCode> = { english: "en", polish: "pl", urdu: "ur" };
+export const BOARD_LANGS: Record<string, LangCode> = { english: "en", polish: "pl", urdu: "ur", romanian: "ro", portuguese: "pt", spanish: "es", french: "fr" };
 
 export function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

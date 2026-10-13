@@ -13,8 +13,12 @@ const VOICES: Record<string, Record<string, string>> = {
   en: { female: "en-GB-SoniaNeural", male: "en-GB-RyanNeural" },
   pl: { female: "pl-PL-ZofiaNeural", male: "pl-PL-MarekNeural" },
   ur: { female: "ur-PK-UzmaNeural", male: "ur-PK-AsadNeural" },
+  ro: { female: "ro-RO-AlinaNeural", male: "ro-RO-EmilNeural" },
+  pt: { female: "pt-PT-RaquelNeural", male: "pt-PT-DuarteNeural" },
+  es: { female: "es-ES-ElviraNeural", male: "es-ES-AlvaroNeural" },
+  fr: { female: "fr-FR-DeniseNeural", male: "fr-FR-HenriNeural" },
 };
-const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK" };
+const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR" };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
