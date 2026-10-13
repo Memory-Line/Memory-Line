@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
+import { HIDDEN_OLD_CARDS, LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { requireAdmin } from "@/lib/admin";
@@ -21,10 +21,13 @@ export default async function CommunicationCardsLanguagePage({
   if (!language) notFound();
 
   // Numbered 001-090, so file name order is card order.
-  const cards = await prisma.template.findMany({
-    where: { category: LANGUAGE_CATEGORY, occasion: null, language: language.slug },
-    orderBy: { fileName: "asc" },
-  });
+  const oldHidden = HIDDEN_OLD_CARDS.includes(language.slug);
+  const cards = oldHidden
+    ? []
+    : await prisma.template.findMany({
+        where: { category: LANGUAGE_CATEGORY, occasion: null, language: language.slug },
+        orderBy: { fileName: "asc" },
+      });
   const showBoards = !!BOARD_LANGS[language.slug] && !!(await requireAdmin());
   const areaMap = new Map<string, { slug: string; name: string; count: number }>();
   if (showBoards) {
@@ -49,7 +52,7 @@ export default async function CommunicationCardsLanguagePage({
         {LANGUAGE_CATEGORY}: {language.label}
       </h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
-        {cards.length} cards{language.slug !== "english" && ", with English beside each translation"}
+        {oldHidden ? "New talking boards" : `${cards.length} cards${language.slug !== "english" ? ", with English beside each translation" : ""}`}
       </p>
 
       {showBoards && (
@@ -72,7 +75,7 @@ export default async function CommunicationCardsLanguagePage({
         <TemplateList templates={cards} completedIds={done} isPremium={viewer.isPremium} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
-          No {language.label} cards yet.
+          {oldHidden ? `New ${language.label} talking boards are on their way.` : `No ${language.label} cards yet.`}
         </p>
       )}
     </div>
