@@ -291,7 +291,8 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
 
         <div style={{ display: needPerson ? "none" : "grid", gridTemplateColumns: "repeat(auto-fill,minmax(170px,1fr))", gap: 14, marginBottom: 18 }}>
           {board.answers.map((a, i) => {
-            const sel = chosen ? chosen.id === a.id : null;
+            // Only a card on this board is marked: the always-available buttons below share names (Yes, No...) but are separate.
+            const sel = chosen && board.answers.some((x) => x.id === chosen.id) ? chosen.id === a.id : null;
             const col = LEAF[i % LEAF.length];
             return (
               <button key={a.id} type="button" onClick={() => choose(a)} aria-pressed={sel === true}
@@ -309,7 +310,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ font: "700 13px Arial", letterSpacing: 0.8, color: "#8A7A6B", margin: "0 0 8px" }}>{UI.always.en.toUpperCase()}</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
           {ALWAYS.map((a) => (
-            <button key={a.id} type="button" onClick={() => choose(a)} style={{ flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
+            <button key={a.id} type="button" onClick={() => choose({ ...a, id: `always-${a.id}` })} style={{ flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
               {showEn && <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>}
               {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other] ?? "", 15, 13)}px Arial` : `700 ${fs(a.label[other] ?? "", 21, 16)}px Georgia,serif`, opacity: 0.92 }}>{secondary(a.label)}</div>}
             </button>
