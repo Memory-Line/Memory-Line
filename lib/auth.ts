@@ -31,7 +31,9 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name ?? undefined,
-        };
+          subscriptionStatus: user.subscriptionStatus,
+          subscriptionRenewsAt: user.subscriptionRenewsAt?.toISOString() ?? null,
+        } as any;
       },
     }),
   ],
@@ -39,6 +41,10 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.userId = user.id;
+        // Just signed in: the details were read a moment ago, no need to read them again.
+        token.subscriptionStatus = (user as any).subscriptionStatus ?? "inactive";
+        token.subscriptionRenewsAt = (user as any).subscriptionRenewsAt ?? null;
+        return token;
       }
       // Refresh subscription status on every token issuance so it stays current
       if (token.userId) {

@@ -98,7 +98,10 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
       const saved = AUDIO[`${lang}|${voice}|${text}`];
       const src = saved ?? `/api/boards/speak?lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
       const a = audioRef.current ?? (audioRef.current = new Audio());
-      a.src = src;
+      const ready = saved ? Promise.resolve(null) : warm.current.get(src) ?? Promise.resolve(null);
+      ready.then((made) => {
+      if (id !== runId.current) return resolve();
+      a.src = made ?? src;
       a.playbackRate = speed === "slow" ? 0.8 : 1;
       a.onended = () => resolve();
       let failed = false;
@@ -111,6 +114,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
       a.onerror = fallback;
       setDeviceNote("");
       a.play().catch(fallback);
+      });
     });
   }
 
@@ -137,14 +141,27 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
 
   useEffect(() => () => stop(), []);
 
-  // Gets the voice recordings for this board ready in the background (a few at a time), so they
-  // start straight away when played. Phrases made for the first time take a moment; later ones are saved.
+  // Gets the voice recordings for this board ready in the background (a few at a time). A press waits for
+  // the same recording if it is already being made, instead of asking for it twice.
+  const warm = useRef(new Map<string, Promise<string | null>>());
+  const start = (u: string) => {
+    let p = warm.current.get(u);
+    if (!p) {
+      p = fetch(u)
+        .then((r) => (r.ok ? r.blob() : null))
+        .then((blob) => (blob ? URL.createObjectURL(blob) : null))
+        .catch(() => null);
+      warm.current.set(u, p);
+    }
+    return p;
+  };
   useEffect(() => {
     if (lang !== "en" && !person) return;
-    const ctl = new AbortController();
+    let cancelled = false;
     const urls: string[] = [];
+    const items = [board.question, ...board.answers.flatMap((a) => [a.label, a.say]), ...ALWAYS.map((a) => a.say as Text3)];
     for (const l of langs()) {
-      for (const item of [board.question, ...board.answers.flatMap((a) => [a.label, a.say])]) {
+      for (const item of items) {
         const text = item[l];
         if (!text) continue;
         const spoken = forPerson(text, l, person);
@@ -154,13 +171,10 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
     }
     let next = 0;
     const worker = async () => {
-      while (next < urls.length && !ctl.signal.aborted) {
-        const u = urls[next++];
-        await fetch(u, { signal: ctl.signal }).then((r) => r.arrayBuffer()).catch(() => {});
-      }
+      while (next < urls.length && !cancelled) await start(urls[next++]);
     };
-    const t = setTimeout(() => { for (let i = 0; i < 3; i++) worker(); }, 300);
-    return () => { clearTimeout(t); ctl.abort(); };
+    for (let i = 0; i < 3; i++) worker();
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [board.id, voice, mode, other, person]);
   useEffect(() => {

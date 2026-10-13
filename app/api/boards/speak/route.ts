@@ -26,6 +26,13 @@ const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", 
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+// A saved recording's address is fixed (store id from the storage key + file name), so we can
+// ask for it directly, which is quicker than listing the storage.
+function savedUrl(pathname: string) {
+  const id = process.env.BLOB_READ_WRITE_TOKEN?.split("_")[3];
+  return id ? `https://${id.toLowerCase()}.public.blob.vercel-storage.com/${pathname}` : null;
+}
+
 let allowed: Set<string> | null = null;
 function boardPhrases() {
   if (allowed) return allowed;
@@ -66,6 +73,12 @@ export async function GET(req: Request) {
 
   try {
     // Already made? Send them to the saved recording.
+    const direct = savedUrl(pathname);
+    if (direct) {
+      const head = await fetch(direct, { method: "HEAD" }).catch(() => null);
+      if (head?.ok) return NextResponse.redirect(direct, 302);
+    }
+    // Not found the quick way (or the address could not be worked out): check the storage properly.
     const found = await list({ prefix: pathname, limit: 1 });
     if (found.blobs[0]) return NextResponse.redirect(found.blobs[0].url, 302);
 
