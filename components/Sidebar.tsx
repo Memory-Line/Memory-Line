@@ -210,6 +210,12 @@ export default function Sidebar({
             label="Upload calendar packs"
             active={pathname === "/dashboard/admin/upload-calendar"}
           />
+          <NavItem
+            href="/dashboard/admin/play-data"
+            icon={Upload}
+            label="Load calendar puzzles"
+            active={pathname === "/dashboard/admin/play-data"}
+          />
         </div>
       )}
     </>

@@ -25,6 +25,8 @@ import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
+import WordBingoPlayer from "@/components/WordBingoPlayer";
+import { occasionBySlug } from "@/lib/occasions";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +133,31 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       player = (
         <SpotDifferencePlayer {...common} pictureA={data.pictureA} pictureB={data.pictureB} />
       );
+    }
+  } else if (template.occasion) {
+    // A calendar occasion's activity: the puzzle was read out of its own PDF
+    // and stored with it (PlayData), then played with the same players as above.
+    const occ = occasionBySlug(template.occasion);
+    back = {
+      href: `/dashboard/occasions/${template.occasion}/${category?.slug ?? ""}`,
+      label: `${occ?.label ?? "Calendar"}: ${template.category}`,
+    };
+    const stored = await prisma.playData.findUnique({ where: { templateId: template.id } });
+    const d = stored?.data as any;
+    if (d) {
+      if (template.category === "Word Searches") {
+        player = <WordSearchPlayer {...common} grid={d.grid} words={d.words} />;
+      } else if (template.category === "Crosswords") {
+        player = (
+          <CrosswordPlayer {...common} rows={d.rows} cols={d.cols} solution={d.solution} numbers={d.numbers} across={d.across} down={d.down} />
+        );
+      } else if (template.category === "Guess the Word") {
+        player = <GuessTheWordPlayer {...common} clue={d.clue} answer={d.answer} tries={d.tries} />;
+      } else if (template.category === "Trivia") {
+        player = <TriviaPlayer {...common} questions={d.questions} />;
+      } else if (template.category === "Bingo") {
+        player = <WordBingoPlayer {...common} words={d.words} caller={d.caller ?? []} />;
+      }
     }
   }
 

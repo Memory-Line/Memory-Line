@@ -42,8 +42,13 @@ export function parsePackPath(path: string): PackFile | null {
   const kind: PackKind =
     variant === "Answers" ? "answers" : variant === "Large Print" || /large[-_\s]?print/i.test(name) ? "largePrint" : "worksheet";
 
+  return { path, prefix, occasion: occasionForPrefix(prefix), category, kind };
+}
+
+// The site's occasion slug for a pack's date number ("38" -> bonfire night), or
+// null if that date has no activities page.
+export function occasionForPrefix(prefix: string): string | null {
   const label = prefix in PACK_DATES ? PACK_DATES[prefix] : null;
   const slug = label ? occasionSlug(label) : null;
-  const occasion = slug && OCCASIONS.some((o) => o.slug === slug) ? slug : null;
-  return { path, prefix, occasion, category, kind };
+  return slug && OCCASIONS.some((o) => o.slug === slug) ? slug : null;
 }

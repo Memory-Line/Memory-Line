@@ -23,6 +23,11 @@ export default async function OccasionCategoryPage({
     where: { category: category.key, occasion: occasion.slug },
     orderBy: { createdAt: "desc" },
   });
+  // Only activities whose puzzle has been loaded can be played online.
+  const withPuzzle = await prisma.playData.findMany({
+    where: { templateId: { in: templates.map((t) => t.id) } },
+    select: { templateId: true },
+  });
   const viewer = await getViewer();
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, templates.map((t) => t.id))
@@ -57,7 +62,12 @@ export default async function OccasionCategoryPage({
       </div>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} />
+        <TemplateList
+          templates={templates}
+          completedIds={done}
+          isPremium={viewer.isPremium}
+          playableIds={withPuzzle.map((p) => p.templateId)}
+        />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {category.key.toLowerCase()} for {occasion.label} yet.
