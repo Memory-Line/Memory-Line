@@ -7,8 +7,7 @@ import { completedIds, getViewer } from "@/lib/viewer";
 import { canSeeBoards, PUBLIC_BOARD_LANGS } from "@/lib/boardsAccess";
 import { BOARD_LANGS } from "@/lib/boards";
 import { boardAreasFor } from "@/lib/boardsDb";
-import { categoryBySlug } from "@/lib/data";
-import { MessageCircle } from "lucide-react";
+import TopicTile from "@/components/TopicTile";
 
 export const dynamic = "force-dynamic";
 
@@ -52,12 +51,8 @@ export default async function CommunicationCardsLanguagePage({
         <div className="rounded-xl p-4 mb-5 bg-card border border-line">
           <div className="text-[11px] font-bold tracking-wide text-clay mb-2">{boardsPublic ? "TALKING BOARDS" : "NEW TALKING BOARDS · ONLY YOU CAN SEE THIS"}</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {areas.map((a) => (
-              <Link key={a.slug} href={`/dashboard/communication-cards/${language.slug}/boards/${a.slug}`} className="flex items-center gap-2 rounded-lg p-3" style={{ background: categoryBySlug("communication-cards")!.tint }}>
-                <MessageCircle size={16} color={categoryBySlug("communication-cards")!.color} />
-                <span className="text-sm font-semibold">{a.name}</span>
-                <span className="ml-auto text-xs text-inkSoft">{a.count}</span>
-              </Link>
+            {areas.map((a, i) => (
+              <TopicTile key={a.slug} href={`/dashboard/communication-cards/${language.slug}/boards/${a.slug}`} slug={a.slug} name={a.name} count={a.count} index={i} />
             ))}
           </div>
           {areas.length === 0 && <p className="text-sm text-inkSoft">No boards loaded yet. Load them from Communication boards in the admin menu.</p>}
