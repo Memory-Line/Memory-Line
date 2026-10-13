@@ -1,14 +1,11 @@
-import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/lib/auth";
-import { userHasFeature } from "@/lib/features";
-import { getViewer } from "@/lib/viewer";
+import { getSession, getViewer } from "@/lib/viewer";
 import Sidebar from "@/components/Sidebar";
 import { getCategories } from "@/lib/categories";
 import TopBar from "@/components/TopBar";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
 
   if (!session?.user) {
     redirect("/login?next=/dashboard");
@@ -20,10 +17,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/pricing");
   }
 
-  const viewer = await getViewer();
-  const professionalCalendar = await userHasFeature(session.user.id, "professional-calendar");
-  const questionnaires = await userHasFeature(session.user.id, "questionnaires");
-  const categories = (await getCategories()).map((c) => ({ key: c.key, slug: c.slug, icon: c.icon }));
+  // The checks below used to run one after another (five separate database trips); now at once, and shared with the page.
+  const [viewer, siteCategories] = await Promise.all([getViewer(), getCategories()]);
+  const professionalCalendar = viewer.ownFeatures.includes("professional-calendar");
+  const questionnaires = viewer.ownFeatures.includes("questionnaires");
+  const categories = siteCategories.map((c) => ({ key: c.key, slug: c.slug, icon: c.icon }));
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-bg">

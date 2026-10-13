@@ -1,6 +1,5 @@
-import { getServerSession } from "next-auth";
 import Link from "next/link";
-import { authOptions } from "@/lib/auth";
+import { getSession } from "@/lib/viewer";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
 import { customIcon } from "@/lib/categoryIcons";
@@ -34,17 +33,16 @@ export default async function DashboardHome({
 }: {
   searchParams?: { billing?: string };
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await getSession();
   const userId = session!.user.id;
-  const categories = await getCategories();
+  const [categories, latestDownloads, activityCount, account] = await Promise.all([
+    getCategories(),
+    // The last downloads of activities that still exist (downloads of the old sample activities are skipped).
+    prisma.download.findMany({ where: { userId }, orderBy: { downloadedAt: "desc" }, take: 20 }),
+    prisma.template.count({ where: { occasion: null } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { accountType: true } }),
+  ]);
 
-  // The last three downloads of activities that still exist (downloads of
-  // the old sample activities are skipped).
-  const latestDownloads = await prisma.download.findMany({
-    where: { userId },
-    orderBy: { downloadedAt: "desc" },
-    take: 20,
-  });
   const existingIds = new Set(
     (
       await prisma.template.findMany({
@@ -55,14 +53,8 @@ export default async function DashboardHome({
   );
   const recentDownloads = latestDownloads.filter((d) => existingIds.has(d.templateId)).slice(0, 3);
 
-  const activityCount = await prisma.template.count({ where: { occasion: null } });
-
   // Care homes are greeted by the home's full name ("Westcliff Lodge"),
   // personal accounts by first name.
-  const account = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { accountType: true },
-  });
   const fullName = session!.user.name ?? session!.user.email ?? "there";
   const firstName = account?.accountType === "care-home" ? fullName : fullName.split(" ")[0];
   const freeAccess = session!.user.subscriptionStatus === "free";
