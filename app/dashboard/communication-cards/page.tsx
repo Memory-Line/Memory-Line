@@ -1,16 +1,14 @@
 import Link from "next/link";
-import { Languages } from "lucide-react";
-import { categoryBySlug } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
-import { LANGUAGE_CATEGORY, LANGUAGES } from "@/lib/languages";
+import { LANGUAGE_CATEGORY, LANGUAGES, NATIVE_NAMES, RTL_LANGUAGES } from "@/lib/languages";
 
 export const dynamic = "force-dynamic";
 
 // Communication Cards are split by language: pick one first, then see its
 // cards. (This static route takes over from /dashboard/[category] here.)
-export default async function CommunicationCardsPage() {
-  const category = categoryBySlug("communication-cards")!;
+const CARD_COLOURS = ["#2F7A7C", "#A9741F", "#6A5A9A", "#3E6E96", "#4F7A45", "#A0507A"];
 
+export default async function CommunicationCardsPage() {
   const counts = await prisma.template.groupBy({
     by: ["language"],
     where: { category: LANGUAGE_CATEGORY, occasion: null },
@@ -25,21 +23,25 @@ export default async function CommunicationCardsPage() {
         Choose a language. Each edition prints English beside the translation.
       </p>
 
-      <div className="rounded-xl p-4 bg-card border border-line">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          {LANGUAGES.map((l) => (
-            <Link
-              key={l.slug}
-              href={`/dashboard/communication-cards/${l.slug}`}
-              className="flex items-center gap-2 rounded-lg p-3"
-              style={{ background: category.tint }}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        {LANGUAGES.map((l, i) => (
+          <Link
+            key={l.slug}
+            href={`/dashboard/communication-cards/${l.slug}`}
+            className="block rounded-2xl px-4 py-4 text-white"
+            style={{ background: CARD_COLOURS[i % CARD_COLOURS.length] }}
+          >
+            <div
+              className="font-serif text-[28px] leading-tight"
+              dir={RTL_LANGUAGES.includes(l.slug) ? "rtl" : "ltr"}
+              lang={undefined}
             >
-              <Languages size={16} color={category.color} />
-              <span className="text-sm font-semibold">{l.label}</span>
-              <span className="ml-auto text-xs text-inkSoft">{countFor(l.slug)}</span>
-            </Link>
-          ))}
-        </div>
+              {NATIVE_NAMES[l.slug] ?? l.label}
+            </div>
+            <div className="text-sm mt-0.5">{l.label}</div>
+            <div className="text-xs mt-3 opacity-90">{countFor(l.slug)} cards &nbsp;›</div>
+          </Link>
+        ))}
       </div>
     </div>
   );

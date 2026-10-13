@@ -32,6 +32,37 @@ export const LANGUAGES: { slug: string; label: string }[] = [
   { slug: "welsh", label: "Welsh" },
 ];
 
+// Each language's name written in its own script, shown big on the language cards.
+export const NATIVE_NAMES: Record<string, string> = {
+  english: "English",
+  polish: "Polski",
+  romanian: "Română",
+  punjabi: "ਪੰਜਾਬੀ",
+  urdu: "اردو",
+  bengali: "বাংলা",
+  gujarati: "ગુજરાતી",
+  arabic: "العربية",
+  portuguese: "Português",
+  spanish: "Español",
+  hindi: "हिन्दी",
+  "mandarin-chinese": "普通话",
+  "cantonese-chinese": "粵語",
+  french: "Français",
+  somali: "Soomaali",
+  tamil: "தமிழ்",
+  malayalam: "മലയാളം",
+  "tagalog-filipino": "Tagalog",
+  ukrainian: "Українська",
+  lithuanian: "Lietuvių",
+  turkish: "Türkçe",
+  "farsi-persian": "فارسی",
+  russian: "Русский",
+  welsh: "Cymraeg",
+};
+
+// Right-to-left scripts.
+export const RTL_LANGUAGES = ["urdu", "arabic", "farsi-persian"];
+
 export function languageBySlug(slug: string) {
   return LANGUAGES.find((l) => l.slug === slug);
 }
