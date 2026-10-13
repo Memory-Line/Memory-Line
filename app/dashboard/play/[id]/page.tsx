@@ -25,6 +25,7 @@ import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
+import EasyView from "@/components/EasyView";
 
 export const dynamic = "force-dynamic";
 
@@ -194,7 +195,9 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       </div>
       <h1 className="font-serif text-[26px] mt-1 mb-4 text-center">{displayTitle(template)}</h1>
       {player ? (
-        <div className="[&>*]:mx-auto">{player}</div>
+        <EasyView>
+          <div className="[&>*]:mx-auto">{player}</div>
+        </EasyView>
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           This activity can't be played online yet, but you can still download and print it.
