@@ -60,3 +60,13 @@ export async function boardListFor(lang: LangCode, areaSlug: string) {
     ORDER BY position`;
   return rows;
 }
+
+// The boards this person has starred, for one language (the Favourites tab on the language page).
+export async function favouriteBoardsFor(userId: string, lang: LangCode) {
+  return prisma.$queryRaw<{ id: string; code: string; area: string; priority: number; signOff: boolean; question: Text3 }[]>`
+    SELECT b.id, b.code, b.area, b.priority, b."signOff", b.question
+    FROM "Board" b
+    JOIN "BoardFavourite" f ON f."boardId" = b.id
+    WHERE f."userId" = ${userId} AND jsonb_exists(b.question, ${lang})
+    ORDER BY b.position`;
+}
