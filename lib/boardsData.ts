@@ -415,7 +415,8 @@ export const ALWAYS_DATA = [
    "bn": "হ্যাঁ",
    "gu": "હા",
    "ar": "نعم",
-   "fa": "بله"
+   "fa": "بله",
+   "tr": "Evet"
   },
   "say": {
    "en": "Yes.",
@@ -430,7 +431,8 @@ export const ALWAYS_DATA = [
    "bn": "হ্যাঁ।",
    "gu": "હા.",
    "ar": "نعم.",
-   "fa": "بله."
+   "fa": "بله.",
+   "tr": "Evet."
   },
   "colour": "#4C6B4A"
  },
@@ -449,7 +451,8 @@ export const ALWAYS_DATA = [
    "bn": "না",
    "gu": "ના",
    "ar": "لا",
-   "fa": "نه"
+   "fa": "نه",
+   "tr": "Hayır"
   },
   "say": {
    "en": "No.",
@@ -464,7 +467,8 @@ export const ALWAYS_DATA = [
    "bn": "না।",
    "gu": "ના.",
    "ar": "لا.",
-   "fa": "نه."
+   "fa": "نه.",
+   "tr": "Hayır."
   },
   "colour": "#A8553A"
  },
@@ -483,7 +487,8 @@ export const ALWAYS_DATA = [
    "bn": "নিশ্চিত নই",
    "gu": "ખાતરી નથી",
    "ar": "لست متأكدًا/متأكدة",
-   "fa": "مطمئن نیستم"
+   "fa": "مطمئن نیستم",
+   "tr": "Emin değilim"
   },
   "say": {
    "en": "I am not sure.",
@@ -498,7 +503,8 @@ export const ALWAYS_DATA = [
    "bn": "আমি নিশ্চিত নই।",
    "gu": "મને ખાતરી નથી.",
    "ar": "لست متأكدًا/متأكدة.",
-   "fa": "مطمئن نیستم."
+   "fa": "مطمئن نیستم.",
+   "tr": "Emin değilim."
   },
   "colour": "#7A6E5E"
  },
@@ -517,7 +523,8 @@ export const ALWAYS_DATA = [
    "bn": "থামুন",
    "gu": "અટકો",
    "ar": "توقّف",
-   "fa": "توقف"
+   "fa": "توقف",
+   "tr": "Dur"
   },
   "say": {
    "en": "Please stop.",
@@ -532,7 +539,8 @@ export const ALWAYS_DATA = [
    "bn": "দয়া করে থামুন।",
    "gu": "કૃપા કરીને અટકો.",
    "ar": "من فضلك توقّف.",
-   "fa": "لطفاً توقف کنید."
+   "fa": "لطفاً توقف کنید.",
+   "tr": "Lütfen durun."
   },
   "colour": "#8A3A4A"
  },
@@ -551,7 +559,8 @@ export const ALWAYS_DATA = [
    "bn": "সাহায্য",
    "gu": "મદદ",
    "ar": "مساعدة",
-   "fa": "کمک"
+   "fa": "کمک",
+   "tr": "Yardım"
   },
   "say": {
    "en": "I need help.",
@@ -566,7 +575,8 @@ export const ALWAYS_DATA = [
    "bn": "আমার সাহায্য দরকার।",
    "gu": "મને મદદ જોઈએ છે.",
    "ar": "أحتاج إلى مساعدة.",
-   "fa": "به کمک نیاز دارم."
+   "fa": "به کمک نیاز دارم.",
+   "tr": "Yardıma ihtiyacım var."
   },
   "colour": "#B5851F"
  }
@@ -585,7 +595,8 @@ export const UI_TEXT = {
    "bn": "বিকল্প পড়ুন",
    "gu": "વિકલ્પો વાંચો",
    "ar": "اقرأ الخيارات",
-   "fa": "خواندن گزینه‌ها"
+   "fa": "خواندن گزینه‌ها",
+   "tr": "Seçenekleri oku"
  },
  "playAgain": {
   "en": "Play again",
@@ -600,7 +611,8 @@ export const UI_TEXT = {
    "bn": "আবার চালান",
    "gu": "ફરી ચલાવો",
    "ar": "أعد التشغيل",
-   "fa": "پخش دوباره"
+   "fa": "پخش دوباره",
+   "tr": "Tekrar oynat"
  },
  "always": {
   "en": "Always available",
@@ -615,7 +627,8 @@ export const UI_TEXT = {
    "bn": "সবসময় পাওয়া যায়",
    "gu": "હંમેશાં ઉપલબ્ધ",
    "ar": "متاح دائمًا",
-   "fa": "همیشه در دسترس"
+   "fa": "همیشه در دسترس",
+   "tr": "Her zaman kullanılabilir"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
