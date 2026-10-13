@@ -3,6 +3,7 @@ import { getSession, getViewer } from "@/lib/viewer";
 import Sidebar from "@/components/Sidebar";
 import { getCategories } from "@/lib/categories";
 import TopBar from "@/components/TopBar";
+import { DementiaProvider } from "@/components/EasyView";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -24,7 +25,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const categories = siteCategories.map((c) => ({ key: c.key, slug: c.slug, icon: c.icon }));
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-bg">
+    <DementiaProvider initial={viewer.dementiaFriendly} className="flex flex-col md:flex-row min-h-screen bg-bg">
       <Sidebar categories={categories} isAdmin={viewer.isAdmin} professionalCalendar={professionalCalendar} questionnaires={questionnaires} />
       <div className="flex-1 min-w-0">
         <TopBar
@@ -37,6 +38,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
           Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.
         </p>
       </div>
-    </div>
+    </DementiaProvider>
   );
 }

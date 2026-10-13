@@ -29,7 +29,7 @@ export const getViewer = cache(async () => {
   const isAdmin =
     !!session?.user?.email && !!adminEmail && session.user.email.toLowerCase() === adminEmail;
   const user = userId
-    ? await prisma.user.findUnique({ where: { id: userId }, select: { features: true, plan: true } })
+    ? await prisma.user.findUnique({ where: { id: userId }, select: { features: true, plan: true, dementiaFriendly: true } })
     : null;
   const features = new Set(user?.features ?? []);
   const plan = user?.plan === "standard" ? "standard" : "premium";
@@ -49,6 +49,7 @@ export const getViewer = cache(async () => {
     has: (feature: FeatureKey) => isAdmin || features.has(feature),
     // The features given to this account itself (the admin's "has" above is always true).
     ownFeatures: user?.features ?? [],
+    dementiaFriendly: user?.dementiaFriendly ?? false,
   };
 });
 

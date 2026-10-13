@@ -5,7 +5,7 @@ import { Check, Download, Eraser, Printer, RotateCcw, Undo2 } from "lucide-react
 import type { ColouringFrame } from "@/lib/colouring";
 import { useEasyView } from "@/components/EasyView";
 
-// Names for the swatches in the Easy to see view, in the same order as PALETTE below.
+// Names for the swatches in Dementia friendly mode, in the same order as PALETTE below.
 const COLOUR_NAMES = ["Red", "Orange", "Yellow", "Light green", "Green", "Teal", "Blue", "Indigo", "Purple", "Pink", "Soft pink", "Peach", "Pale blue", "Lilac", "Brown", "Grey"];
 const DARK_SWATCHES = new Set(["#e74c3c", "#8bc34a", "#2ecc71", "#1abc9c", "#3498db", "#5c6bc0", "#9b59b6", "#e84393", "#8d6e63", "#4a4a4a", "#e67e22"]);
 
