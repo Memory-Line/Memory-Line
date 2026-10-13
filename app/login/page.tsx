@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
@@ -13,6 +13,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // Get the dashboard ready while the person types their password.
+  useEffect(() => {
+    router.prefetch("/dashboard");
+  }, [router]);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -20,15 +25,14 @@ export default function LoginPage() {
 
     const result = await signIn("credentials", { email, password, redirect: false });
 
-    setLoading(false);
-
     if (result?.error) {
+      setLoading(false);
       setError("Incorrect email or password.");
       return;
     }
 
+    // Stay on "Logging in..." until the dashboard opens, so the button never looks frozen.
     router.push("/dashboard");
-    router.refresh();
   }
 
   return (
