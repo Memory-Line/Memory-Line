@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, type Category } from "@/lib/data";
 
@@ -10,7 +11,10 @@ export function slugify(name: string) {
   return name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export async function getCategories(): Promise<SiteCategory[]> {
+// Read from the database at most every 30 seconds (an admin's change shows within that), not on every page.
+export const getCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 30 });
+
+async function readCategories(): Promise<SiteCategory[]> {
   try {
     const [removed, custom] = await Promise.all([
       prisma.removedCategory.findMany({ select: { name: true } }),

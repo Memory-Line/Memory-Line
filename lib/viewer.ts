@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getServerSession } from "next-auth";
 import { cookies } from "next/headers";
 import { authOptions } from "@/lib/auth";
@@ -18,8 +19,11 @@ export const PREVIEW_PLAN_COOKIE = "admin_plan_preview";
 // account on that tier sees, without changing any real account's plan.
 // Plan is a separate concept from features: an account with an admin-granted
 // feature isn't automatically Premium, and vice versa.
-export async function getViewer() {
-  const session = await getServerSession(authOptions);
+// Once per request, however many layouts, pages and helpers ask for it.
+export const getSession = cache(() => getServerSession(authOptions));
+
+export const getViewer = cache(async () => {
+  const session = await getSession();
   const userId = session?.user?.id as string | undefined;
   const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
   const isAdmin =
@@ -43,8 +47,10 @@ export async function getViewer() {
     previewPlan,
     isPremium: previewPlan ? previewPlan === "premium" : isAdmin || plan === "premium",
     has: (feature: FeatureKey) => isAdmin || features.has(feature),
+    // The features given to this account itself (the admin's "has" above is always true).
+    ownFeatures: user?.features ?? [],
   };
-}
+});
 
 // Which of these activities this account has marked as completed.
 export async function completedIds(userId: string | undefined, templateIds: string[]) {
