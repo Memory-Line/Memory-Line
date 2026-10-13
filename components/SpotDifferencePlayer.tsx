@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Printer, RotateCcw, Undo2 } from "lucide-react";
 import type { PictureRect } from "@/lib/spotDifference";
+import { useEasyView } from "@/components/EasyView";
 
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
@@ -36,6 +37,7 @@ function Picture({
   onRemove: (index: number) => void;
 }) {
   const wrapRef = useRef<HTMLDivElement | null>(null);
+  const ev = useEasyView();
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
     const el = wrapRef.current;
@@ -51,7 +53,7 @@ function Picture({
       ref={wrapRef}
       onClick={handleClick}
       className={`relative rounded-xl bg-white border border-line overflow-hidden ${full ? "cursor-default" : "cursor-crosshair"}`}
-      style={{ width: "100%", aspectRatio: `${aspect}` }}
+      style={{ width: "100%", aspectRatio: `${aspect}`, border: ev ? "4px solid #1a1a1a" : undefined }}
       aria-label={label}
     >
       <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block", pointerEvents: "none" }} />
@@ -70,12 +72,12 @@ function Picture({
           style={{
             left: `${m.x * 100}%`,
             top: `${m.y * 100}%`,
-            width: 56,
-            height: 56,
+            width: ev ? 68 : 56,
+            height: ev ? 68 : 56,
             transform: "translate(-50%, -50%)",
-            border: `4px solid ${MARK}`,
-            boxShadow: "0 0 0 2px rgba(181,113,74,0.25)",
-            background: "rgba(255,255,255,0.05)",
+            border: ev ? "6px solid #1a1a1a" : `4px solid ${MARK}`,
+            boxShadow: ev ? "0 0 0 3px #FFD23F" : "0 0 0 2px rgba(181,113,74,0.25)",
+            background: ev ? "rgba(255,210,63,0.45)" : "rgba(255,255,255,0.05)",
           }}
         />
       ))}
@@ -106,6 +108,7 @@ export default function SpotDifferencePlayer({
   hasLargePrint: boolean;
   isPremium: boolean;
 }) {
+  const ev = useEasyView();
   const storageKey = `spotdifference:${templateId}`;
   const [marksA, setMarksA] = useState<Mark[]>([]);
   const [marksB, setMarksB] = useState<Mark[]>([]);
@@ -233,11 +236,20 @@ export default function SpotDifferencePlayer({
 
   return (
     <div className="max-w-[900px]">
-      <p className="text-sm text-inkSoft mb-3">
-        Have a look at the two pictures together and tap to circle anything that's different — on either picture,
-        wherever's easiest. There's no wrong answer here; tap a circle again to take it away. You can circle up to
-        {" "}{TARGET}, the same as the sheet's own "find {TARGET}" — undo one first if you want to change an earlier guess.
-      </p>
+      {ev ? (
+        <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
+          <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE DIFFERENCES</p>
+          <p className="font-bold" style={{ fontSize: 22, lineHeight: 1.25, color: "#1a1a1a" }}>
+            Look at both pictures. Tap anywhere you see something different. Tap a circle again to take it away. Up to {TARGET}.
+          </p>
+        </div>
+      ) : (
+        <p className="text-sm text-inkSoft mb-3">
+          Have a look at the two pictures together and tap to circle anything that's different — on either picture,
+          wherever's easiest. There's no wrong answer here; tap a circle again to take it away. You can circle up to
+          {" "}{TARGET}, the same as the sheet's own "find {TARGET}" — undo one first if you want to change an earlier guess.
+        </p>
+      )}
 
       {status === "error" ? (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line mb-4">
@@ -272,25 +284,25 @@ export default function SpotDifferencePlayer({
         </div>
       )}
 
-      <p className="text-sm font-semibold mb-3">
-        {total} of {TARGET} circled
+      <p className={ev ? "font-bold mb-3" : "text-sm font-semibold mb-3"} style={ev ? { fontSize: 22, color: "#1a1a1a" } : undefined}>
+        {ev ? <span style={{ fontSize: 32 }}>{total}</span> : total} of {TARGET} circled
       </p>
 
       <div className="flex flex-wrap gap-2">
         <button
           onClick={undoLast}
           disabled={total === 0}
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"
+          className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
         >
           <Undo2 size={14} /> Undo
         </button>
-        <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+        <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
           <RotateCcw size={14} /> Start again
         </button>
       </div>
 
       {total >= TARGET && (
-        <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-block" style={{ background: "#e4eee2", color: "#2f7a63" }}>
+        <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-block" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: "#2f7a63" }}>
           Well done — {TARGET} circled! Take a moment to look over the two pictures together.
         </p>
       )}

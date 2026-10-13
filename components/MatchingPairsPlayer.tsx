@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Printer, RotateCcw } from "lucide-react";
 import type { MatchingPairsPicture } from "@/lib/matchingPairs";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours from the printed sheets, used for the card backs.
 const INK = "#3f3237";
@@ -183,16 +184,24 @@ export default function MatchingPairsPlayer({
     }
   }
 
+  const easyView = useEasyView();
   const foundPairs = deck.filter((c) => c.matched).length / 2;
   const totalPairs = deck.length / 2;
   const allFound = deck.length > 0 && foundPairs === totalPairs;
 
   return (
     <div className="max-w-[560px]">
-      <p className="text-sm text-inkSoft mb-3">
-        Turn two cards over. If they match, they stay face up. If not, they'll flip back — take your
-        time.
-      </p>
+      {easyView ? (
+        <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
+          <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE PAIRS</p>
+          <p className="font-bold" style={{ fontSize: 22, lineHeight: 1.25, color: "#1a1a1a" }}>Turn over two cards. If they match, they stay. Take your time.</p>
+        </div>
+      ) : (
+        <p className="text-sm text-inkSoft mb-3">
+          Turn two cards over. If they match, they stay face up. If not, they'll flip back — take your
+          time.
+        </p>
+      )}
 
       {loadError && (
         <p className="mb-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: "#fcefe7", color: INK }}>
@@ -203,21 +212,21 @@ export default function MatchingPairsPlayer({
       {!loadError && (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-            <p className="text-sm font-semibold">
+            <p className={easyView ? "font-bold" : "text-sm font-semibold"} style={easyView ? { fontSize: 22 } : undefined}>
               {allFound ? `All ${totalPairs} pairs found!` : `${foundPairs} of ${totalPairs} pairs found`}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => chooseEasier(false)}
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                style={{ background: !easier ? "#b5714a" : "#f7f3ea", color: !easier ? "#fff" : INK }}
+                className={easyView ? "rounded-xl px-4 py-2 text-base font-bold border-[3px] border-black" : "rounded-lg px-3 py-1.5 text-xs font-semibold"}
+                style={easyView ? { background: !easier ? "#FFD23F" : "#fff", color: "#1a1a1a" } : { background: !easier ? "#b5714a" : "#f7f3ea", color: !easier ? "#fff" : INK }}
               >
                 8 pairs
               </button>
               <button
                 onClick={() => chooseEasier(true)}
-                className="rounded-lg px-3 py-1.5 text-xs font-semibold"
-                style={{ background: easier ? "#b5714a" : "#f7f3ea", color: easier ? "#fff" : INK }}
+                className={easyView ? "rounded-xl px-4 py-2 text-base font-bold border-[3px] border-black" : "rounded-lg px-3 py-1.5 text-xs font-semibold"}
+                style={easyView ? { background: easier ? "#FFD23F" : "#fff", color: "#1a1a1a" } : { background: easier ? "#b5714a" : "#f7f3ea", color: easier ? "#fff" : INK }}
               >
                 Easier (4 pairs)
               </button>
@@ -237,11 +246,18 @@ export default function MatchingPairsPlayer({
                     disabled={card.matched}
                     aria-label={isFaceUp ? "Picture card, face up" : "Picture card, face down"}
                     className="relative aspect-square rounded-xl overflow-hidden"
-                    style={{
-                      background: isFaceUp ? "#fff" : BACKS[card.picture % BACKS.length],
-                      border: card.matched ? `3px solid ${MATCH_BORDER}` : "1px solid #d9cfc1",
-                      boxShadow: card.matched ? `0 0 0 3px ${MATCH_HIGHLIGHT} inset` : undefined,
-                    }}
+                    style={
+                      easyView
+                        ? {
+                            background: card.matched ? "#FFD23F" : isFaceUp ? "#fff" : "#1a1a1a",
+                            border: "4px solid #1a1a1a",
+                          }
+                        : {
+                            background: isFaceUp ? "#fff" : BACKS[card.picture % BACKS.length],
+                            border: card.matched ? `3px solid ${MATCH_BORDER}` : "1px solid #d9cfc1",
+                            boxShadow: card.matched ? `0 0 0 3px ${MATCH_HIGHLIGHT} inset` : undefined,
+                          }
+                    }
                   >
                     {isFaceUp ? (
                       <img
@@ -250,8 +266,15 @@ export default function MatchingPairsPlayer({
                         className="w-full h-full object-contain p-1.5"
                         draggable={false}
                       />
+                    ) : easyView ? (
+                      <span className="absolute inset-0 flex items-center justify-center font-bold" style={{ color: "#fff", fontSize: 44 }}>?</span>
                     ) : (
                       <span className="absolute inset-2 rounded-lg" style={{ border: "2px solid rgba(63,50,55,0.15)" }} />
+                    )}
+                    {easyView && card.matched && (
+                      <span className="absolute right-1 top-1 rounded-full flex items-center justify-center" style={{ width: 28, height: 28, background: "#1a1a1a" }}>
+                        <Check size={18} color="#FFD23F" strokeWidth={4} />
+                      </span>
                     )}
                   </button>
                 );
@@ -260,7 +283,7 @@ export default function MatchingPairsPlayer({
           )}
 
           {allFound && (
-            <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: MATCH_HIGHLIGHT, color: MATCH_BORDER }}>
+            <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={easyView ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 22, fontWeight: 700, textAlign: "center" } : { background: MATCH_HIGHLIGHT, color: MATCH_BORDER }}>
               Well done — you found every pair in {theme}!
             </p>
           )}
@@ -273,7 +296,7 @@ export default function MatchingPairsPlayer({
           <div className="flex flex-wrap gap-2 mt-4">
             <button
               onClick={() => startAgain()}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"
+              className={easyView ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}
             >
               <RotateCcw size={14} /> Start again
             </button>

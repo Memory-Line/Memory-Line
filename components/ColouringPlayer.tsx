@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import { Check, Download, Eraser, Printer, RotateCcw, Undo2 } from "lucide-react";
 import type { ColouringFrame } from "@/lib/colouring";
+import { useEasyView } from "@/components/EasyView";
+
+// Names for the swatches in the Easy to see view, in the same order as PALETTE below.
+const COLOUR_NAMES = ["Red", "Orange", "Yellow", "Light green", "Green", "Teal", "Blue", "Indigo", "Purple", "Pink", "Soft pink", "Peach", "Pale blue", "Lilac", "Brown", "Grey"];
+const DARK_SWATCHES = new Set(["#e74c3c", "#8bc34a", "#2ecc71", "#1abc9c", "#3498db", "#5c6bc0", "#9b59b6", "#e84393", "#8d6e63", "#4a4a4a", "#e67e22"]);
 
 // A soft-and-bright palette, in the spirit of the printed sheets.
 const PALETTE = [
@@ -461,12 +466,29 @@ export default function ColouringPlayer({
     }
   }
 
+  const ev = useEasyView();
+  const chosenName = tool === "eraser" ? "Eraser" : COLOUR_NAMES[PALETTE.indexOf(colour)] ?? "";
+
   return (
     <div className="max-w-[760px]">
-      <p className="text-sm text-inkSoft mb-3">
-        Choose a colour, then tap inside a shape to colour it in. Tap the eraser and tap an area to
-        clear it again.
-      </p>
+      {ev ? (
+        <>
+          <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
+            <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>COLOUR IN</p>
+            <p className="font-bold" style={{ fontSize: 22, lineHeight: 1.25, color: "#1a1a1a" }}>
+              Tap a colour, then tap inside a shape. Tap the eraser, then a shape, to clear it.
+            </p>
+          </div>
+          <p className="font-bold mb-2" style={{ fontSize: 20, color: "#1a1a1a" }}>
+            Chosen: <span style={{ fontSize: 24 }}>{chosenName}</span>
+          </p>
+        </>
+      ) : (
+        <p className="text-sm text-inkSoft mb-3">
+          Choose a colour, then tap inside a shape to colour it in. Tap the eraser and tap an area to
+          clear it again.
+        </p>
+      )}
 
       {/* Palette: 2 columns wide on narrow phones so the swatches stay big
           and easy to tap; wraps to more columns as the screen gets wider. */}
@@ -478,22 +500,42 @@ export default function ColouringPlayer({
               setColour(hex);
               setTool("colour");
             }}
-            aria-label={`Colour ${hex}`}
+            aria-label={ev ? COLOUR_NAMES[PALETTE.indexOf(hex)] : `Colour ${hex}`}
             aria-pressed={tool === "colour" && colour === hex}
             className="rounded-xl"
-            style={{
-              height: 44,
-              background: hex,
-              border: tool === "colour" && colour === hex ? "3px solid #3f3237" : "3px solid transparent",
-              boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.12)",
-            }}
-          />
+            style={
+              ev
+                ? {
+                    height: 58,
+                    background: hex,
+                    border: tool === "colour" && colour === hex ? "6px solid #1a1a1a" : "3px solid #1a1a1a",
+                    color: DARK_SWATCHES.has(hex) ? "#fff" : "#1a1a1a",
+                    fontWeight: 700,
+                    fontSize: 15,
+                  }
+                : {
+                    height: 44,
+                    background: hex,
+                    border: tool === "colour" && colour === hex ? "3px solid #3f3237" : "3px solid transparent",
+                    boxShadow: "inset 0 0 0 1px rgba(0,0,0,0.12)",
+                  }
+            }
+          >
+            {ev && (tool === "colour" && colour === hex ? "\u2713 " : "") + COLOUR_NAMES[PALETTE.indexOf(hex)]}
+          </button>
         ))}
         <button
           onClick={() => setTool("eraser")}
           aria-pressed={tool === "eraser"}
           className="flex items-center justify-center gap-1.5 rounded-xl text-sm font-semibold col-span-2 sm:col-span-8"
-          style={{
+          style={ev ? {
+            height: 58,
+            fontSize: 18,
+            fontWeight: 700,
+            background: tool === "eraser" ? "#FFD23F" : "#fff",
+            color: "#1a1a1a",
+            border: tool === "eraser" ? "6px solid #1a1a1a" : "3px solid #1a1a1a",
+          } : {
             height: 44,
             background: tool === "eraser" ? "#3f3237" : "#f3ede2",
             color: tool === "eraser" ? "#fff" : "#3f3237",
@@ -507,23 +549,23 @@ export default function ColouringPlayer({
         <button
           onClick={undo}
           disabled={!canUndo}
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"
+          className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
         >
           <Undo2 size={14} /> Undo
         </button>
-        <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+        <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
           <RotateCcw size={14} /> Start again
         </button>
         <button
           onClick={savePicture}
           disabled={status !== "ready"}
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"
+          className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
         >
           <Download size={14} /> Save my picture
         </button>
       </div>
 
-      <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block", touchAction: "none" }}>
+      <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block", touchAction: "none", border: ev ? "4px solid #1a1a1a" : undefined }}>
         {status === "loading" && <p className="text-sm text-inkSoft p-6">Loading your picture…</p>}
         {status === "error" && (
           <p className="text-sm text-inkSoft p-6 max-w-[420px]">
@@ -551,7 +593,7 @@ export default function ColouringPlayer({
       )}
 
       {finished && (
-        <div className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style={{ background: "#e4eee2", color: "#2f7a63" }}>
+        <div className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold inline-flex items-center gap-1.5" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: "#2f7a63" }}>
           <Check size={14} /> Lovely — all done for now.
           {tracking && completed && <span>Marked as completed.</span>}
         </div>
@@ -561,8 +603,8 @@ export default function ColouringPlayer({
         <button
           onClick={markCompleted}
           disabled={status !== "ready"}
-          className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-          style={{ background: "#2f7a63" }}
+          className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"}
+          style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : { background: "#2f7a63" }}
         >
           <Check size={14} /> I've finished
         </button>

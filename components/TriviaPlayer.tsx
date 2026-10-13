@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Check, Printer, RotateCcw } from "lucide-react";
 import type { TriviaQuestion } from "@/lib/trivia";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours from the printed sheets.
 const INK = "#3f3237";
@@ -28,6 +29,7 @@ export default function TriviaPlayer({
   hasLargePrint: boolean;
   isPremium: boolean;
 }) {
+  const easy = useEasyView();
   const storageKey = `trivia:${templateId}`;
   // The choice made for each question (null = not answered yet).
   const [picked, setPicked] = useState<(number | null)[]>(() => questions.map(() => null));
@@ -137,12 +139,26 @@ export default function TriviaPlayer({
         </div>
       ) : (
         <div className="rounded-xl bg-white border border-line p-5">
-          <p className="text-xs font-bold tracking-wide mb-2" style={{ color: "#b5714a" }}>
-            QUESTION {index + 1} OF {questions.length}
-          </p>
-          <p className="text-xl font-semibold mb-5" style={{ color: INK }}>
-            {q.q}
-          </p>
+          {easy ? (
+            <>
+              <p className="font-bold mb-3 text-center" style={{ fontSize: 20, color: "#1a1a1a" }}>
+                Question <span style={{ fontSize: 30 }}>{index + 1}</span> of {questions.length}
+              </p>
+              <div className="mb-5 rounded-2xl text-center" style={{ background: "#FFF4C2", padding: "14px 12px" }}>
+                <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>THE QUESTION</p>
+                <p className="font-bold" style={{ fontSize: 26, lineHeight: 1.25, color: "#1a1a1a" }}>{q.q}</p>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-xs font-bold tracking-wide mb-2" style={{ color: "#b5714a" }}>
+                QUESTION {index + 1} OF {questions.length}
+              </p>
+              <p className="text-xl font-semibold mb-5" style={{ color: INK }}>
+                {q.q}
+              </p>
+            </>
+          )}
           <div className="grid gap-3">
             {q.options.map((opt, k) => {
               const isRight = k === q.answer;
@@ -153,21 +169,31 @@ export default function TriviaPlayer({
                   onClick={() => choose(k)}
                   disabled={shown}
                   className="flex items-center justify-between rounded-xl px-4 py-3 text-left text-lg font-semibold"
-                  style={{
-                    background: shown ? (isRight ? "#e4eee2" : "#f7f3ea") : CHOICES[k % CHOICES.length],
-                    border: `2px solid ${shown && isRight ? ANSWER : "transparent"}`,
-                    color: shown && !isRight ? "#8a7a6b" : INK,
-                  }}
+                  style={
+                    easy
+                      ? {
+                          background: shown && isRight ? "#FFD23F" : "#fff",
+                          border: "3px solid #1a1a1a",
+                          color: shown && !isRight ? "#555" : "#1a1a1a",
+                          fontSize: 22,
+                          fontWeight: 700,
+                        }
+                      : {
+                          background: shown ? (isRight ? "#e4eee2" : "#f7f3ea") : CHOICES[k % CHOICES.length],
+                          border: `2px solid ${shown && isRight ? ANSWER : "transparent"}`,
+                          color: shown && !isRight ? "#8a7a6b" : INK,
+                        }
+                  }
                 >
-                  {opt}
-                  {shown && isRight && <Check size={20} color={ANSWER} />}
+                  <span>{easy ? `${"ABCD"[k]}   ` : ""}{opt}</span>
+                  {shown && isRight && <Check size={easy ? 28 : 20} color={easy ? "#1a1a1a" : ANSWER} strokeWidth={easy ? 4 : 2} />}
                 </button>
               );
             })}
           </div>
 
           {choice !== null && (
-            <p className="mt-4 rounded-lg px-3 py-2 text-sm" style={{ background: "#fcefe7", color: INK }}>
+            <p className="mt-4 rounded-lg px-3 py-2 text-sm" style={easy ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700, textAlign: "center" } : { background: "#fcefe7", color: INK }}>
               {choice === q.answer ? (
                 <span className="font-semibold" style={{ color: ANSWER }}>That's right! </span>
               ) : (
@@ -181,17 +207,17 @@ export default function TriviaPlayer({
             <button
               onClick={() => save({ index: Math.max(0, index - 1) })}
               disabled={index === 0}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"
+              className={easy ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
             >
-              <ArrowLeft size={14} /> Back
+              <ArrowLeft size={easy ? 20 : 14} /> Back
             </button>
             <button
               onClick={goNext}
               disabled={choice === null}
-              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"
-              style={{ background: ANSWER }}
+              className={easy ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"}
+              style={easy ? { background: "#FFD23F", color: "#1a1a1a" } : { background: ANSWER }}
             >
-              {index + 1 < questions.length ? "Next question" : "Finish"} <ArrowRight size={14} />
+              {index + 1 < questions.length ? "Next question" : "Finish"} <ArrowRight size={easy ? 20 : 14} />
             </button>
           </div>
         </div>

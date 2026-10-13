@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Check, Eye, Heart, Printer, RotateCcw } from "lucide-react";
 import type { WordSearchWord } from "@/lib/wordSearch";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours from the printed sheets (the answer-key highlights and word pills).
 const INK = "#3f3237";
@@ -170,8 +171,9 @@ export default function WordSearchPlayer({
     }
   });
 
+  const ev = useEasyView();
   const foundCount = Object.keys(found).length;
-  const cell = `min(34px, calc((100vw - 72px) / ${size}))`;
+  const cell = `min(${ev ? 40 : 34}px, calc((100vw - 72px) / ${size}))`;
 
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
@@ -192,11 +194,12 @@ export default function WordSearchPlayer({
                     height: cell,
                     fontSize: `calc(${cell} * 0.55)`,
                     fontWeight: 700,
-                    color: INK,
-                    background: isStart ? "#fcefe7" : bg ?? "transparent",
-                    outline: isStart ? `3px solid ${SELECTED}` : "none",
+                    color: ev ? "#1a1a1a" : INK,
+                    background: ev ? (isStart ? "#FFF4C2" : bg ? (bg === REVEALED ? "#ECECEC" : "#FFD23F") : "transparent") : isStart ? "#fcefe7" : bg ?? "transparent",
+                    outline: isStart ? (ev ? "4px solid #1a1a1a" : `3px solid ${SELECTED}`) : "none",
                     outlineOffset: -3,
-                    borderRadius: 6,
+                    borderRadius: ev ? 4 : 6,
+                    border: ev ? "1px solid #bbb" : undefined,
                     fontFamily: "Helvetica, Arial, sans-serif",
                   }}
                 >
@@ -209,32 +212,62 @@ export default function WordSearchPlayer({
       </div>
 
       <div className="max-w-[340px]">
-        <p className="text-sm text-inkSoft mb-3">
-          Tap the first letter of a word, then its last letter. Words go across, down or
-          diagonally, and can be backwards.
-        </p>
-        <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
-          {Array.from({ length: MAX_LIVES }, (_, i) => (
-            <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
-          ))}
-        </div>
-        <p className="text-sm font-semibold mb-2">
-          {foundCount} of {words.length} found
-        </p>
+        {ev ? (
+          <>
+            <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "10px 12px" }}>
+              <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE WORDS</p>
+              <p className="font-bold" style={{ fontSize: 20, lineHeight: 1.25, color: "#1a1a1a" }}>
+                Tap the first letter of a word, then its last letter. Words go across, down or diagonally, and can be backwards.
+              </p>
+            </div>
+            <p className="font-bold mb-2" style={{ fontSize: 20, color: "#1a1a1a" }}>
+              Lives left: <span style={{ fontSize: 30 }}>{lives}</span>
+            </p>
+            <p className="font-bold mb-2" style={{ fontSize: 22, color: "#1a1a1a" }}>
+              Found <span style={{ fontSize: 30 }}>{foundCount}</span> of {words.length}
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-inkSoft mb-3">
+              Tap the first letter of a word, then its last letter. Words go across, down or
+              diagonally, and can be backwards.
+            </p>
+            <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
+              {Array.from({ length: MAX_LIVES }, (_, i) => (
+                <Heart key={i} size={20} color={WRONG_INK} fill={i < lives ? WRONG_INK : "none"} strokeWidth={2} />
+              ))}
+            </div>
+            <p className="text-sm font-semibold mb-2">
+              {foundCount} of {words.length} found
+            </p>
+          </>
+        )}
         <div className="flex flex-wrap gap-2 mb-4">
           {words.map((w, i) => {
             const done = found[i] !== undefined;
             return (
               <span
                 key={w.word}
-                className="rounded-full px-3 py-1.5 text-sm font-semibold"
-                style={{
-                  background: HIGHLIGHTS[i % HIGHLIGHTS.length],
-                  color: INK,
-                  textDecoration: done ? "line-through" : "none",
-                  textDecorationThickness: 2,
-                  opacity: done ? 0.55 : 1,
-                }}
+                className={ev ? "rounded-xl px-4 py-2 font-bold" : "rounded-full px-3 py-1.5 text-sm font-semibold"}
+                style={
+                  ev
+                    ? {
+                        background: done ? "#FFD23F" : "#fff",
+                        border: "3px solid #1a1a1a",
+                        color: "#1a1a1a",
+                        fontSize: 20,
+                        textDecoration: done ? "line-through" : "none",
+                        textDecorationThickness: 3,
+                      }
+                    : {
+                        background: HIGHLIGHTS[i % HIGHLIGHTS.length],
+                        color: INK,
+                        textDecoration: done ? "line-through" : "none",
+                        textDecorationThickness: 2,
+                        opacity: done ? 0.55 : 1,
+                      }
+                }
               >
                 {done && "✓ "}
                 {w.word}
@@ -245,17 +278,17 @@ export default function WordSearchPlayer({
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setRevealed((v) => !v)}
-            className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"
+            className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}
           >
             <Eye size={14} /> {revealed ? "Hide answers" : "Show answers"}
           </button>
-          <button onClick={startAgain} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+          <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
             <RotateCcw size={14} /> Start again
           </button>
         </div>
 
         {message && (
-          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={{ background: "#e4eee2", color: "#2f7a63" }}>
+          <p className="mt-4 rounded-lg px-3 py-2 text-sm font-semibold" style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 20, fontWeight: 700 } : { background: "#e4eee2", color: "#2f7a63" }}>
             {message}
           </p>
         )}
