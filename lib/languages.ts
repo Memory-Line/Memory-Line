@@ -63,6 +63,10 @@ export const NATIVE_NAMES: Record<string, string> = {
 // Right-to-left scripts.
 export const RTL_LANGUAGES = ["urdu", "arabic", "farsi-persian"];
 
+// Languages whose old printed cards are hidden because the new talking boards replace
+// them. Nothing is deleted: take a slug out of this list and the old cards come back.
+export const HIDDEN_OLD_CARDS = ["polish", "urdu", "romanian", "portuguese", "spanish", "french"];
+
 export function languageBySlug(slug: string) {
   return LANGUAGES.find((l) => l.slug === slug);
 }

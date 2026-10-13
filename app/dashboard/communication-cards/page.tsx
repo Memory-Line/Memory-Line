@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { LANGUAGE_CATEGORY, LANGUAGES, NATIVE_NAMES, RTL_LANGUAGES } from "@/lib/languages";
+import { requireAdmin } from "@/lib/admin";
+import { LANGUAGE_CATEGORY, HIDDEN_OLD_CARDS, LANGUAGES, NATIVE_NAMES, RTL_LANGUAGES } from "@/lib/languages";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,8 @@ export default async function CommunicationCardsPage() {
     _count: { _all: true },
   });
   const countFor = (slug: string) => counts.find((c) => c.language === slug)?._count._all ?? 0;
+
+  const isAdmin = !!(await requireAdmin());
 
   return (
     <div>
@@ -38,7 +41,7 @@ export default async function CommunicationCardsPage() {
               {NATIVE_NAMES[l.slug] ?? l.label}
             </div>
             <div className="text-[22px] font-semibold mt-1 leading-tight">{l.label}</div>
-            <div className="text-sm mt-3 opacity-90">{countFor(l.slug)} cards &nbsp;›</div>
+            <div className="text-sm mt-3 opacity-90">{HIDDEN_OLD_CARDS.includes(l.slug) ? (isAdmin ? "Talking boards" : "New boards coming") : `${countFor(l.slug)} cards`} &nbsp;›</div>
           </Link>
         ))}
       </div>
