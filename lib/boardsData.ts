@@ -405,12 +405,20 @@ export const ALWAYS_DATA = [
   "label": {
    "en": "Yes",
    "pl": "Tak",
-   "ur": "جی ہاں"
+   "ur": "جی ہاں",
+   "ro": "Da",
+   "pt": "Sim",
+   "es": "Sí",
+   "fr": "Oui"
   },
   "say": {
    "en": "Yes.",
    "pl": "Tak.",
-   "ur": "جی ہاں۔"
+   "ur": "جی ہاں۔",
+   "ro": "Da.",
+   "pt": "Sim.",
+   "es": "Sí.",
+   "fr": "Oui."
   },
   "colour": "#4C6B4A"
  },
@@ -419,12 +427,20 @@ export const ALWAYS_DATA = [
   "label": {
    "en": "No",
    "pl": "Nie",
-   "ur": "نہیں"
+   "ur": "نہیں",
+   "ro": "Nu",
+   "pt": "Não",
+   "es": "No",
+   "fr": "Non"
   },
   "say": {
    "en": "No.",
    "pl": "Nie.",
-   "ur": "نہیں۔"
+   "ur": "نہیں۔",
+   "ro": "Nu.",
+   "pt": "Não.",
+   "es": "No.",
+   "fr": "Non."
   },
   "colour": "#A8553A"
  },
@@ -433,12 +449,20 @@ export const ALWAYS_DATA = [
   "label": {
    "en": "Not sure",
    "pl": "Nie wiem",
-   "ur": "معلوم نہیں"
+   "ur": "معلوم نہیں",
+   "ro": "Nu știu",
+   "pt": "Não sei",
+   "es": "No lo sé",
+   "fr": "Pas sûr/sûre"
   },
   "say": {
    "en": "I am not sure.",
    "pl": "Nie wiem.",
-   "ur": "مجھے نہیں معلوم۔"
+   "ur": "مجھے نہیں معلوم۔",
+   "ro": "Nu știu.",
+   "pt": "Não tenho a certeza.",
+   "es": "No estoy seguro/segura.",
+   "fr": "Je ne suis pas sûr/sûre."
   },
   "colour": "#7A6E5E"
  },
@@ -447,12 +471,20 @@ export const ALWAYS_DATA = [
   "label": {
    "en": "Stop",
    "pl": "Stop",
-   "ur": "رکیے"
+   "ur": "رکیے",
+   "ro": "Stop",
+   "pt": "Pare",
+   "es": "Pare",
+   "fr": "Stop"
   },
   "say": {
    "en": "Please stop.",
    "pl": "Proszę przestać.",
-   "ur": "براہ کرم رکیے۔"
+   "ur": "براہ کرم رکیے۔",
+   "ro": "Vă rog, opriți.",
+   "pt": "Por favor, pare.",
+   "es": "Por favor, pare.",
+   "fr": "Arrêtez, s'il vous plaît."
   },
   "colour": "#8A3A4A"
  },
@@ -461,12 +493,20 @@ export const ALWAYS_DATA = [
   "label": {
    "en": "Help",
    "pl": "Pomocy",
-   "ur": "مدد"
+   "ur": "مدد",
+   "ro": "Ajutor",
+   "pt": "Ajuda",
+   "es": "Ayuda",
+   "fr": "Aide"
   },
   "say": {
    "en": "I need help.",
    "pl": "Potrzebuję pomocy.",
-   "ur": "مجھے مدد چاہیے۔"
+   "ur": "مجھے مدد چاہیے۔",
+   "ro": "Am nevoie de ajutor.",
+   "pt": "Preciso de ajuda.",
+   "es": "Necesito ayuda.",
+   "fr": "J'ai besoin d'aide."
   },
   "colour": "#B5851F"
  }
@@ -475,17 +515,29 @@ export const UI_TEXT = {
  "readChoices": {
   "en": "Read the choices",
   "pl": "Przeczytaj opcje",
-  "ur": "اختیارات سنیں"
+  "ur": "اختیارات سنیں",
+   "ro": "Citiți opțiunile",
+   "pt": "Ler as opções",
+   "es": "Leer las opciones",
+   "fr": "Lire les choix"
  },
  "playAgain": {
   "en": "Play again",
   "pl": "Odtwórz ponownie",
-  "ur": "دوبارہ سنیں"
+  "ur": "دوبارہ سنیں",
+   "ro": "Redă din nou",
+   "pt": "Reproduzir de novo",
+   "es": "Reproducir otra vez",
+   "fr": "Rejouer"
  },
  "always": {
   "en": "Always available",
   "pl": "Zawsze dostępne",
-  "ur": "ہمیشہ دستیاب"
+  "ur": "ہمیشہ دستیاب",
+   "ro": "Mereu disponibile",
+   "pt": "Sempre disponíveis",
+   "es": "Siempre disponibles",
+   "fr": "Toujours disponibles"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
