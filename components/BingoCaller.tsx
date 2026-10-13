@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Maximize2, Megaphone, RotateCcw, Search, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { BINGO_CALLS, BINGO_CARDS, bingoLetter } from "@/lib/bingo";
+import { BINGO_LANGS, MAX_BINGO_LANGS } from "@/lib/bingoLangs";
 
 const INK = "#3f3237";
 const CALLED = "#2f7a63";
@@ -18,6 +19,10 @@ export default function BingoCaller() {
   const [called, setCalled] = useState<number[]>([]);
   const [showCalls, setShowCalls] = useState(true);
   const [speak, setSpeak] = useState(false);
+  const [voice, setVoice] = useState<"female" | "male">("female");
+  const [langs, setLangs] = useState<string[]>([]); // said after English, in this order
+  const runRef = useRef(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [autoSeconds, setAutoSeconds] = useState(0);
   const [bigScreen, setBigScreen] = useState(false);
   const [cardInput, setCardInput] = useState("");
@@ -32,14 +37,16 @@ export default function BingoCaller() {
         setCalled(saved.called);
         setShowCalls(saved.showCalls ?? true);
         setSpeak(!!saved.speak);
+        if (saved.voice === "male") setVoice("male");
+        if (Array.isArray(saved.langs)) setLangs(saved.langs.filter((c: string) => BINGO_LANGS.some((l) => l.code === c)).slice(0, MAX_BINGO_LANGS));
       }
     } catch {
       // nothing saved, or storage unavailable
     }
   }, []);
 
-  function persist(next: { called?: number[]; showCalls?: boolean; speak?: boolean }) {
-    const state = { called, showCalls, speak, ...next };
+  function persist(next: { called?: number[]; showCalls?: boolean; speak?: boolean; voice?: string; langs?: string[] }) {
+    const state = { called, showCalls, speak, voice, langs, ...next };
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
@@ -47,15 +54,68 @@ export default function BingoCaller() {
     }
   }
 
-  function say(n: number) {
-    if (!speak || typeof window === "undefined" || !window.speechSynthesis) return;
-    const words = `${bingoLetter(n)}. ${n}.${showCalls && BINGO_CALLS[n] ? ` ${BINGO_CALLS[n]}.` : ""}`;
-    const u = new SpeechSynthesisUtterance(words);
-    u.lang = "en-GB";
-    u.rate = 0.85;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
+  // Plays one phrase with the natural voice (made on first use, then saved). If that cannot load,
+  // the device's own voice steps in. Resolves when it has finished.
+  function playPhrase(lang: string, text: string, id: number): Promise<void> {
+    return new Promise((resolve) => {
+      if (id !== runRef.current) return resolve();
+      const a = audioRef.current ?? (audioRef.current = new Audio());
+      let done = false;
+      const finish = () => {
+        if (!done) {
+          done = true;
+          resolve();
+        }
+      };
+      const fallback = () => {
+        if (done) return;
+        if (!window.speechSynthesis) return finish();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = lang === "en" ? "en-GB" : BINGO_LANGS.find((l) => l.code === lang)?.locale ?? lang;
+        u.rate = 0.85;
+        u.onend = finish;
+        u.onerror = finish;
+        window.speechSynthesis.speak(u);
+      };
+      a.src = `/api/boards/speak?use=bingo&lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
+      a.playbackRate = 0.92;
+      a.onended = finish;
+      a.onerror = fallback;
+      a.play().catch(fallback);
+    });
   }
+
+  // English first ("B. 7." and the traditional call), then each chosen language says the number, one after another.
+  async function say(n: number) {
+    if (!speak || typeof window === "undefined") return;
+    const id = ++runRef.current;
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+    await playPhrase("en", `${bingoLetter(n)}. ${n}.`, id);
+    if (showCalls && BINGO_CALLS[n]) await playPhrase("en", `${BINGO_CALLS[n]}.`, id);
+    for (const code of langs) {
+      if (id !== runRef.current) return;
+      await new Promise((r) => setTimeout(r, 250));
+      await playPhrase(code, String(n), id);
+    }
+  }
+
+  // Gets the numbers ready in the background when Read aloud is on, so a call starts straight away.
+  useEffect(() => {
+    if (!speak) return;
+    let cancelled = false;
+    const urls: string[] = [];
+    for (let n = 1; n <= 75; n++) {
+      urls.push(`/api/boards/speak?use=bingo&lang=en&voice=${voice}&text=${encodeURIComponent(`${bingoLetter(n)}. ${n}.`)}`);
+      for (const code of langs) urls.push(`/api/boards/speak?use=bingo&lang=${code}&voice=${voice}&text=${encodeURIComponent(String(n))}`);
+    }
+    let next = 0;
+    const worker = async () => {
+      while (next < urls.length && !cancelled) await fetch(urls[next++]).then((r) => r.arrayBuffer()).catch(() => {});
+    };
+    const t = setTimeout(() => { worker(); worker(); }, 800);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [speak, voice, langs]);
 
   function callNext() {
     const left = Array.from({ length: 75 }, (_, k) => k + 1).filter((n) => !called.includes(n));
@@ -131,7 +191,7 @@ export default function BingoCaller() {
         <div key={row} className="contents">
           <div
             className="flex items-center justify-center rounded-md font-bold"
-            style={{ background: LETTER_COLOURS[row], color: INK, fontSize: big ? "3vh" : 14, padding: big ? "0 1.2vh" : "0 6px" }}
+            style={{ background: LETTER_COLOURS[row], color: INK, fontSize: big ? "min(5.6vh, 3.6vw)" : 14, padding: big ? "0 1.6vh" : "0 6px" }}
           >
             {"BINGO"[row]}
           </div>
@@ -144,7 +204,7 @@ export default function BingoCaller() {
                 className="flex items-center justify-center rounded-md font-bold"
                 style={{
                   aspectRatio: "1",
-                  fontSize: big ? "2.4vh" : "clamp(9px, 1.6vw, 13px)",
+                  fontSize: big ? "min(5.2vh, 3.3vw)" : "clamp(9px, 1.6vw, 13px)",
                   background: latest ? "#b5714a" : on ? CALLED : "#f7f3ea",
                   color: on ? "#fff" : "#b9ad9c",
                 }}
@@ -221,7 +281,7 @@ export default function BingoCaller() {
               Traditional calls
             </label>
             <button
-              onClick={() => { setSpeak(!speak); persist({ speak: !speak }); }}
+              onClick={() => { if (speak) { runRef.current++; audioRef.current?.pause(); window.speechSynthesis?.cancel(); } setSpeak(!speak); persist({ speak: !speak }); }}
               className="flex items-center gap-1.5"
             >
               {speak ? <Volume2 size={15} /> : <VolumeX size={15} />} Read aloud {speak ? "on" : "off"}
@@ -237,6 +297,59 @@ export default function BingoCaller() {
               </select>
             </label>
           </div>
+          {speak && (
+            <div className="mt-3 rounded-xl bg-white border border-line p-3 space-y-3">
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="font-semibold">Voice:</span>
+                {(["female", "male"] as const).map((v) => (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={voice === v}
+                    onClick={() => { setVoice(v); persist({ voice: v }); }}
+                    className={`rounded-full px-4 py-1.5 font-semibold border-2 ${voice === v ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line"}`}
+                  >
+                    {v === "female" ? "Female" : "Male"}
+                  </button>
+                ))}
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold mb-1.5">
+                  Say each number in: <span className="font-normal text-inkSoft">English, then</span>
+                </p>
+                <div className="flex flex-wrap items-center gap-2">
+                  {langs.map((code, i) => (
+                    <span key={code} className="flex items-center gap-1.5 rounded-full border-2 border-line bg-cardTint pl-3 pr-1.5 py-1 font-semibold">
+                      {i + 1}. {BINGO_LANGS.find((l) => l.code === code)?.name}
+                      <button
+                        type="button"
+                        aria-label={`Remove ${BINGO_LANGS.find((l) => l.code === code)?.name}`}
+                        onClick={() => { const next = langs.filter((c) => c !== code); setLangs(next); persist({ langs: next }); }}
+                        className="rounded-full p-0.5 hover:bg-white"
+                      >
+                        <X size={14} />
+                      </button>
+                    </span>
+                  ))}
+                  {langs.length < MAX_BINGO_LANGS ? (
+                    <select
+                      value=""
+                      onChange={(e) => { if (e.target.value) { const next = [...langs, e.target.value]; setLangs(next); persist({ langs: next }); } }}
+                      aria-label="Add a language"
+                      className="rounded-full border-2 border-line px-3 py-1.5 bg-white font-semibold"
+                    >
+                      <option value="">+ Add a language</option>
+                      {BINGO_LANGS.filter((l) => !langs.includes(l.code)).map((l) => (
+                        <option key={l.code} value={l.code}>{l.name}</option>
+                      ))}
+                    </select>
+                  ) : (
+                    <span className="text-inkSoft">That's the most (5).</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -306,7 +419,7 @@ export default function BingoCaller() {
       >
         <div className="flex items-start justify-between">
           <div>
-            <p className="font-bold leading-none" style={{ fontSize: "18vh", color: INK }}>
+            <p className="font-bold leading-none" style={{ fontSize: "22vh", color: INK }}>
               {current ? (
                 <>
                   <span style={{ color: "#b5714a" }}>{bingoLetter(current)}</span> {current}
@@ -316,17 +429,17 @@ export default function BingoCaller() {
               )}
             </p>
             {current && showCalls && BINGO_CALLS[current] && (
-              <p className="font-semibold text-inkSoft" style={{ fontSize: "4vh" }}>
+              <p className="font-semibold text-inkSoft" style={{ fontSize: "6vh" }}>
                 {BINGO_CALLS[current]}
               </p>
             )}
-            <p className="text-inkSoft" style={{ fontSize: "2.2vh" }}>
+            <p className="text-inkSoft" style={{ fontSize: "3.2vh" }}>
               {called.length} of 75 called
               {called.length > 1 && ` · before that: ${called.slice(-6, -1).reverse().map((n) => `${bingoLetter(n)} ${n}`).join(", ")}`}
             </p>
           </div>
           <div className="flex gap-2">
-            <button onClick={callNext} disabled={called.length >= 75} className="rounded-lg px-5 py-3 font-bold text-white" style={{ background: CALLED, fontSize: "2.2vh" }}>
+            <button onClick={callNext} disabled={called.length >= 75} className="rounded-lg px-5 py-3 font-bold text-white" style={{ background: CALLED, fontSize: "3vh" }}>
               Call next number
             </button>
             <button onClick={closeBigScreen} className="flex items-center gap-1.5 rounded-lg px-4 py-3 font-semibold bg-white" aria-label="Close big screen">

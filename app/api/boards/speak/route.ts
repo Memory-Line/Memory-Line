@@ -5,6 +5,8 @@ import { requireAdmin } from "@/lib/admin";
 import { canUseBoardCode } from "@/lib/boardsAccess";
 import seed from "@/data/boards.seed.json";
 import { ALWAYS, UI } from "@/lib/boards";
+import { BINGO_CALLS, bingoLetter } from "@/lib/bingo";
+import { getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -21,8 +23,25 @@ const VOICES: Record<string, Record<string, string>> = {
   pt: { female: "pt-PT-RaquelNeural", male: "pt-PT-DuarteNeural" },
   es: { female: "es-ES-ElviraNeural", male: "es-ES-AlvaroNeural" },
   fr: { female: "fr-FR-DeniseNeural", male: "fr-FR-HenriNeural" },
+  // More languages, used by the Bingo caller.
+  ar: { female: "ar-SA-ZariyahNeural", male: "ar-SA-HamedNeural" },
+  hi: { female: "hi-IN-SwaraNeural", male: "hi-IN-MadhurNeural" },
+  bn: { female: "bn-IN-TanishaaNeural", male: "bn-IN-BashkarNeural" },
+  gu: { female: "gu-IN-DhwaniNeural", male: "gu-IN-NiranjanNeural" },
+  zh: { female: "zh-CN-XiaoxiaoNeural", male: "zh-CN-YunxiNeural" },
+  yue: { female: "zh-HK-HiuMaanNeural", male: "zh-HK-WanLungNeural" },
+  so: { female: "so-SO-UbaxNeural", male: "so-SO-MuuseNeural" },
+  ta: { female: "ta-IN-PallaviNeural", male: "ta-IN-ValluvarNeural" },
+  ml: { female: "ml-IN-SobhanaNeural", male: "ml-IN-MidhunNeural" },
+  tl: { female: "fil-PH-BlessicaNeural", male: "fil-PH-AngeloNeural" },
+  uk: { female: "uk-UA-PolinaNeural", male: "uk-UA-OstapNeural" },
+  lt: { female: "lt-LT-OnaNeural", male: "lt-LT-LeonasNeural" },
+  tr: { female: "tr-TR-EmelNeural", male: "tr-TR-AhmetNeural" },
+  fa: { female: "fa-IR-DilaraNeural", male: "fa-IR-FaridNeural" },
+  ru: { female: "ru-RU-SvetlanaNeural", male: "ru-RU-DmitryNeural" },
+  cy: { female: "cy-GB-NiaNeural", male: "cy-GB-AledNeural" },
 };
-const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR" };
+const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", ar: "ar-SA", hi: "hi-IN", bn: "bn-IN", gu: "gu-IN", zh: "zh-CN", yue: "zh-HK", so: "so-SO", ta: "ta-IN", ml: "ml-IN", tl: "fil-PH", uk: "uk-UA", lt: "lt-LT", tr: "tr-TR", fa: "fa-IR", ru: "ru-RU", cy: "cy-GB" };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -31,6 +50,24 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 function savedUrl(pathname: string) {
   const id = process.env.BLOB_READ_WRITE_TOKEN?.split("_")[3];
   return id ? `https://${id.toLowerCase()}.public.blob.vercel-storage.com/${pathname}` : null;
+}
+
+// What the Bingo caller says: "B. 7.", the number on its own (for the other languages) and the traditional calls.
+let bingoAllowed: Set<string> | null = null;
+function bingoPhrases() {
+  if (bingoAllowed) return bingoAllowed;
+  const set = new Set<string>();
+  for (let n = 1; n <= 90; n++) {
+    set.add(`${bingoLetter(n)}. ${n}.`);
+    set.add(String(n));
+    const call = BINGO_CALLS[n];
+    if (call) {
+      set.add(call);
+      set.add(`${call}.`);
+    }
+  }
+  bingoAllowed = set;
+  return set;
 }
 
 let allowed: Set<string> | null = null;
@@ -61,8 +98,14 @@ export async function GET(req: Request) {
   const text = (u.searchParams.get("text") ?? "").trim();
   const isAdmin = !!(await requireAdmin());
   if (!isAdmin) {
-    if (!(await canUseBoardCode(lang))) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-    if (!boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    if (u.searchParams.get("use") === "bingo") {
+      // The Bingo caller: any signed-in account, any language, but only the Bingo calls.
+      const v = await getViewer();
+      if (!v.userId || !bingoPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    } else {
+      if (!(await canUseBoardCode(lang))) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+      if (!boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    }
   }
   const name = VOICES[lang]?.[voice];
   if (!name || !text || text.length > 300) return NextResponse.json({ error: "Bad request" }, { status: 400 });
