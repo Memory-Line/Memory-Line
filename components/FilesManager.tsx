@@ -175,10 +175,7 @@ export default function FilesManager() {
   async function addCalendarSection(l: Link) {
     let calendar = "activity";
     if (proCalendar) {
-      const pro = window.confirm("Which calendar?
-
-OK = your Professional Calendar (your own events and rota)
-Cancel = the Holidays and celebrations calendar");
+      const pro = window.confirm("Which calendar? OK = your Professional Calendar (your own events and rota). Cancel = the Holidays and celebrations calendar.");
       calendar = pro ? "professional" : "activity";
     }
     setError(null);
