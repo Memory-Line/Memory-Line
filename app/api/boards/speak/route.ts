@@ -2,13 +2,17 @@ import { NextResponse } from "next/server";
 import { createHash } from "crypto";
 import { list, put } from "@vercel/blob";
 import { requireAdmin } from "@/lib/admin";
+import { canUseBoardCode } from "@/lib/boardsAccess";
+import seed from "@/data/boards.seed.json";
+import { ALWAYS, UI } from "@/lib/boards";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 // Natural voices for the talking boards. The first time a phrase is needed it is
 // made by Azure Speech and saved in Blob storage; after that it is played from storage.
-// Pilot: admin only. Before this opens to customers it must only speak text that is on a board.
+// The admin can use any language; other Premium accounts only the opened-up languages, and only for
+// text that is on a board (so the speech service cannot be used for anything else).
 const VOICES: Record<string, Record<string, string>> = {
   en: { female: "en-GB-SoniaNeural", male: "en-GB-RyanNeural" },
   pl: { female: "pl-PL-ZofiaNeural", male: "pl-PL-MarekNeural" },
@@ -22,12 +26,37 @@ const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", 
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+let allowed: Set<string> | null = null;
+function boardPhrases() {
+  if (allowed) return allowed;
+  const set = new Set<string>();
+  const add = (v?: string) => {
+    if (!v) return;
+    set.add(v.trim());
+    // A word written as a man/woman pair is spoken with one side chosen.
+    for (const side of [1, 2]) set.add(v.replace(/([\p{L}]+)\/([\p{L}]+)/gu, (_m, a: string, b: string) => (side === 1 ? a : b)).trim());
+  };
+  const addText = (x: Record<string, string | undefined>) => Object.values(x).forEach(add);
+  for (const b of seed as any[]) {
+    addText(b.question);
+    for (const a of b.answers) { addText(a.label); addText(a.say); }
+  }
+  for (const a of ALWAYS) { addText(a.label as any); addText(a.say as any); }
+  Object.values(UI).forEach((x) => addText(x as any));
+  allowed = set;
+  return set;
+}
+
 export async function GET(req: Request) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const u = new URL(req.url);
   const lang = u.searchParams.get("lang") ?? "";
   const voice = u.searchParams.get("voice") ?? "";
   const text = (u.searchParams.get("text") ?? "").trim();
+  const isAdmin = !!(await requireAdmin());
+  if (!isAdmin) {
+    if (!(await canUseBoardCode(lang))) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    if (!boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  }
   const name = VOICES[lang]?.[voice];
   if (!name || !text || text.length > 300) return NextResponse.json({ error: "Bad request" }, { status: 400 });
 

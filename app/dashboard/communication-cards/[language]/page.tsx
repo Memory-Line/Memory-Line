@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { HIDDEN_OLD_CARDS, LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
-import { requireAdmin } from "@/lib/admin";
+import { canSeeBoards, PUBLIC_BOARD_LANGS } from "@/lib/boardsAccess";
 import { BOARD_LANGS } from "@/lib/boards";
 import { getBoardsFor } from "@/lib/boardsDb";
 import { categoryBySlug } from "@/lib/data";
@@ -22,13 +22,14 @@ export default async function CommunicationCardsLanguagePage({
 
   // Numbered 001-090, so file name order is card order.
   const oldHidden = HIDDEN_OLD_CARDS.includes(language.slug);
+  const boardsPublic = PUBLIC_BOARD_LANGS.includes(language.slug);
   const cards = oldHidden
     ? []
     : await prisma.template.findMany({
         where: { category: LANGUAGE_CATEGORY, occasion: null, language: language.slug },
         orderBy: { fileName: "asc" },
       });
-  const showBoards = !!BOARD_LANGS[language.slug] && !!(await requireAdmin());
+  const showBoards = !!BOARD_LANGS[language.slug] && await canSeeBoards(language.slug);
   const areaMap = new Map<string, { slug: string; name: string; count: number }>();
   if (showBoards) {
     for (const b of await getBoardsFor(BOARD_LANGS[language.slug])) {
@@ -57,7 +58,7 @@ export default async function CommunicationCardsLanguagePage({
 
       {showBoards && (
         <div className="rounded-xl p-4 mb-5 bg-card border border-line">
-          <div className="text-[11px] font-bold tracking-wide text-clay mb-2">NEW TALKING BOARDS · ONLY YOU CAN SEE THIS</div>
+          <div className="text-[11px] font-bold tracking-wide text-clay mb-2">{boardsPublic ? "TALKING BOARDS" : "NEW TALKING BOARDS · ONLY YOU CAN SEE THIS"}</div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {areas.map((a) => (
               <Link key={a.slug} href={`/dashboard/communication-cards/${language.slug}/boards/${a.slug}`} className="flex items-center gap-2 rounded-lg p-3" style={{ background: categoryBySlug("communication-cards")!.tint }}>
