@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { canSeeBoards } from "@/lib/boardsAccess";
 import { languageBySlug } from "@/lib/languages";
 import { BOARD_LANGS } from "@/lib/boards";
-import { getBoardsFor } from "@/lib/boardsDb";
+import { boardListFor } from "@/lib/boardsDb";
 import BoardList from "./BoardList";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ export default async function BoardTopic({ params }: { params: { language: strin
   const language = languageBySlug(params.language);
   if (!language || !BOARD_LANGS[language.slug] || !(await canSeeBoards(language.slug))) notFound();
   const code = BOARD_LANGS[language.slug];
-  const inArea = (await getBoardsFor(code)).filter((b) => b.areaSlug === params.area);
+  const inArea = await boardListFor(code, params.area);
   if (inArea.length === 0) notFound();
   const here = `/dashboard/communication-cards/${language.slug}/boards/${params.area}`;
   const items = inArea.map((b) => ({ id: b.id, code: b.code, priority: b.priority, signOff: b.signOff, en: b.question.en, other: code !== "en" ? b.question[code] ?? "" : "" }));

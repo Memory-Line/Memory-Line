@@ -136,6 +136,33 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   const readChoices = () => speak([board.question, ...board.answers.map((a) => a.label)]);
 
   useEffect(() => () => stop(), []);
+
+  // Gets the voice recordings for this board ready in the background (a few at a time), so they
+  // start straight away when played. Phrases made for the first time take a moment; later ones are saved.
+  useEffect(() => {
+    if (lang !== "en" && !person) return;
+    const ctl = new AbortController();
+    const urls: string[] = [];
+    for (const l of langs()) {
+      for (const item of [board.question, ...board.answers.flatMap((a) => [a.label, a.say])]) {
+        const text = item[l];
+        if (!text) continue;
+        const spoken = forPerson(text, l, person);
+        if (AUDIO[`${l}|${voice}|${spoken}`]) continue;
+        urls.push(`/api/boards/speak?lang=${l}&voice=${voice}&text=${encodeURIComponent(spoken)}`);
+      }
+    }
+    let next = 0;
+    const worker = async () => {
+      while (next < urls.length && !ctl.signal.aborted) {
+        const u = urls[next++];
+        await fetch(u, { signal: ctl.signal }).then((r) => r.arrayBuffer()).catch(() => {});
+      }
+    };
+    const t = setTimeout(() => { for (let i = 0; i < 3; i++) worker(); }, 300);
+    return () => { clearTimeout(t); ctl.abort(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board.id, voice, mode, other, person]);
   useEffect(() => {
     try {
       const p = localStorage.getItem("board-person");
