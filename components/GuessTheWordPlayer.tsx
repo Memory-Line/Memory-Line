@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Check, Lightbulb, Printer, RotateCcw } from "lucide-react";
+import { useEasyView } from "@/components/EasyView";
 
 // Colours from the printed sheet.
 const INK = "#3f3237";
@@ -33,6 +34,7 @@ export default function GuessTheWordPlayer({
   hasLargePrint: boolean;
   isPremium: boolean;
 }) {
+  const easy = useEasyView();
   const storageKey = `guesstheword:${templateId}`;
   const [guessed, setGuessed] = useState<string[]>([]);
   const [hinted, setHinted] = useState<string[]>([]);
@@ -106,6 +108,18 @@ export default function GuessTheWordPlayer({
 
   return (
     <div className="max-w-[640px]">
+      {easy ? (
+        <>
+          <div className="rounded-2xl p-4 mb-4 text-center" style={{ background: "#FFF4C2" }}>
+            <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>THE CLUE</p>
+            <p className="font-bold" style={{ color: "#1a1a1a", fontSize: 26, lineHeight: 1.25 }}>{clue}</p>
+          </div>
+          <p className="text-center font-bold mb-4" style={{ fontSize: 20, color: "#1a1a1a" }}>
+            You have <span style={{ fontSize: 34 }}>{petalsLeft}</span> {petalsLeft === 1 ? "try" : "tries"} left
+          </p>
+        </>
+      ) : (
+        <>
       {/* The flower: one petal per try left. */}
       <div className="rounded-xl bg-white border border-line p-4 mb-4 text-center">
         <p className="text-sm font-semibold mb-2" style={{ color: "#4f6f8f" }}>
@@ -146,6 +160,9 @@ export default function GuessTheWordPlayer({
         </p>
       </div>
 
+        </>
+      )}
+
       {/* The blanks. */}
       <div className="rounded-xl bg-white border border-line p-4 mb-4 flex flex-wrap justify-center gap-x-2 gap-y-3" aria-live="polite">
         {answer.split("").map((ch, i) =>
@@ -154,11 +171,12 @@ export default function GuessTheWordPlayer({
           ) : (
             <span
               key={i}
-              className="w-8 text-center text-2xl font-bold border-b-4"
+              className={easy ? "w-10 text-center font-bold border-b-[6px]" : "w-8 text-center text-2xl font-bold border-b-4"}
               style={{
-                borderColor: "#8aa38a",
+                borderColor: easy ? "#1a1a1a" : "#8aa38a",
+                fontSize: easy ? 32 : undefined,
                 color: known.has(ch) ? (hinted.includes(ch) && !guessed.includes(ch) ? "#b5714a" : INK) : lost ? "#b9ad9c" : "transparent",
-                minHeight: 38,
+                minHeight: easy ? 48 : 38,
               }}
             >
               {known.has(ch) || lost ? ch : "_"}
@@ -193,13 +211,13 @@ export default function GuessTheWordPlayer({
                 onClick={() => guess(l)}
                 disabled={used || won || lost}
                 aria-label={used ? `${l}, ${right ? "in the word" : "not in the word"}` : l}
-                className="relative rounded-full text-base font-bold"
+                className={easy ? "relative rounded-xl text-xl font-bold" : "relative rounded-full text-base font-bold"}
                 style={{
-                  width: 42,
-                  height: 42,
-                  border: `2px solid ${right ? ANSWER : "#d9cfc1"}`,
+                  width: easy ? 50 : 42,
+                  height: easy ? 50 : 42,
+                  border: easy ? `3px solid ${used && !right ? "#8a8a8a" : "#1a1a1a"}` : `2px solid ${right ? ANSWER : "#d9cfc1"}`,
                   background: right ? "#e4eee2" : "#fff",
-                  color: used && !right ? "#b9ad9c" : INK,
+                  color: used && !right ? (easy ? "#8a8a8a" : "#b9ad9c") : easy ? "#1a1a1a" : INK,
                 }}
               >
                 {l}
@@ -213,10 +231,10 @@ export default function GuessTheWordPlayer({
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button onClick={hint} disabled={won || lost} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50">
+        <button onClick={hint} disabled={won || lost} className={easy ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold disabled:opacity-50" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50"} style={easy ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
           <Lightbulb size={14} /> Give me a letter
         </button>
-        <button onClick={() => save([], [])} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+        <button onClick={() => save([], [])} className={easy ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"}>
           <RotateCcw size={14} /> {lost ? "Try again" : "Start again"}
         </button>
       </div>

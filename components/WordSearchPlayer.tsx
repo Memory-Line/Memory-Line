@@ -174,7 +174,7 @@ export default function WordSearchPlayer({
   const cell = `min(34px, calc((100vw - 72px) / ${size}))`;
 
   return (
-    <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block" }}>
         <div role="grid" aria-label="Word search grid" style={{ display: "grid", gridTemplateColumns: `repeat(${size}, ${cell})` }}>
           {grid.map((row, r) =>

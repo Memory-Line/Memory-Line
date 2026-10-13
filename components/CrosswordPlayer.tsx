@@ -200,7 +200,7 @@ export default function CrosswordPlayer({
   const cell = `min(40px, calc((100vw - 72px) / ${cols}))`;
 
   return (
-    <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div>
         <p className="mb-3 rounded-lg px-3 py-2 text-sm min-h-[40px]" style={{ background: WORD_TINT, color: INK }}>
           {current ? (

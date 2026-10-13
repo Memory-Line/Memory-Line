@@ -252,7 +252,7 @@ export default function SnakesAndLaddersPlayer({
   const DiceIcon = dice ? DICE_ICONS[dice - 1] : Dices;
 
   return (
-    <div className="flex flex-wrap gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div
         className="relative rounded-xl bg-white border border-line overflow-hidden"
         style={{ width: "min(92vw, 420px)", aspectRatio: `1 / ${aspect}` }}

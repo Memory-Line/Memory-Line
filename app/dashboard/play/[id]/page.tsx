@@ -25,6 +25,7 @@ import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
+import EasyView from "@/components/EasyView";
 
 export const dynamic = "force-dynamic";
 
@@ -183,21 +184,26 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     </div>
   );
 
+  // The whole page sits in a centred column, and each game is centred in it (the games keep their own design).
   return (
-    <div>
+    <div className="max-w-[900px] mx-auto">
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <Link href={back.href} className="text-xs text-inkSoft">
           ← {back.label}
         </Link>
         {prevNext}
       </div>
-      <h1 className="font-serif text-[26px] mt-1 mb-4">{displayTitle(template)}</h1>
-      {player ?? (
+      <h1 className="font-serif text-[26px] mt-1 mb-4 text-center">{displayTitle(template)}</h1>
+      {player ? (
+        <EasyView>
+          <div className="[&>*]:mx-auto">{player}</div>
+        </EasyView>
+      ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           This activity can't be played online yet, but you can still download and print it.
         </p>
       )}
-      {player && <div className="mt-6">{prevNext}</div>}
+      {player && <div className="mt-6 flex justify-center">{prevNext}</div>}
     </div>
   );
 }
