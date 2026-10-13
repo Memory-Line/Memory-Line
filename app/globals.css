@@ -71,3 +71,13 @@ html {
 
 /* Favourites tab (components/FavouriteTabs.tsx): in the Favourites view, hide the activities that are not starred. */
 [data-fav-view="favs"] [data-template-row]:not([data-fav="1"]) { display: none !important; }
+
+/* Playable activities on a wide screen: the board on the left, the words, options and buttons on the right.
+   On a phone everything stays in one column. Put play-two-col on the container, play-board on the board
+   and play-wide on anything that should span both sides. */
+@media (min-width: 1024px) {
+  .play-two-col { display: grid; grid-template-columns: minmax(0, 1fr) var(--panel, 320px); column-gap: 28px; align-items: start; }
+  .play-two-col > * { grid-column: 2; }
+  .play-two-col > .play-board { grid-column: 1; grid-row: 1 / span 14; }
+  .play-two-col > .play-wide { grid-column: 1 / -1; }
+}

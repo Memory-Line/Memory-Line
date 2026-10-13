@@ -235,7 +235,7 @@ export default function SpotDifferencePlayer({
   }
 
   return (
-    <div className="max-w-[900px]">
+    <div className="max-w-[900px] lg:max-w-[980px] play-two-col" style={{ ["--panel" as string]: "280px" }}>
       {ev ? (
         <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
           <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE DIFFERENCES</p>
@@ -256,7 +256,7 @@ export default function SpotDifferencePlayer({
           The pictures couldn't be loaded for playing on screen right now, but you can still print the sheet below.
         </p>
       ) : (
-        <div className="flex flex-wrap gap-4 mb-4">
+        <div className="flex flex-wrap gap-4 mb-4 play-board">
           <div style={{ flex: "1 1 320px", minWidth: 220 }}>
             <Picture
               canvasRef={canvasARef}
@@ -312,7 +312,7 @@ export default function SpotDifferencePlayer({
         </p>
       )}
 
-      <div className="mt-6 pt-4 border-t border-line">
+      <div className="mt-6 pt-4 border-t border-line play-wide">
         <p className="text-xs font-semibold text-inkSoft mb-2">Prefer paper?</p>
         <div className="flex flex-wrap gap-2">
           <a

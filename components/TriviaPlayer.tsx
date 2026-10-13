@@ -96,7 +96,7 @@ export default function TriviaPlayer({
   const rightCount = picked.filter((p, i) => p === questions[i].answer).length;
 
   return (
-    <div className="max-w-[640px]">
+    <div className="max-w-[640px] lg:max-w-[980px]">
       {/* Progress: one dot per question. */}
       <div className="flex flex-wrap gap-1.5 mb-4" aria-label={`Question ${index + 1} of ${questions.length}`}>
         {questions.map((qq, i) => (
@@ -138,7 +138,8 @@ export default function TriviaPlayer({
           )}
         </div>
       ) : (
-        <div className="rounded-xl bg-white border border-line p-5">
+        <div className="rounded-xl bg-white border border-line p-5 play-two-col" style={{ ["--panel" as string]: "400px" }}>
+          <div className="play-board lg:pr-2">
           {easy ? (
             <>
               <p className="font-bold mb-3 text-center" style={{ fontSize: 20, color: "#1a1a1a" }}>
@@ -159,6 +160,7 @@ export default function TriviaPlayer({
               </p>
             </>
           )}
+          </div>
           <div className="grid gap-3">
             {q.options.map((opt, k) => {
               const isRight = k === q.answer;
