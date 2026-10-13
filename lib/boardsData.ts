@@ -412,7 +412,8 @@ export const ALWAYS_DATA = [
    "fr": "Oui",
    "hi": "हाँ",
    "pa": "ਹਾਂ",
-   "bn": "হ্যাঁ"
+   "bn": "হ্যাঁ",
+   "gu": "હા"
   },
   "say": {
    "en": "Yes.",
@@ -424,7 +425,8 @@ export const ALWAYS_DATA = [
    "fr": "Oui.",
    "hi": "हाँ।",
    "pa": "ਹਾਂ।",
-   "bn": "হ্যাঁ।"
+   "bn": "হ্যাঁ।",
+   "gu": "હા."
   },
   "colour": "#4C6B4A"
  },
@@ -440,7 +442,8 @@ export const ALWAYS_DATA = [
    "fr": "Non",
    "hi": "नहीं",
    "pa": "ਨਹੀਂ",
-   "bn": "না"
+   "bn": "না",
+   "gu": "ના"
   },
   "say": {
    "en": "No.",
@@ -452,7 +455,8 @@ export const ALWAYS_DATA = [
    "fr": "Non.",
    "hi": "नहीं।",
    "pa": "ਨਹੀਂ।",
-   "bn": "না।"
+   "bn": "না।",
+   "gu": "ના."
   },
   "colour": "#A8553A"
  },
@@ -468,7 +472,8 @@ export const ALWAYS_DATA = [
    "fr": "Pas sûr/sûre",
    "hi": "पक्का नहीं",
    "pa": "ਪੱਕਾ ਨਹੀਂ",
-   "bn": "নিশ্চিত নই"
+   "bn": "নিশ্চিত নই",
+   "gu": "ખાતરી નથી"
   },
   "say": {
    "en": "I am not sure.",
@@ -480,7 +485,8 @@ export const ALWAYS_DATA = [
    "fr": "Je ne suis pas sûr/sûre.",
    "hi": "मुझे पक्का नहीं पता।",
    "pa": "ਮੈਨੂੰ ਪੱਕਾ ਨਹੀਂ ਪਤਾ।",
-   "bn": "আমি নিশ্চিত নই।"
+   "bn": "আমি নিশ্চিত নই।",
+   "gu": "મને ખાતરી નથી."
   },
   "colour": "#7A6E5E"
  },
@@ -496,7 +502,8 @@ export const ALWAYS_DATA = [
    "fr": "Stop",
    "hi": "रुकिए",
    "pa": "ਰੁਕੋ",
-   "bn": "থামুন"
+   "bn": "থামুন",
+   "gu": "અટકો"
   },
   "say": {
    "en": "Please stop.",
@@ -508,7 +515,8 @@ export const ALWAYS_DATA = [
    "fr": "Arrêtez, s'il vous plaît.",
    "hi": "कृपया रुकिए।",
    "pa": "ਕਿਰਪਾ ਕਰਕੇ ਰੁਕੋ।",
-   "bn": "দয়া করে থামুন।"
+   "bn": "দয়া করে থামুন।",
+   "gu": "કૃપા કરીને અટકો."
   },
   "colour": "#8A3A4A"
  },
@@ -524,7 +532,8 @@ export const ALWAYS_DATA = [
    "fr": "Aide",
    "hi": "मदद",
    "pa": "ਮਦਦ",
-   "bn": "সাহায্য"
+   "bn": "সাহায্য",
+   "gu": "મદદ"
   },
   "say": {
    "en": "I need help.",
@@ -536,7 +545,8 @@ export const ALWAYS_DATA = [
    "fr": "J'ai besoin d'aide.",
    "hi": "मुझे मदद चाहिए।",
    "pa": "ਮੈਨੂੰ ਮਦਦ ਚਾਹੀਦੀ ਹੈ।",
-   "bn": "আমার সাহায্য দরকার।"
+   "bn": "আমার সাহায্য দরকার।",
+   "gu": "મને મદદ જોઈએ છે."
   },
   "colour": "#B5851F"
  }
@@ -552,7 +562,8 @@ export const UI_TEXT = {
    "fr": "Lire les choix",
    "hi": "विकल्प पढ़ें",
    "pa": "ਵਿਕਲਪ ਪੜ੍ਹੋ",
-   "bn": "বিকল্প পড়ুন"
+   "bn": "বিকল্প পড়ুন",
+   "gu": "વિકલ્પો વાંચો"
  },
  "playAgain": {
   "en": "Play again",
@@ -564,7 +575,8 @@ export const UI_TEXT = {
    "fr": "Rejouer",
    "hi": "दोबारा चलाएँ",
    "pa": "ਦੁਬਾਰਾ ਚਲਾਓ",
-   "bn": "আবার চালান"
+   "bn": "আবার চালান",
+   "gu": "ફરી ચલાવો"
  },
  "always": {
   "en": "Always available",
@@ -576,7 +588,8 @@ export const UI_TEXT = {
    "fr": "Toujours disponibles",
    "hi": "हमेशा उपलब्ध",
    "pa": "ਹਮੇਸ਼ਾ ਉਪਲਬਧ",
-   "bn": "সবসময় পাওয়া যায়"
+   "bn": "সবসময় পাওয়া যায়",
+   "gu": "હંમેશાં ઉપલબ્ધ"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
