@@ -35,7 +35,7 @@ const fs = (text: string, big: number, small: number) => (text.length > 16 ? sma
 // The board shows the side that matches who it is for.
 function forPerson(text: string, lang: LangCode, person: Person | null) {
   if (lang === "en" || !person) return text;
-  return text.replace(/([\p{L}]+)\/([\p{L}]+)/gu, (_m, man: string, woman: string) => (person === "man" ? man : woman));
+  return text.replace(/([\p{L}\p{M}]+)\/([\p{L}\p{M}]+)/gu, (_m, man: string, woman: string) => (person === "man" ? man : woman));
 }
 
 function Seg<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
@@ -80,10 +80,10 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   function deviceSpeak(lang: LangCode, text: string, resolve: () => void) {
     if (!window.speechSynthesis) return resolve();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR" }[lang];
+    u.lang = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", hi: "hi-IN" }[lang];
     const dv = pickDeviceVoice(lang, voice);
     if (dv) u.voice = dv;
-    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${{ en: "English", pl: "Polish", ur: "Urdu", ro: "Romanian", pt: "Portuguese", es: "Spanish", fr: "French" }[lang]} voice, so it may stay silent.`);
+    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${{ en: "English", pl: "Polish", ur: "Urdu", ro: "Romanian", pt: "Portuguese", es: "Spanish", fr: "French", hi: "Hindi" }[lang]} voice, so it may stay silent.`);
     u.rate = speed === "slow" ? 0.75 : 1;
     u.onend = () => resolve();
     u.onerror = () => resolve();
