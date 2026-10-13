@@ -38,3 +38,25 @@ export async function getBoardsFor(lang: LangCode): Promise<Board[]> {
 export async function boardCount() {
   return prisma.board.count();
 }
+
+// Light queries for the lists: they read only what the list shows, in the database, instead of
+// loading every board with all its answers. (Every board that has the question in a language has
+// all its answers too; the board page itself still checks the whole board.)
+export async function boardAreasFor(lang: LangCode) {
+  const rows = await prisma.$queryRaw<{ areaSlug: string; area: string; count: number }[]>`
+    SELECT "areaSlug", area, COUNT(*)::int AS count
+    FROM "Board"
+    WHERE jsonb_exists(question, ${lang})
+    GROUP BY "areaSlug", area
+    ORDER BY MIN(position)`;
+  return rows.map((r) => ({ slug: r.areaSlug, name: r.area, count: r.count }));
+}
+
+export async function boardListFor(lang: LangCode, areaSlug: string) {
+  const rows = await prisma.$queryRaw<{ id: string; code: string; area: string; priority: number; signOff: boolean; question: Text3 }[]>`
+    SELECT id, code, area, priority, "signOff", question
+    FROM "Board"
+    WHERE "areaSlug" = ${areaSlug} AND jsonb_exists(question, ${lang})
+    ORDER BY position`;
+  return rows;
+}

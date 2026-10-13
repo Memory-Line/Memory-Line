@@ -6,7 +6,7 @@ import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { canSeeBoards, PUBLIC_BOARD_LANGS } from "@/lib/boardsAccess";
 import { BOARD_LANGS } from "@/lib/boards";
-import { getBoardsFor } from "@/lib/boardsDb";
+import { boardAreasFor } from "@/lib/boardsDb";
 import { categoryBySlug } from "@/lib/data";
 import { MessageCircle } from "lucide-react";
 
@@ -30,15 +30,7 @@ export default async function CommunicationCardsLanguagePage({
         orderBy: { fileName: "asc" },
       });
   const showBoards = !!BOARD_LANGS[language.slug] && await canSeeBoards(language.slug);
-  const areaMap = new Map<string, { slug: string; name: string; count: number }>();
-  if (showBoards) {
-    for (const b of await getBoardsFor(BOARD_LANGS[language.slug])) {
-      const e = areaMap.get(b.areaSlug) ?? { slug: b.areaSlug, name: b.area, count: 0 };
-      e.count++;
-      areaMap.set(b.areaSlug, e);
-    }
-  }
-  const areas = Array.from(areaMap.values());
+  const areas = showBoards ? await boardAreasFor(BOARD_LANGS[language.slug]) : [];
   const viewer = await getViewer();
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, cards.map((t) => t.id))
