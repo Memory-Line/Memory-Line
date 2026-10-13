@@ -39,6 +39,7 @@ model User {
   calendarEvents       CalendarEvent[]
   completions          Completion[]
   favourites           Favourite[]
+  boardFavourites      BoardFavourite[]
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
@@ -306,6 +307,19 @@ model Favourite {
   createdAt  DateTime @default(now())
 
   @@unique([userId, templateId])
+  @@index([userId])
+}
+
+// A talking board a person has starred. boardId is the board's fixed id from the data file; there is
+// deliberately no link to the Board table, because reloading the boards replaces every row there.
+model BoardFavourite {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  boardId   String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, boardId])
   @@index([userId])
 }
 

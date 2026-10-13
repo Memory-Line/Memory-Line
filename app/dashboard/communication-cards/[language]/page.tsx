@@ -6,7 +6,8 @@ import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { canSeeBoards, PUBLIC_BOARD_LANGS } from "@/lib/boardsAccess";
 import { BOARD_LANGS } from "@/lib/boards";
-import { boardAreasFor } from "@/lib/boardsDb";
+import { boardAreasFor, favouriteBoardsFor } from "@/lib/boardsDb";
+import BoardsHome from "./BoardsHome";
 import TopicTile from "@/components/TopicTile";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,9 @@ export default async function CommunicationCardsLanguagePage({
   const showBoards = !!BOARD_LANGS[language.slug] && await canSeeBoards(language.slug);
   const areas = showBoards ? await boardAreasFor(BOARD_LANGS[language.slug]) : [];
   const viewer = await getViewer();
+  const code = BOARD_LANGS[language.slug];
+  const favBoards = showBoards && viewer.userId ? await favouriteBoardsFor(viewer.userId, code) : [];
+  const favItems = favBoards.map((b) => ({ id: b.id, code: b.code, priority: b.priority, signOff: b.signOff, en: b.question.en, other: code !== "en" ? b.question[code] ?? "" : "" }));
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, cards.map((t) => t.id))
     : undefined;
@@ -50,11 +54,20 @@ export default async function CommunicationCardsLanguagePage({
       {showBoards && (
         <div className="rounded-xl p-4 mb-5 bg-card border border-line">
           <div className="text-[11px] font-bold tracking-wide text-clay mb-2">{boardsPublic ? "TALKING BOARDS" : "NEW TALKING BOARDS · ONLY YOU CAN SEE THIS"}</div>
+          <BoardsHome
+            lang={code}
+            back={`/dashboard/communication-cards/${language.slug}`}
+            favourites={favItems}
+            topics={
+              <>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {areas.map((a, i) => (
               <TopicTile key={a.slug} href={`/dashboard/communication-cards/${language.slug}/boards/${a.slug}`} slug={a.slug} name={a.name} count={a.count} index={i} />
             ))}
           </div>
+              </>
+            }
+          />
           {areas.length === 0 && <p className="text-sm text-inkSoft">No boards loaded yet. Load them from Communication boards in the admin menu.</p>}
         </div>
       )}
