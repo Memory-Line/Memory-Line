@@ -5,6 +5,7 @@ import { getCategories } from "@/lib/categories";
 import { customIcon } from "@/lib/categoryIcons";
 import { getActiveSeason } from "@/lib/seasonDb";
 import { EVERYDAY } from "@/lib/seasons";
+import { occasionHref } from "@/lib/occasions";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Newspaper,
@@ -117,13 +118,13 @@ export default async function DashboardHome({
       </div>
       {active && (
         <Link
-          href="/dashboard/occasions"
+          href={look.occasion ? occasionHref(look.occasion) : "/dashboard/occasions"}
           className="festive-banner mt-3 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white"
           style={{ background: look.palette.topbar }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img alt="" src={`/season/${look.icons[1] ?? look.icons[0]}.svg`} style={{ height: 26, width: "auto" }} />
-          <span>{look.label} activities are ready. Open the {look.label} pack &rsaquo;</span>
+          <span>{look.label} activities are ready. Open the {look.label} activities &rsaquo;</span>
         </Link>
       )}
 
