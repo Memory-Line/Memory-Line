@@ -1,10 +1,10 @@
 import { requireAdmin } from "@/lib/admin";
 import { getViewer } from "@/lib/viewer";
 
-// Languages whose talking boards are open to every Premium account. All the other
-// languages are still only for the admin until they are checked and added here.
-export const PUBLIC_BOARD_LANGS = ["portuguese"];
-export const PUBLIC_BOARD_CODES = ["pt"];
+// Languages whose talking boards are open to every Premium account. Dominik has had them checked and
+// opens each language as it is built; add a language's slug and code here when it is finished.
+export const PUBLIC_BOARD_LANGS = ["portuguese", "polish", "urdu", "romanian", "spanish", "french"];
+export const PUBLIC_BOARD_CODES = ["pt", "pl", "ur", "ro", "es", "fr"];
 
 // Can this visitor open the talking boards for this language (by page slug)?
 export async function canSeeBoards(languageSlug: string) {
