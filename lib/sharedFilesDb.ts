@@ -59,7 +59,7 @@ export function publicShape(link: Awaited<ReturnType<typeof getOwnedLink>> & {})
     title: link.title,
     allowDownload: link.allowDownload,
     updatedAt: link.updatedAt,
-    categories: link.categories.map((c) => ({ id: c.id, name: c.name })),
+    categories: link.categories.map((c) => ({ id: c.id, name: c.name, calendar: c.calendar })),
     items: link.items.map((i) => ({ id: i.id, categoryId: i.categoryId, contentType: i.contentType, sizeBytes: i.sizeBytes })),
   };
 }

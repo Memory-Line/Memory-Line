@@ -116,6 +116,9 @@ model SharedCategory {
   sharedFile   SharedFile @relation(fields: [sharedFileId], references: [id], onDelete: Cascade)
   name         String
   position     Int
+  // "activity" or "professional" = this section shows a live calendar instead of
+  // files; empty = an ordinary section of files.
+  calendar     String?
   items        SharedFileItem[]
 
   @@index([sharedFileId])

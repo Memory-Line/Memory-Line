@@ -13,7 +13,7 @@ import {
 import QrCodeButton from "@/components/QrCodeButton";
 
 type Item = { id: string; categoryId: string | null; contentType: string; sizeBytes: number };
-type Category = { id: string; name: string };
+type Category = { id: string; name: string; calendar: string | null };
 type Link = { id: string; token: string; title: string; allowDownload: boolean; updatedAt: string; categories: Category[]; items: Item[] };
 type Draft = { key: number; name: string; files: File[] };
 
@@ -23,6 +23,7 @@ const sizeLabel = (b: number) => (b >= 1024 * 1024 ? `${(b / (1024 * 1024)).toFi
 export default function FilesManager() {
   const [links, setLinks] = useState<Link[] | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [proCalendar, setProCalendar] = useState(false);
   const [title, setTitle] = useState("");
   const [allowDownload, setAllowDownload] = useState(false);
   const [drafts, setDrafts] = useState<Draft[]>([{ key: 1, name: "", files: [] }]);
@@ -42,6 +43,7 @@ export default function FilesManager() {
       .then((d) => {
         setLinks(d.files ?? []);
         setUserId(d.userId ?? null);
+        setProCalendar(!!d.professionalCalendar);
       })
       .catch(() => setLinks([]));
   }, []);
@@ -167,6 +169,20 @@ export default function FilesManager() {
     if (!name || !name.trim()) return;
     setError(null);
     const data = await send(`/api/shared-files/${l.id}/categories`, "POST", { name });
+    if (data?.file) setOne(data.file);
+  }
+
+  async function addCalendarSection(l: Link) {
+    let calendar = "activity";
+    if (proCalendar) {
+      const pro = window.confirm("Which calendar?
+
+OK = your Professional Calendar (your own events and rota)
+Cancel = the Holidays and celebrations calendar");
+      calendar = pro ? "professional" : "activity";
+    }
+    setError(null);
+    const data = await send(`/api/shared-files/${l.id}/categories`, "POST", { name: "Calendar", calendar });
     if (data?.file) setOne(data.file);
   }
 
@@ -421,9 +437,17 @@ export default function FilesManager() {
                         <button type="button" onClick={() => renameSection(l, c)} className={`text-xs ${smallBtn}`}>Rename</button>
                         <button type="button" onClick={() => deleteSection(l, c)} className="text-xs text-red-600 underline font-semibold">Delete section</button>
                       </div>
-                      {inside.length === 0 && <p className="text-xs text-inkSoft">No files yet. Add one so visitors see this section.</p>}
-                      <div className="space-y-1">{inside.map((item, i) => fileRow(l, item, i + 1))}</div>
-                      {addFileButton(l, c.id)}
+                      {c.calendar ? (
+                        <p className="text-xs text-inkSoft">
+                          A live calendar. Visitors see this month and can move to other months. It updates by itself when you add events, so there is nothing to upload.
+                        </p>
+                      ) : (
+                        <>
+                          {inside.length === 0 && <p className="text-xs text-inkSoft">No files yet. Add one so visitors see this section.</p>}
+                          <div className="space-y-1">{inside.map((item, i) => fileRow(l, item, i + 1))}</div>
+                          {addFileButton(l, c.id)}
+                        </>
+                      )}
                     </div>
                   );
                 })}
@@ -437,13 +461,24 @@ export default function FilesManager() {
                   </div>
                 )}
                 {l.categories.length < MAX_CATEGORIES && (
-                  <button
-                    type="button"
-                    onClick={() => addSection(l)}
-                    className="rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
-                  >
-                    + Add a section
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => addSection(l)}
+                      className="rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
+                    >
+                      + Add a section
+                    </button>
+                    {!l.categories.some((c) => c.calendar) && (
+                      <button
+                        type="button"
+                        onClick={() => addCalendarSection(l)}
+                        className="rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
+                      >
+                        + Add a live calendar
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             </div>

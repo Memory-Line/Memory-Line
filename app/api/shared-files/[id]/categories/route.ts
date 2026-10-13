@@ -7,7 +7,7 @@ import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 
 export const dynamic = "force-dynamic";
 
-// Add a section (Menu, Calendar...) to a link. JSON: { name }. It starts empty.
+// Add a section (Menu, Calendar...) to a link. JSON: { name, calendar? }. It starts empty; calendar makes it a live calendar section.
 export async function POST(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -20,7 +20,8 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: `A link can have up to ${MAX_CATEGORIES} sections.` }, { status: 400 });
   }
   const position = link.categories.reduce((max, c) => Math.max(max, c.position), -1) + 1;
-  await prisma.sharedCategory.create({ data: { sharedFileId: link.id, name, position } });
+  const calendar = body?.calendar === "activity" || body?.calendar === "professional" ? body.calendar : null;
+  await prisma.sharedCategory.create({ data: { sharedFileId: link.id, name, position, calendar } });
   await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
   const updated = await getOwnedLink(link.id, session.user.id);
   return NextResponse.json({ file: updated ? publicShape(updated) : null }, { status: 201 });

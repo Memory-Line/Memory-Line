@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { MAX_CATEGORIES, MAX_ITEMS_PER_CATEGORY, MAX_SHARED_FILES, cleanTitle } from "@/lib/sharedFiles";
 import { listOwnedLinks, getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
+import { userHasFeature } from "@/lib/features";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +17,11 @@ export async function GET() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const links = await listOwnedLinks(session.user.id);
-  return NextResponse.json({ files: links.map(publicShape), userId: session.user.id });
+  return NextResponse.json({
+    files: links.map(publicShape),
+    userId: session.user.id,
+    professionalCalendar: await userHasFeature(session.user.id, "professional-calendar"),
+  });
 }
 
 // Make a new link from files the browser has already uploaded to storage.

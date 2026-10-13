@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getLinkByToken } from "@/lib/sharedFilesDb";
 import PdfViewer from "./PdfViewer";
+import CalendarSection from "./CalendarSection";
 
 export const dynamic = "force-dynamic";
 
@@ -27,19 +28,23 @@ const OTHER = "other"; // files on a link that are not in any section
 // with sections opens on a row of them (Menu, Calendar...) and shows the files of
 // the one tapped (the first to start with); a link without sections shows its files
 // one after another.
-export default async function SharedFilePage({ params, searchParams }: { params: { token: string }; searchParams: { s?: string } }) {
+export default async function SharedFilePage({ params, searchParams }: { params: { token: string }; searchParams: { s?: string; m?: string } }) {
   const link = await getLinkByToken(params.token);
   if (!link || link.items.length === 0) notFound();
 
   const base = `/api/f/${link.token}/file`;
   const sections = link.categories
-    .map((c) => ({ id: c.id, name: c.name, items: link.items.filter((i) => i.categoryId === c.id) }))
-    .filter((s) => s.items.length > 0);
+    .map((c) => ({ id: c.id, name: c.name, calendar: c.calendar, items: link.items.filter((i) => i.categoryId === c.id) }))
+    .filter((s) => s.items.length > 0 || s.calendar);
   const loose = link.items.filter((i) => !i.categoryId || !link.categories.some((c) => c.id === i.categoryId));
-  if (loose.length > 0 && sections.length > 0) sections.push({ id: OTHER, name: "Other", items: loose });
+  if (loose.length > 0 && sections.length > 0) sections.push({ id: OTHER, name: "Other", calendar: null, items: loose });
   const tabbed = sections.length > 0;
   const current = tabbed ? sections.find((s) => s.id === searchParams.s) ?? sections[0] : null;
   const items = tabbed ? current!.items : link.items;
+  const now = new Date();
+  const mm = /^(\d{4})-(\d{1,2})$/.exec(searchParams.m ?? "");
+  const calYear = mm && +mm[1] >= 2000 && +mm[1] <= 2100 && +mm[2] >= 1 && +mm[2] <= 12 ? +mm[1] : now.getFullYear();
+  const calMonth = mm && +mm[1] >= 2000 && +mm[1] <= 2100 && +mm[2] >= 1 && +mm[2] <= 12 ? +mm[2] - 1 : now.getMonth();
   const many = items.length > 1;
 
   // A care home is named after the home; a personal account's name stays private.
@@ -88,6 +93,10 @@ export default async function SharedFilePage({ params, searchParams }: { params:
                 );
               })}
             </nav>
+          )}
+
+          {tabbed && current!.calendar && (
+            <CalendarSection userId={link.userId} calendar={current!.calendar} token={link.token} sectionId={current!.id} year={calYear} month={calMonth} />
           )}
 
           {items.map((item, i) => {
