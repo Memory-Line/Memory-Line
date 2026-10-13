@@ -3,7 +3,7 @@
 // the page, and gentle falling items. The artwork is in /public/season (icons) and
 // /public/season/scenes. Which look is on is set on the admin page (lib/seasonDb.ts).
 
-export type SeasonKey = "christmas" | "autumn" | "ve-day" | "remembrance" | "easter" | "dementia";
+export type SeasonKey = "christmas" | "autumn" | "ve-day" | "remembrance" | "easter" | "dementia" | "everyday";
 
 export type Season = {
   key: SeasonKey;
@@ -16,6 +16,8 @@ export type Season = {
   falling: { src?: string; kind?: "confetti"; count: number; min: number; max: number };
   icons: string[]; // shown on the admin page
   defaultBanner: string;
+  greeting: string; // the dashboard welcome ("Happy Halloween"); the name is added after it
+  sub: string; // the line under it
 };
 
 export const SEASONS: Season[] = [
@@ -29,6 +31,8 @@ export const SEASONS: Season[] = [
     falling: { src: "/season/snowflake.svg", count: 26, min: 14, max: 30 },
     icons: ["holly", "bauble", "star", "bell", "pine", "snowflake"],
     defaultBanner: "Merry Christmas from Activity Central",
+    greeting: "Merry Christmas",
+    sub: "Carols, crafts and quizzes for the season",
   },
   {
     key: "autumn",
@@ -40,6 +44,8 @@ export const SEASONS: Season[] = [
     falling: { src: "/season/maple.svg", count: 22, min: 16, max: 30 },
     icons: ["bat", "pumpkin", "moon", "maple", "candle"],
     defaultBanner: "Happy Halloween from Activity Central",
+    greeting: "Happy Halloween",
+    sub: "Spooky activities for this week",
   },
   {
     key: "ve-day",
@@ -52,6 +58,8 @@ export const SEASONS: Season[] = [
     falling: { kind: "confetti", count: 28, min: 8, max: 16 },
     icons: ["poppy", "star", "poppy"],
     defaultBanner: "Remembering VE Day, 8 May 1945",
+    greeting: "Remembering VE Day",
+    sub: "8 May 1945. Songs, stories and memories",
   },
   {
     key: "remembrance",
@@ -63,6 +71,8 @@ export const SEASONS: Season[] = [
     falling: { src: "/season/petal.svg", count: 18, min: 12, max: 22 },
     icons: ["poppy", "candle", "poppy"],
     defaultBanner: "We will remember them",
+    greeting: "We will remember them",
+    sub: "A quiet, respectful week of remembrance",
   },
   {
     key: "easter",
@@ -75,6 +85,8 @@ export const SEASONS: Season[] = [
     falling: { src: "/season/blossom.svg", count: 20, min: 18, max: 34 },
     icons: ["egg", "daffodil", "blossom", "egg"],
     defaultBanner: "Happy Easter from Activity Central",
+    greeting: "Happy Easter",
+    sub: "Spring is here. Bright ideas for the week",
   },
   {
     key: "dementia",
@@ -86,8 +98,27 @@ export const SEASONS: Season[] = [
     falling: { src: "/season/forgetmenot.svg", count: 24, min: 14, max: 26 },
     icons: ["blossom", "daffodil", "egg"],
     defaultBanner: "World Alzheimer's Month: September. Remember me.",
+    greeting: "World Alzheimer's Month",
+    sub: "September. Remember me",
   },
 ];
+
+// The look for an ordinary day: the same design as the occasions (sky strip, scene along the bottom,
+// greeting banner), in the site's own colours. Used on the dashboard only, and not offered as an
+// occasion on the admin page, so it is not in SEASONS.
+export const EVERYDAY: Season = {
+  key: "everyday",
+  label: "Everyday",
+  art: "everyday",
+  palette: { bg: "#F5F0E4", cardTint: "#F1E9D8", line: "#E6DDC8", sage: "#6D8C6A", sageDeep: "#4F6B4C", clay: "#B08968", topbar: "#1F1D19" },
+  sky: { top: "#CFE5F3", mid: "#EAF3F6", text: "#4F6B4C" },
+  mover: { seconds: 70, height: 60, top: 40 },
+  falling: { count: 0, min: 0, max: 0 },
+  icons: ["blossom", "daffodil", "forgetmenot"],
+  defaultBanner: "Welcome to Activity Central",
+  greeting: "Welcome back",
+  sub: "Your library of engagement activities is ready to use",
+};
 
 export const seasonByKey = (key: string | null | undefined) => SEASONS.find((s) => s.key === key);
 
