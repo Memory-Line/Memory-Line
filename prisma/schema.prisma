@@ -38,6 +38,7 @@ model User {
   downloads           Download[]
   calendarEvents       CalendarEvent[]
   completions          Completion[]
+  favourites           Favourite[]
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
   sharedFiles          SharedFile[]
@@ -289,11 +290,25 @@ model Template {
   subcategory   String?
   createdAt     DateTime @default(now())
   completions   Completion[]
+  favourites    Favourite[]
 }
 
 // Activities an account has marked as completed (the "completion-tracking"
 // feature). One row per account and activity; everyone using that login
 // shares the list.
+// An activity a person has starred, so each category can show just their favourites.
+model Favourite {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId String
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, templateId])
+  @@index([userId])
+}
+
 model Completion {
   id          String   @id @default(cuid())
   userId      String
