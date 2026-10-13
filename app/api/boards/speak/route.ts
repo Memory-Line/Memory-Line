@@ -23,6 +23,7 @@ const VOICES: Record<string, Record<string, string>> = {
   pt: { female: "pt-PT-RaquelNeural", male: "pt-PT-DuarteNeural" },
   es: { female: "es-ES-ElviraNeural", male: "es-ES-AlvaroNeural" },
   fr: { female: "fr-FR-DeniseNeural", male: "fr-FR-HenriNeural" },
+  pa: { female: "pa-IN-VaaniNeural", male: "pa-IN-OjasNeural" },
   // More languages, used by the Bingo caller.
   ar: { female: "ar-SA-ZariyahNeural", male: "ar-SA-HamedNeural" },
   hi: { female: "hi-IN-SwaraNeural", male: "hi-IN-MadhurNeural" },
@@ -41,7 +42,7 @@ const VOICES: Record<string, Record<string, string>> = {
   ru: { female: "ru-RU-SvetlanaNeural", male: "ru-RU-DmitryNeural" },
   cy: { female: "cy-GB-NiaNeural", male: "cy-GB-AledNeural" },
 };
-const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", ar: "ar-SA", hi: "hi-IN", bn: "bn-IN", gu: "gu-IN", zh: "zh-CN", yue: "zh-HK", so: "so-SO", ta: "ta-IN", ml: "ml-IN", tl: "fil-PH", uk: "uk-UA", lt: "lt-LT", tr: "tr-TR", fa: "fa-IR", ru: "ru-RU", cy: "cy-GB" };
+const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", ar: "ar-SA", hi: "hi-IN", bn: "bn-IN", gu: "gu-IN", zh: "zh-CN", yue: "zh-HK", so: "so-SO", ta: "ta-IN", ml: "ml-IN", tl: "fil-PH", uk: "uk-UA", lt: "lt-LT", tr: "tr-TR", fa: "fa-IR", ru: "ru-RU", cy: "cy-GB", pa: "pa-IN" };
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
