@@ -424,7 +424,8 @@ export const ALWAYS_DATA = [
    "ml": "അതെ",
    "uk": "Так",
    "lt": "Taip",
-   "ru": "Да"
+   "ru": "Да",
+   "so": "Haa"
   },
   "say": {
    "en": "Yes.",
@@ -448,7 +449,8 @@ export const ALWAYS_DATA = [
    "ml": "അതെ.",
    "uk": "Так.",
    "lt": "Taip.",
-   "ru": "Да."
+   "ru": "Да.",
+   "so": "Haa."
   },
   "colour": "#4C6B4A"
  },
@@ -476,7 +478,8 @@ export const ALWAYS_DATA = [
    "ml": "അല്ല",
    "uk": "Ні",
    "lt": "Ne",
-   "ru": "Нет"
+   "ru": "Нет",
+   "so": "Maya"
   },
   "say": {
    "en": "No.",
@@ -500,7 +503,8 @@ export const ALWAYS_DATA = [
    "ml": "അല്ല.",
    "uk": "Ні.",
    "lt": "Ne.",
-   "ru": "Нет."
+   "ru": "Нет.",
+   "so": "Maya."
   },
   "colour": "#A8553A"
  },
@@ -528,7 +532,8 @@ export const ALWAYS_DATA = [
    "ml": "ഉറപ്പില്ല",
    "uk": "Не впевнений/впевнена",
    "lt": "Nesu tikras/tikra",
-   "ru": "Не уверен/уверена"
+   "ru": "Не уверен/уверена",
+   "so": "Ma hubo"
   },
   "say": {
    "en": "I am not sure.",
@@ -552,7 +557,8 @@ export const ALWAYS_DATA = [
    "ml": "എനിക്ക് ഉറപ്പില്ല.",
    "uk": "Я не впевнений/впевнена.",
    "lt": "Nesu tikras/tikra.",
-   "ru": "Я не уверен/уверена."
+   "ru": "Я не уверен/уверена.",
+   "so": "Ma hubo."
   },
   "colour": "#7A6E5E"
  },
@@ -580,7 +586,8 @@ export const ALWAYS_DATA = [
    "ml": "നിർത്തൂ",
    "uk": "Стоп",
    "lt": "Stop",
-   "ru": "Стоп"
+   "ru": "Стоп",
+   "so": "Jooji"
   },
   "say": {
    "en": "Please stop.",
@@ -604,7 +611,8 @@ export const ALWAYS_DATA = [
    "ml": "ദയവായി നിർത്തൂ.",
    "uk": "Будь ласка, зупиніться.",
    "lt": "Prašau sustoti.",
-   "ru": "Пожалуйста, остановитесь."
+   "ru": "Пожалуйста, остановитесь.",
+   "so": "Fadlan jooji."
   },
   "colour": "#8A3A4A"
  },
@@ -632,7 +640,8 @@ export const ALWAYS_DATA = [
    "ml": "സഹായം",
    "uk": "Допомога",
    "lt": "Pagalba",
-   "ru": "Помощь"
+   "ru": "Помощь",
+   "so": "Caawimaad"
   },
   "say": {
    "en": "I need help.",
@@ -656,7 +665,8 @@ export const ALWAYS_DATA = [
    "ml": "എനിക്ക് സഹായം വേണം.",
    "uk": "Мені потрібна допомога.",
    "lt": "Man reikia pagalbos.",
-   "ru": "Мне нужна помощь."
+   "ru": "Мне нужна помощь.",
+   "so": "Waxaan u baahanahay caawimaad."
   },
   "colour": "#B5851F"
  }
@@ -684,7 +694,8 @@ export const UI_TEXT = {
    "ml": "ഓപ്ഷനുകൾ വായിക്കൂ",
    "uk": "Прочитати варіанти",
    "lt": "Perskaityti pasirinkimus",
-   "ru": "Прочитать варианты"
+   "ru": "Прочитать варианты",
+   "so": "Akhri doorashooyinka"
  },
  "playAgain": {
   "en": "Play again",
@@ -708,7 +719,8 @@ export const UI_TEXT = {
    "ml": "വീണ്ടും പ്ലേ ചെയ്യൂ",
    "uk": "Відтворити ще раз",
    "lt": "Paleisti iš naujo",
-   "ru": "Воспроизвести ещё раз"
+   "ru": "Воспроизвести ещё раз",
+   "so": "Mar kale ciyaar"
  },
  "always": {
   "en": "Always available",
@@ -732,7 +744,8 @@ export const UI_TEXT = {
    "ml": "എപ്പോഴും ലഭ്യം",
    "uk": "Завжди доступно",
    "lt": "Visada prieinama",
-   "ru": "Всегда доступно"
+   "ru": "Всегда доступно",
+   "so": "Had iyo jeer diyaar"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
