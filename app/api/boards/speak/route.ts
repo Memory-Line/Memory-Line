@@ -7,6 +7,7 @@ import seed from "@/data/boards.seed.json";
 import { ALWAYS, UI } from "@/lib/boards";
 import { BINGO_CALLS, bingoLetter } from "@/lib/bingo";
 import { getViewer } from "@/lib/viewer";
+import { trainingPhrases } from "@/lib/trainingCourses";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -98,7 +99,10 @@ export async function GET(req: Request) {
   const voice = u.searchParams.get("voice") ?? "";
   const text = (u.searchParams.get("text") ?? "").trim();
   const isAdmin = !!(await requireAdmin());
-  if (!isAdmin) {
+  if (u.searchParams.get("use") === "training") {
+    // The staff training course: anyone with a course link, but only the course's own sentences, in English.
+    if (lang !== "en" || !trainingPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  } else if (!isAdmin) {
     if (u.searchParams.get("use") === "bingo") {
       // The Bingo caller: any signed-in account, any language, but only the Bingo calls.
       const v = await getViewer();
