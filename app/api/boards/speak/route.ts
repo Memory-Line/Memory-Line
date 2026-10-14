@@ -112,12 +112,14 @@ export async function GET(req: Request) {
       if (!boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     }
   }
-  const name = VOICES[lang]?.[voice];
+  // The staff training has its own voice (Bella), chosen by the admin; the talking boards keep theirs.
+  const training = u.searchParams.get("use") === "training";
+  const name = training ? "en-GB-BellaNeural" : VOICES[lang]?.[voice];
   if (!name || !text || text.length > 300) return NextResponse.json({ error: "Bad request" }, { status: 400 });
 
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
-  const pathname = `speech/${lang}/${voice}/${createHash("sha1").update(text).digest("hex").slice(0, 24)}.mp3`;
+  const pathname = `speech/${training ? "training-bella" : `${lang}/${voice}`}/${createHash("sha1").update(text).digest("hex").slice(0, 24)}.mp3`;
 
   try {
     // Already made? Send them to the saved recording.
