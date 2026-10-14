@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -114,14 +114,29 @@ export type CalendarVariant = "activity" | "professional";
 
 export default function CalendarView({
   variant = "activity",
+  dementiaFriendly = false,
 }: {
   variant?: CalendarVariant;
+  // The account's Dementia friendly choice (shared with the rest of the site).
+  dementiaFriendly?: boolean;
   // Printed at the top of "Print dates": the care home's name, never a personal account's.
   homeName?: string | null;
 }) {
   const { status } = useSession();
   const signedIn = status === "authenticated";
   const professional = variant === "professional";
+
+  // Dementia friendly view of the calendar: black on white, bold outlines, larger text. Screen only.
+  const [dementia, setDementia] = useState(dementiaFriendly);
+  function changeDementia(v: boolean) {
+    setDementia(v);
+    if (signedIn)
+      fetch("/api/preferences/dementia-friendly", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ on: v }),
+      }).catch(() => {});
+  }
 
   const [year, setYear] = useState(() => new Date().getFullYear());
   const [monthIndex, setMonthIndex] = useState(() => new Date().getMonth());
@@ -136,31 +151,82 @@ export default function CalendarView({
   const [saving, setSaving] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
-  // The notes box under the calendar: the text is kept for each month (and each
-  // calendar) on this computer, the colour and the print on/off choice for all.
+  // The notes box under the calendar: the text is saved on the account for each month (and each
+  // calendar), so the shared link and QR code always show it. The colour and the print on/off
+  // choice are kept on this computer. Notes typed before this was saved on the account (kept in this
+  // browser) are moved across the first time that month is opened.
   const [notesText, setNotesText] = useState("");
   const [notesColour, setNotesColour] = useState(NOTE_COLOURS[0].value);
   const [notesInclude, setNotesInclude] = useState(true);
   const notesKey = `cal-notes:${variant}:${year}-${monthIndex}`;
+  const notesLoaded = useRef(false);
+  const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveNotes = useCallback(
+    (text: string, colour: string) => {
+      if (!signedIn) return;
+      fetch("/api/calendar-notes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ calendar: variant, year, month: monthIndex, text, colour }),
+      }).catch(() => {});
+    },
+    [signedIn, variant, year, monthIndex]
+  );
   useEffect(() => {
+    notesLoaded.current = false;
+    let colour = NOTE_COLOURS[0].value;
+    let local = "";
     try {
-      setNotesText(localStorage.getItem(notesKey) ?? "");
-      setNotesColour(localStorage.getItem("cal-notes-colour") ?? NOTE_COLOURS[0].value);
+      local = localStorage.getItem(notesKey) ?? "";
+      colour = localStorage.getItem("cal-notes-colour") ?? colour;
       setNotesInclude(localStorage.getItem("cal-notes-include") !== "no");
     } catch {}
-  }, [notesKey]);
+    setNotesText(local);
+    setNotesColour(colour);
+    if (!signedIn) {
+      notesLoaded.current = true;
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/calendar-notes?calendar=${variant}&year=${year}&month=${monthIndex}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (cancelled) return;
+        if (d?.note) {
+          setNotesText(d.note.text);
+          setNotesColour(d.note.colour);
+        } else if (local.trim()) {
+          saveNotes(local, colour);
+        }
+        notesLoaded.current = true;
+      })
+      .catch(() => {
+        notesLoaded.current = true;
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notesKey, signedIn]);
 
+  function queueSave(text: string, colour: string) {
+    if (!notesLoaded.current) return;
+    if (notesTimer.current) clearTimeout(notesTimer.current);
+    notesTimer.current = setTimeout(() => saveNotes(text, colour), 600);
+  }
   function changeNotes(value: string) {
     setNotesText(value);
     try {
       localStorage.setItem(notesKey, value);
     } catch {}
+    queueSave(value, notesColour);
   }
   function changeNotesColour(value: string) {
     setNotesColour(value);
     try {
       localStorage.setItem("cal-notes-colour", value);
     } catch {}
+    queueSave(notesText, value);
   }
   function changeNotesInclude(value: boolean) {
     setNotesInclude(value);
@@ -372,7 +438,7 @@ export default function CalendarView({
   }
 
   return (
-    <div id="calendar-print-area" data-print-size="A4" style={{ background: "#F5F0E4", minHeight: "auto", padding: "40px 20px" }}>
+    <div id="calendar-print-area" className={dementia ? "cal-dementia" : undefined} data-print-size="A4" style={{ background: "#F5F0E4", minHeight: "auto", padding: "40px 20px" }}>
       <style>{`
         @media print {
           .cal-no-print { display: none !important; }
@@ -413,6 +479,23 @@ export default function CalendarView({
           [data-print-size="A3"] .cal-day-plain { font-size: 20px !important; margin-bottom: 4px !important; }
           [data-print-size="A3"] .cal-event-tab { font-size: 14px !important; padding: 7px 9px !important; }
           [data-print-size="A3"] .cal-content-wrap { max-width: 1450px !important; height: 274mm !important; max-height: 274mm !important; }
+        }
+        /* Dementia friendly: black on white, thick outlines, larger text, yellow highlights. Screen only, so printing is unchanged. */
+        @media screen {
+          #calendar-print-area.cal-dementia { background: #fff !important; }
+          .cal-dementia .cal-year, .cal-dementia .cal-notes { border: 3px solid #1a1a1a !important; }
+          .cal-dementia .cal-title, .cal-dementia .cal-year, .cal-dementia .cal-eyebrow, .cal-dementia .cal-subtitle { color: #1a1a1a !important; }
+          .cal-dementia .cal-subtitle { font-size: 16px !important; }
+          .cal-dementia .cal-weekday { background: #1a1a1a !important; color: #fff !important; font-size: 17px !important; }
+          .cal-dementia .cal-day-cell { border: 2px solid #1a1a1a !important; }
+          .cal-dementia .cal-day-cell-inner { background: #fff !important; }
+          .cal-dementia .cal-day-plain { font-size: 22px !important; color: #1a1a1a !important; }
+          .cal-dementia .cal-event-tab { background: #FFD23F !important; color: #1a1a1a !important; border: 2px solid #1a1a1a !important; font-size: 14px !important; font-weight: 700 !important; }
+          .cal-dementia .cal-toolbar button { border: 2px solid #1a1a1a !important; background: #fff !important; color: #1a1a1a !important; font-weight: 700 !important; }
+        }
+        @media screen and (max-width: 640px) {
+          .cal-dementia .cal-day-plain { font-size: 15px !important; }
+          .cal-dementia .cal-event-tab { font-size: 11px !important; }
         }
         /* The printed copy of the notes is only shown when printing. */
         .cal-notes-print { display: none; }
@@ -546,6 +629,14 @@ export default function CalendarView({
             style={{ padding: "10px 18px", borderRadius: 10, border: "none", background: "#C9E6DD", color: "#295044", cursor: "pointer", fontWeight: 600 }}
           >
             Print Large (A3)
+          </button>
+          <button
+            type="button"
+            onClick={() => changeDementia(!dementia)}
+            aria-pressed={dementia}
+            style={{ padding: "10px 18px", borderRadius: 10, border: "2px solid #1a1a1a", background: dementia ? "#FFD23F" : "#fff", color: "#1a1a1a", cursor: "pointer", fontWeight: 700 }}
+          >
+            Dementia friendly: {dementia ? "On" : "Off"}
           </button>
         </div>
         {!signedIn && status !== "loading" && (
@@ -917,7 +1008,7 @@ export default function CalendarView({
               style={{ width: "100%", padding: "9px 11px", borderRadius: 8, border: "1px solid #EAE4D6", fontSize: 13.5, fontFamily: "inherit", background: "#FBF9F4", color: notesColour, resize: "vertical" }}
             />
             <p style={{ fontSize: 11, color: "#8A7A6B", margin: "4px 0 0" }}>
-              Saved on this computer for each month. Pick a colour above, or use Bullet points for a list.
+              Saved to your account for each month, and shown at the bottom of your shared calendar link and QR code. Pick a colour above, or use Bullet points for a list.
             </p>
           </div>
 
