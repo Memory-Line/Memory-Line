@@ -7,6 +7,7 @@ import Image from "next/image";
 import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import MonthPrint from "@/components/MonthPrint";
+import { parseNoteLines, serialiseNoteLines, noteIsEmpty, type NoteLine } from "@/lib/noteLines";
 import RotaControl from "@/components/RotaControl";
 import { rotaLabelFor, type RotaConfig } from "@/lib/rota";
 
@@ -192,6 +193,7 @@ export default function CalendarView({
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => {
         if (cancelled) return;
+        if (typeof d?.include === "boolean") setNotesInclude(d.include);
         if (d?.note) {
           setNotesText(d.note.text);
           setNotesColour(d.note.colour);
@@ -221,51 +223,105 @@ export default function CalendarView({
     } catch {}
     queueSave(value, notesColour);
   }
+  // Each line of the notes can have its own colour. A colour click changes the line the cursor is
+  // on (or every line when "Whole note" is ticked) and becomes the colour for new lines.
+  const [wholeNote, setWholeNote] = useState(false);
+  const [focusLine, setFocusLine] = useState(0);
+  const lineRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const pendingFocus = useRef<{ i: number; pos: number } | null>(null);
+  const noteLines = parseNoteLines(notesText, notesColour);
+  function setLines(lines: NoteLine[]) {
+    changeNotes(serialiseNoteLines(lines));
+  }
+  useEffect(() => {
+    const f = pendingFocus.current;
+    if (!f) return;
+    pendingFocus.current = null;
+    const el = lineRefs.current[f.i];
+    if (el) {
+      el.focus();
+      const pos = Math.min(f.pos, el.value.length);
+      el.setSelectionRange(pos, pos);
+    }
+  }, [notesText]);
   function changeNotesColour(value: string) {
     setNotesColour(value);
     try {
       localStorage.setItem("cal-notes-colour", value);
     } catch {}
-    queueSave(notesText, value);
+    const lines = parseNoteLines(notesText, notesColour);
+    const next = lines.map((l, i) => (wholeNote || i === focusLine ? { ...l, colour: value } : l));
+    changeNotes(serialiseNoteLines(next));
   }
   function changeNotesInclude(value: boolean) {
     setNotesInclude(value);
     try {
       localStorage.setItem("cal-notes-include", value ? "yes" : "no");
     } catch {}
+    if (signedIn)
+      fetch("/api/calendar-notes/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ include: value }),
+      }).catch(() => {});
   }
   // Puts a bullet on every line (or takes them all off if they all have one).
   function toggleBullets() {
-    const lines = notesText.split("\n");
-    const filled = lines.filter((l) => l.trim() !== "");
+    const lines = parseNoteLines(notesText, notesColour);
+    const filled = lines.filter((l) => l.text.trim() !== "");
     if (filled.length === 0) {
-      changeNotes("• ");
+      setLines([{ text: "• ", colour: lines[0]?.colour ?? notesColour }]);
       return;
     }
-    const allBulleted = filled.every((l) => l.startsWith("• "));
-    changeNotes(
-      lines
-        .map((l) => (l.trim() === "" ? l : allBulleted ? l.slice(2) : l.startsWith("• ") ? l : `• ${l}`))
-        .join("\n")
+    const allBulleted = filled.every((l) => l.text.startsWith("• "));
+    setLines(
+      lines.map((l) =>
+        l.text.trim() === "" ? l : { ...l, text: allBulleted ? l.text.slice(2) : l.text.startsWith("• ") ? l.text : `• ${l.text}` }
+      )
     );
   }
-  // Enter on a bulleted line starts a new bullet; Enter on an empty bullet ends the list.
-  function handleNotesKey(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key !== "Enter") return;
+  function changeLine(i: number, value: string) {
+    const lines = parseNoteLines(notesText, notesColour);
+    lines[i] = { ...lines[i], text: value };
+    const out = serialiseNoteLines(lines);
+    if (out.length > 2500) return;
+    changeNotes(out);
+  }
+  // Enter starts a new line (a new bullet after a bulleted line; Enter on an empty bullet ends the list);
+  // Backspace on an empty line removes it; the arrows move between lines.
+  function handleLineKey(e: React.KeyboardEvent<HTMLInputElement>, i: number) {
+    const lines = parseNoteLines(notesText, notesColour);
+    const cur = lines[i];
     const el = e.currentTarget;
-    const pos = el.selectionStart;
-    const lineStart = notesText.lastIndexOf("\n", pos - 1) + 1;
-    const line = notesText.slice(lineStart, pos);
-    if (!line.startsWith("• ")) return;
-    e.preventDefault();
-    if (line === "• ") {
-      changeNotes(notesText.slice(0, lineStart) + notesText.slice(pos));
-      return;
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (lines.length >= 40) return;
+      const pos = el.selectionStart ?? cur.text.length;
+      const before = cur.text.slice(0, pos);
+      const after = cur.text.slice(el.selectionEnd ?? pos);
+      const bulleted = cur.text.startsWith("• ");
+      if (bulleted && before === "• " && after === "") {
+        lines[i] = { ...cur, text: "" };
+        pendingFocus.current = { i, pos: 0 };
+        setLines(lines);
+        return;
+      }
+      const nextText = bulleted ? `• ${after}` : after;
+      lines.splice(i, 1, { ...cur, text: before }, { text: nextText, colour: cur.colour });
+      pendingFocus.current = { i: i + 1, pos: bulleted ? 2 : 0 };
+      setLines(lines);
+    } else if (e.key === "Backspace" && cur.text === "" && lines.length > 1) {
+      e.preventDefault();
+      lines.splice(i, 1);
+      pendingFocus.current = { i: Math.max(0, i - 1), pos: 99999 };
+      setLines(lines);
+    } else if (e.key === "ArrowUp" && i > 0) {
+      e.preventDefault();
+      lineRefs.current[i - 1]?.focus();
+    } else if (e.key === "ArrowDown" && i < lines.length - 1) {
+      e.preventDefault();
+      lineRefs.current[i + 1]?.focus();
     }
-    changeNotes(notesText.slice(0, pos) + "\n• " + notesText.slice(el.selectionEnd));
-    requestAnimationFrame(() => {
-      el.selectionStart = el.selectionEnd = pos + 3;
-    });
   }
 
   const month = { name: MONTH_NAMES[monthIndex] };
@@ -970,25 +1026,30 @@ export default function CalendarView({
                   <button
                     key={c.value}
                     type="button"
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => changeNotesColour(c.value)}
                     title={c.name}
                     aria-label={`${c.name} text`}
-                    aria-pressed={notesColour === c.value}
+                    aria-pressed={noteLines[Math.min(focusLine, noteLines.length - 1)]?.colour === c.value}
                     style={{
                       width: 22,
                       height: 22,
                       borderRadius: "50%",
                       background: c.value,
                       border: "2px solid #fff",
-                      outline: notesColour === c.value ? `2px solid ${c.value}` : "1px solid #EAE4D6",
+                      outline: noteLines[Math.min(focusLine, noteLines.length - 1)]?.colour === c.value ? `2px solid ${c.value}` : "1px solid #EAE4D6",
                       cursor: "pointer",
                       padding: 0,
                     }}
                   />
                 ))}
               </div>
+              <label style={{ fontSize: 12, color: "#8A7A6B", cursor: "pointer" }}>
+                <input type="checkbox" checked={wholeNote} onChange={(e) => setWholeNote(e.target.checked)} /> Whole note
+              </label>
               <button
                 type="button"
+                onMouseDown={(e) => e.preventDefault()}
                 onClick={toggleBullets}
                 style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #EAE4D6", background: "#FBF9F4", color: "#3F3237", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
               >
@@ -998,42 +1059,49 @@ export default function CalendarView({
                 <input type="checkbox" checked={notesInclude} onChange={(e) => changeNotesInclude(e.target.checked)} /> Print this box
               </label>
             </div>
-            <textarea
-              value={notesText}
-              onChange={(e) => changeNotes(e.target.value)}
-              onKeyDown={handleNotesKey}
-              rows={3}
-              maxLength={500}
-              placeholder={`Type notes for ${month.name} ${year}. They print under the calendar. Leave it empty to print blank lines to write on.`}
-              style={{ width: "100%", padding: "9px 11px", borderRadius: 8, border: "1px solid #EAE4D6", fontSize: 13.5, fontFamily: "inherit", background: "#FBF9F4", color: notesColour, resize: "vertical" }}
-            />
+            <div style={{ border: "1px solid #EAE4D6", borderRadius: 8, background: "#FBF9F4", padding: "6px 8px" }}>
+              {noteLines.map((l, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    lineRefs.current[i] = el;
+                  }}
+                  value={l.text}
+                  maxLength={200}
+                  onChange={(e) => changeLine(i, e.target.value)}
+                  onKeyDown={(e) => handleLineKey(e, i)}
+                  onFocus={() => setFocusLine(i)}
+                  placeholder={i === 0 && noteLines.length === 1 ? `Type notes for ${month.name} ${year}. They print under the calendar. Leave it empty to print blank lines to write on.` : ""}
+                  style={{ display: "block", width: "100%", padding: "4px 3px", border: "none", borderBottom: "1px dotted #E3DCCB", background: i === focusLine ? "#F3ECDD" : "transparent", fontSize: 14, fontFamily: "inherit", color: l.colour, fontWeight: 600, outline: "none" }}
+                />
+              ))}
+            </div>
             <p style={{ fontSize: 11, color: "#8A7A6B", margin: "4px 0 0" }}>
-              Saved to your account for each month, and shown at the bottom of your shared calendar link and QR code. Pick a colour above, or use Bullet points for a list.
+              Saved to your account for each month, and shown at the bottom of your shared calendar link and QR code. Each line can be its own colour: click on a line, then pick a colour. Press Enter for a new line, or use Bullet points for a list.
             </p>
           </div>
 
           <div
             className="cal-notes-print"
             style={{
-              color: notesColour,
               fontSize: "10pt",
               lineHeight: 1.35,
               overflowWrap: "anywhere",
               minHeight: "16mm",
-              ...(notesText.trim()
+              ...(!noteIsEmpty(notesText)
                 ? {}
                 : { backgroundImage: "repeating-linear-gradient(to bottom, transparent 0, transparent 5.2mm, #D9D2C0 5.2mm, #D9D2C0 5.5mm)" }),
             }}
           >
             <p style={{ margin: "0 0 1mm", fontSize: "7.5pt", fontWeight: 700, letterSpacing: "1px", color: "#B5714A" }}>NOTES</p>
-            {notesText.split("\n").map((line, i) =>
-              line.startsWith("• ") ? (
-                <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
+            {(noteIsEmpty(notesText) ? [] : noteLines).map((l, i) =>
+              l.text.startsWith("• ") ? (
+                <div key={i} style={{ display: "flex", gap: "1.5mm", color: l.colour }}>
                   <span>•</span>
-                  <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
+                  <span style={{ flex: 1, minWidth: 0 }}>{l.text.slice(2)}</span>
                 </div>
               ) : (
-                <div key={i} style={{ minHeight: line === "" ? "1.3em" : undefined }}>{line}</div>
+                <div key={i} style={{ color: l.colour, minHeight: l.text === "" ? "1.3em" : undefined }}>{l.text}</div>
               )
             )}
           </div>
