@@ -1,22 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 
 export default function LoginPage() {
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-
-  // Get the dashboard ready while the person types their password.
-  useEffect(() => {
-    router.prefetch("/dashboard");
-  }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,8 +24,18 @@ export default function LoginPage() {
       return;
     }
 
-    // Stay on "Logging in..." until the dashboard opens, so the button never looks frozen.
-    router.push("/dashboard");
+    // A full page load (not a client-side hop): a pre-fetched /dashboard from before sign-in can be
+    // remembered as "redirect to login", which left people stuck on "Logging in...". Stays on
+    // "Logging in..." until the dashboard opens.
+    let next = "/dashboard";
+    try {
+      const cb = new URLSearchParams(window.location.search).get("callbackUrl");
+      if (cb) {
+        const u = new URL(cb, window.location.origin);
+        if (u.origin === window.location.origin && !u.pathname.startsWith("/login")) next = u.pathname + u.search;
+      }
+    } catch {}
+    window.location.assign(next);
   }
 
   return (
