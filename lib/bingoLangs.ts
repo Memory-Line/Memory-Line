@@ -12,6 +12,7 @@ export const BINGO_LANGS: { code: string; name: string; locale: string }[] = [
   { code: "hi", name: "Hindi", locale: "hi-IN" },
   { code: "bn", name: "Bengali", locale: "bn-IN" },
   { code: "gu", name: "Gujarati", locale: "gu-IN" },
+  { code: "pa", name: "Punjabi", locale: "pa-IN" },
   { code: "zh", name: "Mandarin Chinese", locale: "zh-CN" },
   { code: "yue", name: "Cantonese Chinese", locale: "zh-HK" },
   { code: "so", name: "Somali", locale: "so-SO" },
