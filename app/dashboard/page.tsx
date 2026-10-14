@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
 import { customIcon } from "@/lib/categoryIcons";
 import { getActiveSeason } from "@/lib/seasonDb";
-import { EVERYDAY } from "@/lib/seasons";
 import { occasionHref } from "@/lib/occasions";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
@@ -46,7 +45,7 @@ export default async function DashboardHome({
     prisma.user.findUnique({ where: { id: userId }, select: { accountType: true } }),
     getActiveSeason(),
   ]);
-  const look = active?.season ?? EVERYDAY;
+  const look = active?.season ?? null;
 
   const existingIds = new Set(
     (
@@ -98,25 +97,31 @@ export default async function DashboardHome({
 
   return (
     <div>
-      {/* The greeting banner: the look's colour and icons (an occasion, or the everyday look). */}
-      <div
-        className="festive-banner rounded-2xl px-5 py-4 mt-3 flex items-center gap-4 text-white"
-        style={{ background: look.palette.sage }}
-      >
-        <div className="min-w-0">
-          <h1 className="font-serif text-2xl sm:text-3xl leading-tight">
-            {look.greeting}, {firstName}
-          </h1>
-          <p className="text-sm mt-1 opacity-95">{look.sub}</p>
+      {look ? (
+        <div
+          className="festive-banner rounded-2xl px-5 py-4 mt-3 flex items-center gap-4 text-white"
+          style={{ background: look.palette.sage }}
+        >
+          <div className="min-w-0">
+            <h1 className="font-serif text-2xl sm:text-3xl leading-tight">
+              {look.greeting}, {firstName}
+            </h1>
+            <p className="text-sm mt-1 opacity-95">{look.sub}</p>
+          </div>
+          <div className="ml-auto hidden sm:flex gap-2 shrink-0" aria-hidden="true">
+            {look.icons.slice(0, 3).map((icon, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img key={i} alt="" src={`/season/${icon}.svg`} style={{ height: 42, width: "auto" }} />
+            ))}
+          </div>
         </div>
-        <div className="ml-auto hidden sm:flex gap-2 shrink-0" aria-hidden="true">
-          {look.icons.slice(0, 3).map((icon, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} alt="" src={`/season/${icon}.svg`} style={{ height: 42, width: "auto" }} />
-          ))}
-        </div>
-      </div>
-      {active && (
+      ) : (
+        <>
+          <h1 className="font-serif text-2xl sm:text-3xl">Welcome Back, {firstName}</h1>
+          <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
+        </>
+      )}
+      {active && look && (
         <Link
           href={look.occasion ? occasionHref(look.occasion) : "/dashboard/occasions"}
           className="festive-banner mt-3 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white"
@@ -216,12 +221,14 @@ export default async function DashboardHome({
                 key={c.slug}
                 href={`/dashboard/${c.slug}`}
                 className="flex items-center gap-2 rounded-lg p-3"
-                style={{ background: c.tint, border: `2px solid ${look.palette.sage}` }}
+                style={look ? { background: c.tint, border: `2px solid ${look.palette.sage}` } : { background: c.tint }}
               >
                 <Icon size={16} color={c.color} />
                 <span className="text-sm font-semibold">{c.key}</span>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img alt="" aria-hidden="true" src={`/season/${look.icons[c.slug.length % look.icons.length]}.svg`} className="ml-auto" style={{ height: 20, width: "auto", opacity: 0.85 }} />
+                {look && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img alt="" aria-hidden="true" src={`/season/${look.icons[c.slug.length % look.icons.length]}.svg`} className="ml-auto" style={{ height: 20, width: "auto", opacity: 0.85 }} />
+                )}
               </Link>
             );
           })}
