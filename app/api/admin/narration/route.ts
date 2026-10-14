@@ -16,9 +16,9 @@ export async function POST(req: Request) {
   const region = process.env.AZURE_SPEECH_REGION;
   if (!key || !region) return NextResponse.json({ error: "Speech is not set up" }, { status: 503 });
 
-  // A short pause after each sentence so it sounds like a person presenting.
-  const body = esc(text.trim()).replace(/([.?!])\s+/g, '$1<break time="320ms"/> ');
-  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="en-GB-BellaNeural"><prosody rate="-4%">${body}</prosody></voice></speak>`;
+  // No extra pauses: Bella already pauses naturally at full stops, so it flows like a person talking.
+  const body = esc(text.trim());
+  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="en-GB-BellaNeural"><prosody rate="0%">${body}</prosody></voice></speak>`;
   try {
     const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",
