@@ -187,12 +187,6 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/forms"}
           />
           <NavItem
-            href="/dashboard/admin/voices"
-            icon={Mail}
-            label="Voice samples"
-            active={pathname === "/dashboard/admin/voices"}
-          />
-          <NavItem
             href="/dashboard/training"
             icon={ClipboardList}
             label="Staff training (test)"
