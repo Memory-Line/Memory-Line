@@ -80,10 +80,10 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   function deviceSpeak(lang: LangCode, text: string, resolve: () => void) {
     if (!window.speechSynthesis) return resolve();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", hi: "hi-IN", pa: "pa-IN", bn: "bn-IN", gu: "gu-IN", ar: "ar-SA", fa: "fa-IR", tr: "tr-TR", zh: "zh-CN", yue: "zh-HK" }[lang];
+    u.lang = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", hi: "hi-IN", pa: "pa-IN", bn: "bn-IN", gu: "gu-IN", ar: "ar-SA", fa: "fa-IR", tr: "tr-TR", zh: "zh-CN", yue: "zh-HK", tl: "fil-PH" }[lang];
     const dv = pickDeviceVoice(lang, voice);
     if (dv) u.voice = dv;
-    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${{ en: "English", pl: "Polish", ur: "Urdu", ro: "Romanian", pt: "Portuguese", es: "Spanish", fr: "French", hi: "Hindi", pa: "Punjabi", bn: "Bengali", gu: "Gujarati", ar: "Arabic", fa: "Farsi", tr: "Turkish", zh: "Mandarin Chinese", yue: "Cantonese Chinese" }[lang]} voice, so it may stay silent.`);
+    setDeviceNote(dv ? `The natural voice did not load, so this device's ${dv.name} voice is reading it.` : `The natural voice did not load and this device has no ${{ en: "English", pl: "Polish", ur: "Urdu", ro: "Romanian", pt: "Portuguese", es: "Spanish", fr: "French", hi: "Hindi", pa: "Punjabi", bn: "Bengali", gu: "Gujarati", ar: "Arabic", fa: "Farsi", tr: "Turkish", zh: "Mandarin Chinese", yue: "Cantonese Chinese", tl: "Tagalog" }[lang]} voice, so it may stay silent.`);
     u.rate = speed === "slow" ? 0.75 : 1;
     u.onend = () => resolve();
     u.onerror = () => resolve();

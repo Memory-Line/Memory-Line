@@ -418,7 +418,8 @@ export const ALWAYS_DATA = [
    "fa": "بله",
    "tr": "Evet",
    "zh": "是",
-   "yue": "係"
+   "yue": "係",
+   "tl": "Oo"
   },
   "say": {
    "en": "Yes.",
@@ -436,7 +437,8 @@ export const ALWAYS_DATA = [
    "fa": "بله.",
    "tr": "Evet.",
    "zh": "是的。",
-   "yue": "係。"
+   "yue": "係。",
+   "tl": "Oo po."
   },
   "colour": "#4C6B4A"
  },
@@ -458,7 +460,8 @@ export const ALWAYS_DATA = [
    "fa": "نه",
    "tr": "Hayır",
    "zh": "不",
-   "yue": "唔係"
+   "yue": "唔係",
+   "tl": "Hindi"
   },
   "say": {
    "en": "No.",
@@ -476,7 +479,8 @@ export const ALWAYS_DATA = [
    "fa": "نه.",
    "tr": "Hayır.",
    "zh": "不是。",
-   "yue": "唔係。"
+   "yue": "唔係。",
+   "tl": "Hindi po."
   },
   "colour": "#A8553A"
  },
@@ -498,7 +502,8 @@ export const ALWAYS_DATA = [
    "fa": "مطمئن نیستم",
    "tr": "Emin değilim",
    "zh": "不确定",
-   "yue": "唔肯定"
+   "yue": "唔肯定",
+   "tl": "Hindi sigurado"
   },
   "say": {
    "en": "I am not sure.",
@@ -516,7 +521,8 @@ export const ALWAYS_DATA = [
    "fa": "مطمئن نیستم.",
    "tr": "Emin değilim.",
    "zh": "我不确定。",
-   "yue": "我唔肯定。"
+   "yue": "我唔肯定。",
+   "tl": "Hindi po ako sigurado."
   },
   "colour": "#7A6E5E"
  },
@@ -538,7 +544,8 @@ export const ALWAYS_DATA = [
    "fa": "توقف",
    "tr": "Dur",
    "zh": "停",
-   "yue": "停"
+   "yue": "停",
+   "tl": "Tigil"
   },
   "say": {
    "en": "Please stop.",
@@ -556,7 +563,8 @@ export const ALWAYS_DATA = [
    "fa": "لطفاً توقف کنید.",
    "tr": "Lütfen durun.",
    "zh": "请停下。",
-   "yue": "請停低。"
+   "yue": "請停低。",
+   "tl": "Pakihinto po."
   },
   "colour": "#8A3A4A"
  },
@@ -578,7 +586,8 @@ export const ALWAYS_DATA = [
    "fa": "کمک",
    "tr": "Yardım",
    "zh": "帮助",
-   "yue": "幫手"
+   "yue": "幫手",
+   "tl": "Tulong"
   },
   "say": {
    "en": "I need help.",
@@ -596,7 +605,8 @@ export const ALWAYS_DATA = [
    "fa": "به کمک نیاز دارم.",
    "tr": "Yardıma ihtiyacım var.",
    "zh": "我需要帮助。",
-   "yue": "我需要幫手。"
+   "yue": "我需要幫手。",
+   "tl": "Kailangan ko po ng tulong."
   },
   "colour": "#B5851F"
  }
@@ -618,7 +628,8 @@ export const UI_TEXT = {
    "fa": "خواندن گزینه‌ها",
    "tr": "Seçenekleri oku",
    "zh": "朗读选项",
-   "yue": "讀出選項"
+   "yue": "讀出選項",
+   "tl": "Basahin ang mga pagpipilian"
  },
  "playAgain": {
   "en": "Play again",
@@ -636,7 +647,8 @@ export const UI_TEXT = {
    "fa": "پخش دوباره",
    "tr": "Tekrar oynat",
    "zh": "重新播放",
-   "yue": "重新播放"
+   "yue": "重新播放",
+   "tl": "I-play ulit"
  },
  "always": {
   "en": "Always available",
@@ -654,7 +666,8 @@ export const UI_TEXT = {
    "fa": "همیشه در دسترس",
    "tr": "Her zaman kullanılabilir",
    "zh": "随时可用",
-   "yue": "隨時可用"
+   "yue": "隨時可用",
+   "tl": "Laging magagamit"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
