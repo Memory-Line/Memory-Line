@@ -44,6 +44,7 @@ model User {
   boardFavourites      BoardFavourite[]
   passwordResets       PasswordResetToken[]
   sharedCalendars      SharedCalendar[]
+  calendarNotes        CalendarNote[]
   sharedFiles          SharedFile[]
   calendarRotas        CalendarRota[]
   sharedForms          SharedForm[]
@@ -161,6 +162,22 @@ model SharedCalendar {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// The notes box under a calendar month. Kept on the server (not just the browser)
+// so the shared calendar link and QR code always show the current notes.
+model CalendarNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendar  String   @default("activity") // activity | professional
+  year      Int
+  month     Int      // 0-11
+  text      String
+  colour    String   @default("#3F3237")
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, calendar, year, month])
 }
 
 // One-time "forgot my password" links. Only a hash of the link's secret is

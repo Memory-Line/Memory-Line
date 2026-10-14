@@ -8,6 +8,9 @@ import { OWNER_SELECT, ownerIsActive, ownerIsPremium } from "@/lib/ownerAccess";
 import { rotaLabelFor } from "@/lib/rota";
 import { loadRota } from "@/lib/rotaDb";
 import PrintButton from "./PrintButton";
+import DementiaSwitch from "./DementiaSwitch";
+import SharedNotes from "@/components/SharedNotes";
+import { loadNotes } from "@/lib/calendarNotes";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +44,8 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
   const builtIn = professional ? [] : occasionsForYear(link.year);
   // The owner's weekly rota, if it's switched on, shows on the shared months too.
   const rota = await loadRota(link.userId, link.calendar);
+  // The notes under each month, always shown at the bottom of that month.
+  const notes = await loadNotes(link.userId, link.calendar, link.year, months);
 
   const itemsFor = (month: number) => {
     const byDay: Record<number, Item[]> = {};
@@ -59,12 +64,25 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
   const heading = professional ? "Our calendar" : "Holidays & celebrations";
 
   return (
-    <main style={{ background: "#F5F0E4", minHeight: "100vh", padding: "24px 16px 40px", color: "#3F3237" }}>
+    <main className="sc-main" style={{ background: "#F5F0E4", minHeight: "100vh", padding: "24px 16px 40px", color: "#3F3237" }}>
       <style>{`
         .sc-agenda { display: none; }
         @media (max-width: 640px) {
           .sc-grid, .sc-weekdays { display: none !important; }
           .sc-agenda { display: block; }
+        }
+        /* Dementia friendly (the switch at the top): black on white, bold outlines, larger text, yellow highlights. Screen only. */
+        @media screen {
+          .sc-main.sc-dementia { background: #fff !important; color: #1a1a1a !important; }
+          .sc-dementia .sc-month { border: 3px solid #1a1a1a !important; box-shadow: none !important; }
+          .sc-dementia .sc-cell { border: 2px solid #1a1a1a !important; }
+          .sc-dementia .sc-daynum { font-size: 20px !important; }
+          .sc-dementia .sc-wd { background: #1a1a1a !important; color: #fff !important; font-size: 15px !important; }
+          .sc-dementia .sc-item { background: #FFD23F !important; color: #1a1a1a !important; border: 2px solid #1a1a1a; font-size: 14px !important; }
+          .sc-dementia .sc-agenda .sc-item { font-size: 18px !important; }
+          .sc-dementia .sc-agenda div { color: #1a1a1a !important; }
+          .sc-dementia .sc-notes { border: 3px solid #1a1a1a !important; font-weight: 700; }
+          .sc-dementia .sc-notes div { color: #1a1a1a !important; font-size: 19px !important; }
         }
         @page { size: A4 landscape; margin: 10mm; }
         @media print {
@@ -93,6 +111,7 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
           </h1>
           <div className="sc-no-print" style={{ marginTop: 10 }}>
             <PrintButton />
+            <DementiaSwitch />
           </div>
         </header>
 
@@ -112,7 +131,7 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
 
               <div className="sc-weekdays" style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4, marginBottom: 4 }}>
                 {WEEKDAYS.map((w, i) => (
-                  <div key={w} style={{ textAlign: "center", fontWeight: 700, fontSize: 13, padding: "8px 0", background: TAB_COLORS[i].bg, color: TAB_COLORS[i].text, borderRadius: 10 }}>
+                  <div key={w} className="sc-wd" style={{ textAlign: "center", fontWeight: 700, fontSize: 13, padding: "8px 0", background: TAB_COLORS[i].bg, color: TAB_COLORS[i].text, borderRadius: 10 }}>
                     {w}
                   </div>
                 ))}
@@ -123,12 +142,12 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
                   const c = TAB_COLORS[i % 7];
                   const items = day ? byDay[day] ?? [] : [];
                   return (
-                    <div key={i} style={{ minHeight: 96, border: "1px solid #EAE4D6", borderRadius: 10, padding: 7, background: day ? "#fff" : "transparent", borderColor: day ? "#EAE4D6" : "transparent" }}>
+                    <div key={i} className="sc-cell" style={{ minHeight: 96, border: "1px solid #EAE4D6", borderRadius: 10, padding: 7, background: day ? "#fff" : "transparent", borderColor: day ? "#EAE4D6" : "transparent" }}>
                       {day && (
                         <>
-                          <div style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.1, marginBottom: 3 }}>{day}</div>
+                          <div className="sc-daynum" style={{ fontWeight: 700, fontSize: 14, lineHeight: 1.1, marginBottom: 3 }}>{day}</div>
                           {items.map((it, k) => (
-                            <div key={k} style={{ background: c.bg, color: c.text, fontWeight: 700, fontSize: 10.5, lineHeight: 1.2, padding: "3px 6px", borderRadius: 6, marginBottom: 2, overflowWrap: "anywhere" }}>
+                            <div key={k} className="sc-item" style={{ background: c.bg, color: c.text, fontWeight: 700, fontSize: 10.5, lineHeight: 1.2, padding: "3px 6px", borderRadius: 6, marginBottom: 2, overflowWrap: "anywhere" }}>
                               {it.label}
                               {it.time ? ` · ${it.time}` : ""}
                             </div>
@@ -153,7 +172,7 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {byDay[day].map((it, k) => (
-                          <div key={k} style={{ background: c.bg, color: c.text, fontWeight: 700, fontSize: 13, padding: "4px 8px", borderRadius: 6, marginBottom: 3, overflowWrap: "anywhere" }}>
+                          <div key={k} className="sc-item" style={{ background: c.bg, color: c.text, fontWeight: 700, fontSize: 13, padding: "4px 8px", borderRadius: 6, marginBottom: 3, overflowWrap: "anywhere" }}>
                             {it.label}
                             {it.time ? ` · ${it.time}` : ""}
                           </div>
@@ -163,6 +182,8 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
                   );
                 })}
               </div>
+
+              {notes[m] && <SharedNotes text={notes[m].text} colour={notes[m].colour} />}
             </section>
           );
         })}

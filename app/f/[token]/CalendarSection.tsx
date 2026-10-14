@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { MONTH_NAMES, WEEKDAYS, TAB_COLORS } from "@/lib/calendarShared";
 import { loadMonthItems } from "@/lib/calendarMonth";
+import { loadNotes } from "@/lib/calendarNotes";
+import SharedNotes from "@/components/SharedNotes";
 
 // A live calendar inside a shared link, laid out as a day list for phones: a big
 // date on the left, the day's events as coloured bars on the right.
@@ -20,6 +22,7 @@ export default async function CalendarSection({
   month: number;
 }) {
   const byDay = await loadMonthItems(userId, calendar, year, month);
+  const note = (await loadNotes(userId, calendar, year, [month]))[month];
   const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
   const prev = new Date(year, month - 1, 1);
   const next = new Date(year, month + 1, 1);
@@ -59,6 +62,7 @@ export default async function CalendarSection({
           </div>
         );
       })}
+      {note && <SharedNotes text={note.text} colour={note.colour} large />}
     </div>
   );
 }
