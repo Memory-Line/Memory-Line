@@ -421,7 +421,8 @@ export const ALWAYS_DATA = [
    "yue": "係",
    "tl": "Oo",
    "ta": "ஆம்",
-   "ml": "അതെ"
+   "ml": "അതെ",
+   "uk": "Так"
   },
   "say": {
    "en": "Yes.",
@@ -442,7 +443,8 @@ export const ALWAYS_DATA = [
    "yue": "係。",
    "tl": "Oo po.",
    "ta": "ஆம்.",
-   "ml": "അതെ."
+   "ml": "അതെ.",
+   "uk": "Так."
   },
   "colour": "#4C6B4A"
  },
@@ -467,7 +469,8 @@ export const ALWAYS_DATA = [
    "yue": "唔係",
    "tl": "Hindi",
    "ta": "இல்லை",
-   "ml": "അല്ല"
+   "ml": "അല്ല",
+   "uk": "Ні"
   },
   "say": {
    "en": "No.",
@@ -488,7 +491,8 @@ export const ALWAYS_DATA = [
    "yue": "唔係。",
    "tl": "Hindi po.",
    "ta": "இல்லை.",
-   "ml": "അല്ല."
+   "ml": "അല്ല.",
+   "uk": "Ні."
   },
   "colour": "#A8553A"
  },
@@ -513,7 +517,8 @@ export const ALWAYS_DATA = [
    "yue": "唔肯定",
    "tl": "Hindi sigurado",
    "ta": "உறுதியில்லை",
-   "ml": "ഉറപ്പില്ല"
+   "ml": "ഉറപ്പില്ല",
+   "uk": "Не впевнений/впевнена"
   },
   "say": {
    "en": "I am not sure.",
@@ -534,7 +539,8 @@ export const ALWAYS_DATA = [
    "yue": "我唔肯定。",
    "tl": "Hindi po ako sigurado.",
    "ta": "எனக்கு உறுதியில்லை.",
-   "ml": "എനിക്ക് ഉറപ്പില്ല."
+   "ml": "എനിക്ക് ഉറപ്പില്ല.",
+   "uk": "Я не впевнений/впевнена."
   },
   "colour": "#7A6E5E"
  },
@@ -559,7 +565,8 @@ export const ALWAYS_DATA = [
    "yue": "停",
    "tl": "Tigil",
    "ta": "நிறுத்து",
-   "ml": "നിർത്തൂ"
+   "ml": "നിർത്തൂ",
+   "uk": "Стоп"
   },
   "say": {
    "en": "Please stop.",
@@ -580,7 +587,8 @@ export const ALWAYS_DATA = [
    "yue": "請停低。",
    "tl": "Pakihinto po.",
    "ta": "தயவுசெய்து நிறுத்துங்கள்.",
-   "ml": "ദയവായി നിർത്തൂ."
+   "ml": "ദയവായി നിർത്തൂ.",
+   "uk": "Будь ласка, зупиніться."
   },
   "colour": "#8A3A4A"
  },
@@ -605,7 +613,8 @@ export const ALWAYS_DATA = [
    "yue": "幫手",
    "tl": "Tulong",
    "ta": "உதவி",
-   "ml": "സഹായം"
+   "ml": "സഹായം",
+   "uk": "Допомога"
   },
   "say": {
    "en": "I need help.",
@@ -626,7 +635,8 @@ export const ALWAYS_DATA = [
    "yue": "我需要幫手。",
    "tl": "Kailangan ko po ng tulong.",
    "ta": "எனக்கு உதவி வேண்டும்.",
-   "ml": "എനിക്ക് സഹായം വേണം."
+   "ml": "എനിക്ക് സഹായം വേണം.",
+   "uk": "Мені потрібна допомога."
   },
   "colour": "#B5851F"
  }
@@ -651,7 +661,8 @@ export const UI_TEXT = {
    "yue": "讀出選項",
    "tl": "Basahin ang mga pagpipilian",
    "ta": "தேர்வுகளைப் படி",
-   "ml": "ഓപ്ഷനുകൾ വായിക്കൂ"
+   "ml": "ഓപ്ഷനുകൾ വായിക്കൂ",
+   "uk": "Прочитати варіанти"
  },
  "playAgain": {
   "en": "Play again",
@@ -672,7 +683,8 @@ export const UI_TEXT = {
    "yue": "重新播放",
    "tl": "I-play ulit",
    "ta": "மீண்டும் இயக்கு",
-   "ml": "വീണ്ടും പ്ലേ ചെയ്യൂ"
+   "ml": "വീണ്ടും പ്ലേ ചെയ്യൂ",
+   "uk": "Відтворити ще раз"
  },
  "always": {
   "en": "Always available",
@@ -693,7 +705,8 @@ export const UI_TEXT = {
    "yue": "隨時可用",
    "tl": "Laging magagamit",
    "ta": "எப்போதும் கிடைக்கும்",
-   "ml": "എപ്പോഴും ലഭ്യം"
+   "ml": "എപ്പോഴും ലഭ്യം",
+   "uk": "Завжди доступно"
  }
 } as const;
 export const AUDIO_FILES: Record<string, string> = {
