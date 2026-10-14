@@ -1,6 +1,6 @@
 import { ALWAYS_DATA, UI_TEXT, AUDIO_FILES } from "@/lib/boardsData";
 
-export type LangCode = "en" | "pl" | "ur" | "ro" | "pt" | "es" | "fr" | "hi" | "pa" | "bn" | "gu" | "ar" | "fa" | "tr" | "zh" | "yue" | "tl" | "ta";
+export type LangCode = "en" | "pl" | "ur" | "ro" | "pt" | "es" | "fr" | "hi" | "pa" | "bn" | "gu" | "ar" | "fa" | "tr" | "zh" | "yue" | "tl" | "ta" | "ml";
 export type Text3 = Partial<Record<LangCode, string>> & { en: string };
 export type BoardAnswer = { id: string; label: Text3; say: Text3; colour?: string; icon?: string; staff?: string; escalate?: boolean };
 export type Board = {
@@ -30,10 +30,11 @@ export const OTHER_LANGS: { code: LangCode; name: string; rtl: boolean }[] = [
   { code: "yue", name: "廣東話", rtl: false },
   { code: "tl", name: "Tagalog", rtl: false },
   { code: "ta", name: "தமிழ்", rtl: false },
+  { code: "ml", name: "മലയാളം", rtl: false },
 ];
 
 // Languages that have boards so far. The page language chosen sets the other language.
-export const BOARD_LANGS: Record<string, LangCode> = { english: "en", polish: "pl", urdu: "ur", romanian: "ro", portuguese: "pt", spanish: "es", french: "fr", hindi: "hi", punjabi: "pa", bengali: "bn", gujarati: "gu", arabic: "ar", "farsi-persian": "fa", turkish: "tr", "mandarin-chinese": "zh", "cantonese-chinese": "yue", "tagalog-filipino": "tl", tamil: "ta" };
+export const BOARD_LANGS: Record<string, LangCode> = { english: "en", polish: "pl", urdu: "ur", romanian: "ro", portuguese: "pt", spanish: "es", french: "fr", hindi: "hi", punjabi: "pa", bengali: "bn", gujarati: "gu", arabic: "ar", "farsi-persian": "fa", turkish: "tr", "mandarin-chinese": "zh", "cantonese-chinese": "yue", "tagalog-filipino": "tl", tamil: "ta", malayalam: "ml" };
 
 export function slug(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
