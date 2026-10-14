@@ -7,7 +7,6 @@ import seed from "@/data/boards.seed.json";
 import { ALWAYS, UI } from "@/lib/boards";
 import { BINGO_CALLS, bingoLetter } from "@/lib/bingo";
 import { getViewer } from "@/lib/viewer";
-import { trainingPhrases } from "@/lib/trainingCourses";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -99,10 +98,7 @@ export async function GET(req: Request) {
   const voice = u.searchParams.get("voice") ?? "";
   const text = (u.searchParams.get("text") ?? "").trim();
   const isAdmin = !!(await requireAdmin());
-  if (u.searchParams.get("use") === "training") {
-    // The staff training course: anyone with a course link, but only the course's own sentences, in English.
-    if (lang !== "en" || !trainingPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-  } else if (!isAdmin) {
+  if (!isAdmin) {
     if (u.searchParams.get("use") === "bingo") {
       // The Bingo caller: any signed-in account, any language, but only the Bingo calls.
       const v = await getViewer();
@@ -112,14 +108,12 @@ export async function GET(req: Request) {
       if (!boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
     }
   }
-  // The staff training has its own voice (Bella), chosen by the admin; the talking boards keep theirs.
-  const training = u.searchParams.get("use") === "training";
-  const name = training ? "en-GB-BellaNeural" : VOICES[lang]?.[voice];
+  const name = VOICES[lang]?.[voice];
   if (!name || !text || text.length > 300) return NextResponse.json({ error: "Bad request" }, { status: 400 });
 
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
-  const pathname = `speech/${training ? "training-bella" : `${lang}/${voice}`}/${createHash("sha1").update(text).digest("hex").slice(0, 24)}.mp3`;
+  const pathname = `speech/${lang}/${voice}/${createHash("sha1").update(text).digest("hex").slice(0, 24)}.mp3`;
 
   try {
     // Already made? Send them to the saved recording.

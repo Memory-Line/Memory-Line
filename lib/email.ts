@@ -257,29 +257,3 @@ export function formSubmissionEmail(input: {
     attachments: [{ filename: pdf.filename, content: pdf.base64 }],
   };
 }
-
-// A staff member's certificate, sent to the manager. The details are not kept by us: this email is the record.
-export function trainingCertificateEmail(input: {
-  to: string;
-  staffName: string;
-  jobTitle: string;
-  courseTitle: string;
-  score: number;
-  total: number;
-  homeName: string | null;
-  pdf: { filename: string; base64: string };
-}): Message {
-  const { to, staffName, jobTitle, courseTitle, score, total, homeName, pdf } = input;
-  return {
-    to,
-    subject: `Training certificate: ${staffName} - ${courseTitle}`,
-    html: layout(
-      "A training certificate",
-      `<p style="margin:0 0 12px;"><b>${esc(staffName)}</b> (${esc(jobTitle)})${homeName ? ` at ${esc(homeName)}` : ""} has completed <b>${esc(courseTitle)}</b> and passed the quiz with ${score} out of ${total}.</p>
-<p style="margin:0 0 12px;">Their certificate is attached: <b>${esc(pdf.filename)}</b>. Please keep it with their training record.</p>
-<p style="margin:0;font-size:13px;color:#6A7785;">Activity Central does not keep the staff member's details. This email and the attached certificate are your record.</p>`
-    ),
-    text: `${staffName} (${jobTitle})${homeName ? ` at ${homeName}` : ""} has completed "${courseTitle}" and passed the quiz with ${score} out of ${total}.\n\nTheir certificate is attached: ${pdf.filename}. Please keep it with their training record.\n\nActivity Central does not keep the staff member's details. This email and the attached certificate are your record.`,
-    attachments: [{ filename: pdf.filename, content: pdf.base64 }],
-  };
-}
