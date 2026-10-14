@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   const parsed = key.safeParse({ calendar: sp.get("calendar"), year: Number(sp.get("year")), month: Number(sp.get("month")) });
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   const note = await prisma.calendarNote.findUnique({
-    where: { userId_calendar_year_month: { userId: session.user.id, ...parsed.data } },
+    where: { userId_calendar_year_month: { userId: session.user.id, calendar: parsed.data.calendar!, year: parsed.data.year!, month: parsed.data.month! } },
     select: { text: true, colour: true },
   });
   return NextResponse.json({ note });
@@ -36,15 +36,16 @@ export async function PUT(req: Request) {
   if (!session?.user?.id) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   const parsed = putSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-  const { text, colour, ...where } = parsed.data;
+  const { text, colour } = parsed.data;
   const userId = session.user.id;
-  if (text.trim() === "") {
+  const where = { calendar: parsed.data.calendar!, year: parsed.data.year!, month: parsed.data.month! };
+  if (text!.trim() === "") {
     await prisma.calendarNote.deleteMany({ where: { userId, ...where } });
   } else {
     await prisma.calendarNote.upsert({
       where: { userId_calendar_year_month: { userId, ...where } },
-      create: { userId, ...where, text, colour },
-      update: { text, colour },
+      create: { userId, ...where, text: text!, colour: colour! },
+      update: { text: text!, colour: colour! },
     });
   }
   return NextResponse.json({ ok: true });
