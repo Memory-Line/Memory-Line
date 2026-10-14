@@ -58,3 +58,51 @@ export const NARRATION_SCRIPTS: { title: string; text: string }[] = [
     text: "So let's finish with three thoughts. Activities are tools, engagement is the goal, and the best way to choose a tool is to know the person first. If you'd like to see what's in the library, you can try free samples from every category, with no card needed, at activity central dot co dot uk. Thank you for watching, and thank you for the difference you make every day. Activity Central, bringing moments to life.",
   },
 ];
+
+// TEMPORARY: the how-to videos, one set of slide scripts each (used by the admin Narration studio).
+export const HOWTO_SETS: { key: string; label: string; slides: { title: string; text: string }[] }[] = [
+  { key: "activities", label: "Finding and using activities", slides: [
+    { title: "1. Title", text: "Welcome. In this short video I'll show you how to find an activity, and how to print it or play it on screen. It only takes a couple of minutes, and you can come back to it any time you need a reminder." },
+    { title: "2. Your dashboard", text: "This is your dashboard, the first page you see when you log in. There are three ways to find an activity. Type a word into the search bar at the top, like seaside or birds. Or choose a category from the tiles. Or use the menu down the left-hand side, which lists every category." },
+    { title: "3. Browse a category", text: "Here's the Crosswords category. You can narrow the list by picking a theme, such as seaside or farm, or by searching inside the category. Each activity has its own row, with the name on the left and the buttons on the right." },
+    { title: "4. Print it or play it", text: "The buttons do different jobs. Play online lets you play it on screen, with no printer needed. Standard gives you a print-ready A4 sheet. Large Print gives you an A3 version, which is easier to see for people with poor eyesight. And Answers shows you the solution, so you're ready when someone asks. Playing online and large print are part of Premium." },
+    { title: "5. Keep track", text: "Two small buttons help you keep track. The star saves an activity to your favourites, so you can find it again quickly. And Mark as completed ticks it off, so you can see how many you've done in each category." },
+    { title: "6. Remember", text: "So, to recap. Search, browse or use the menu to find something. Play it online, or print it in standard or large print. Use the star and the tick to keep track. If you ever get stuck, there's a Help and support link in the menu. Thanks for watching." },
+  ] },
+  { key: "play", label: "Playing on screen and the bingo caller", slides: [
+    { title: "1. Title", text: "Many of our puzzles and games can be played right on screen, so you don't need a printer. In this video I'll show you how, and how to use the bingo caller." },
+    { title: "2. Find Play online", text: "Look for the green Play online button next to an activity. Not every activity has one, but many of the puzzles and games do. Press it and the game opens on its own page." },
+    { title: "3. Playing a crossword", text: "Here's a crossword. Tap a square and type your answer. Tap the same square again to switch between across and down. Wrong letters show up in red, so nobody needs to feel stuck. The clues are on the right. Use Next and Previous to move to other games in the same category. And the Dementia friendly switch gives you a calmer, easier-to-see view." },
+    { title: "4. The bingo caller", text: "On the Bingo page, the bingo caller is at the top. Press Call next number and it picks a number at random. Tick Traditional calls for the classic bingo sayings. Turn on Read aloud and it says each number out loud. Auto-call can pick the numbers for you at a pace you choose. And Big screen fills the display, so everyone in the room can see." },
+    { title: "5. Calling and checking", text: "The latest number appears in the box, with its traditional call underneath, like cup of tea for B three. As numbers are called they light up on the board. Made a mistake? Undo takes back the last number, and New game starts afresh. If someone shouts bingo, type their card number here and press Check card." },
+    { title: "6. Remember", text: "So, to recap. Press Play online to play on screen. Tap a square and type, and wrong letters show in red. For bingo, use the caller to call the numbers, read them aloud, or fill the screen for the whole room. Thanks for watching." },
+  ] },
+  { key: "calendar", label: "Using the calendar", slides: [
+    { title: "1. Title", text: "The calendar helps you plan around holidays and celebrations all year. In this video I'll show you how to find the activities for a date, add your own events, and print it." },
+    { title: "2. Your calendar", text: "Open Calendar from the menu. Use Previous and Next to move between months, and the year box to change the year. Dates with a coloured outline have activities ready for them. Click one to see what's available." },
+    { title: "3. Open the activities", text: "Clicking a date takes you to a page of activities made for that occasion. Choose a category, such as crosswords or word searches, to see what's there. These are separate from the regular library, so they're ready to use on the day." },
+    { title: "4. Add your own events", text: "You can add your own events too, such as birthdays, outings or visitors. Press Add event. To change or delete one of your events later, just click it. There's also a weekly rota option underneath, if you plan your week that way." },
+    { title: "5. Print it", text: "To print, choose Print A4, or Print Large for bigger text. For the large version, set your printer to A3 paper in its print settings. The Dementia friendly button makes the calendar calmer and easier to read." },
+    { title: "6. Remember", text: "So, to recap. Outlined dates have activities ready. Add your own events with Add event. And print on A4, or large print on A3. You can also put the calendar on a shared files link, which we cover in another video. Thanks for watching." },
+  ] },
+  { key: "boards", label: "Communication boards", slides: [
+    { title: "1. Title", text: "Communication boards help someone tell you what they want, using pictures and words, even when you don't share a language. In this video I'll show you how to find a board and how to use it." },
+    { title: "2. Choose a language", text: "Open Communication Cards from the menu and choose a language. There are twenty-four, including English. Each one has talking boards that can read out loud, and the printed cards show English beside the translation." },
+    { title: "3. Choose a topic and a board", text: "Boards are grouped into topics, like eating and drinking, pain, feelings, family and choice. Search the cards if you know what you want. Then tap a board to open it. The star saves your favourites." },
+    { title: "4. Using a board", text: "The settings across the top choose how the board speaks. Read aloud in English, in their language, or both. Some languages use different words for a man and a woman, so choose who it's for. Pick a voice and a speed, then press Read the choices. The person can point to the picture they want." },
+    { title: "5. Always available", text: "At the bottom of every board are five answers that are always there: yes, no, not sure, stop and help. And you can print any board on A4, or large print on A3, to keep by the bed or on the table." },
+    { title: "6. Remember", text: "So, to recap. Choose the language, then the topic, then the board. Set who it's for and how it speaks, and press Read the choices. Yes, no, not sure, stop and help are always there. Thanks for watching." },
+  ] },
+  { key: "bsl", label: "BSL cards", slides: [
+    { title: "1. Title", text: "Our BSL tools help you learn and use simple British Sign Language with the people you support. In this video I'll show you where to find them, and how the video cards work." },
+    { title: "2. Find the BSL tools", text: "Choose BSL Tools from the menu. There are ninety cards, covering everyday questions such as would you like a drink, are you in pain, and do you need the toilet. Search for one, or pick a theme." },
+    { title: "3. Print and watch", text: "Standard gives you the card to print. Watch sign video opens a video of the sign, so you can see exactly how it's made. Mark as completed keeps track of the ones you've learned. Every card is also saved with a QR code, so anyone can scan it and watch the sign." },
+    { title: "4. Remember", text: "So, to recap. BSL Tools is in the menu. Print the card, then watch the sign video. The videos come from a BSL dictionary, so always check a sign before you use it. Thanks for watching." },
+  ] },
+  { key: "files", label: "Shared files and QR codes", slides: [
+    { title: "1. Title", text: "Shared files lets you upload a menu, a newsletter or your calendar and get a link or a QR code. You can put it on your own website, or on a noticeboard. In this video I'll show you how." },
+    { title: "2. Make a new link", text: "Open Shared files from the menu. First give your page a title. Then add sections, such as Menu, Calendar and Complaints form. Each section can hold up to ten files, as PDF, J-peg or P-N-G, each up to twenty-five megabytes. If you only have one group of files, leave the section name blank." },
+    { title: "3. Your link", text: "Press Upload and make my link. You'll get a link and a QR code. Visitors scan the code and see your sections as buttons. They tap the one they want to see the files inside. Your links are listed below, and you can add, rename or remove sections and files whenever you like, or delete a link." },
+    { title: "4. Remember", text: "So, to recap. Give it a title, add sections and files, then upload. Visitors scan one code and see your sections as buttons. Remember, anyone with the link can see what's on it, so never share residents' names or private details. Thanks for watching." },
+  ] },
+];

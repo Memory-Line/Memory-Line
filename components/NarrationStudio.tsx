@@ -6,7 +6,7 @@ type Item = { title: string; text: string };
 type Made = { url: string; blob: Blob; seconds: number };
 
 // Makes the Bella audio for each slide, lets the admin listen and edit, and downloads everything as one zip.
-export default function NarrationStudio({ scripts }: { scripts: Item[] }) {
+function Studio({ scripts, zipName }: { scripts: Item[]; zipName: string }) {
   const [texts, setTexts] = useState(scripts.map((s) => s.text));
   const [made, setMade] = useState<(Made | null)[]>(scripts.map(() => null));
   const [busy, setBusy] = useState<number | null>(null);
@@ -86,7 +86,7 @@ export default function NarrationStudio({ scripts }: { scripts: Item[] }) {
     const blob = new Blob([...parts, ...central, end] as BlobPart[], { type: "application/zip" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "engagement-bella-audio.zip";
+    a.download = zipName;
     a.click();
   }
 
@@ -129,6 +129,27 @@ export default function NarrationStudio({ scripts }: { scripts: Item[] }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+type VideoSet = { key: string; label: string; slides: Item[] };
+
+// Pick which video to make the audio for. Each video has its own zip of slide audio.
+export default function NarrationStudio({ sets }: { sets: VideoSet[] }) {
+  const [key, setKey] = useState(sets[0].key);
+  const set = sets.find((s) => s.key === key) ?? sets[0];
+  return (
+    <div>
+      <label className="block mt-6 text-sm font-semibold">
+        Video
+        <select value={key} onChange={(e) => setKey(e.target.value)} className="ml-3 rounded-lg border border-line bg-white px-3 py-2 text-sm font-normal">
+          {sets.map((s) => (
+            <option key={s.key} value={s.key}>{s.label}</option>
+          ))}
+        </select>
+      </label>
+      <Studio key={set.key} scripts={set.slides} zipName={`${set.key}-bella-audio.zip`} />
     </div>
   );
 }
