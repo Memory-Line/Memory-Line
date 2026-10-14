@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
+import { parseNoteLines, noteIsEmpty } from "@/lib/noteLines";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -66,7 +67,8 @@ export default function MonthPrint({
 
   const cells = getMonthGrid(year, monthIndex);
   const weeks = cells.length / 7;
-  const notesText = notes.text.trim();
+  const noteLines = noteIsEmpty(notes.text) ? [] : parseNoteLines(notes.text.trim(), notes.colour);
+  const notesText = noteLines.length ? 'x' : '';
 
   // Fit everything inside its box before printing.
   useLayoutEffect(() => {
@@ -265,16 +267,16 @@ export default function MonthPrint({
             {notesText ? (
               <div
                 data-month-notes
-                style={{ height: "calc(100% - 4mm)", overflow: "hidden", overflowWrap: "anywhere", fontSize: "9pt", lineHeight: 1.25, color: notes.colour }}
+                style={{ height: "calc(100% - 4mm)", overflow: "hidden", overflowWrap: "anywhere", fontSize: "9pt", lineHeight: 1.25 }}
               >
-                {notesText.split("\n").map((line, i) =>
-                  line.startsWith("• ") ? (
-                    <div key={i} style={{ display: "flex", gap: "1.5mm" }}>
+                {noteLines.map((l, i) =>
+                  l.text.startsWith("• ") ? (
+                    <div key={i} style={{ display: "flex", gap: "1.5mm", color: l.colour }}>
                       <span>•</span>
-                      <span style={{ flex: 1, minWidth: 0 }}>{line.slice(2)}</span>
+                      <span style={{ flex: 1, minWidth: 0 }}>{l.text.slice(2)}</span>
                     </div>
                   ) : (
-                    <div key={i} style={{ minHeight: line === "" ? "1.25em" : undefined }}>{line}</div>
+                    <div key={i} style={{ color: l.colour, minHeight: l.text === "" ? "1.25em" : undefined }}>{l.text}</div>
                   )
                 )}
               </div>

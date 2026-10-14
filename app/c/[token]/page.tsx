@@ -82,7 +82,7 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
           .sc-dementia .sc-agenda .sc-item { font-size: 18px !important; }
           .sc-dementia .sc-agenda div { color: #1a1a1a !important; }
           .sc-dementia .sc-notes { border: 3px solid #1a1a1a !important; font-weight: 700; }
-          .sc-dementia .sc-notes div { color: #1a1a1a !important; font-size: 19px !important; }
+          .sc-dementia .sc-notes div { font-size: 19px !important; }
         }
         @page { size: A4 landscape; margin: 10mm; }
         @media print {
