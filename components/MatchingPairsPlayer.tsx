@@ -5,9 +5,9 @@ import { Check, Printer, RotateCcw } from "lucide-react";
 import type { MatchingPairsPicture } from "@/lib/matchingPairs";
 import { useEasyView } from "@/components/EasyView";
 
-// Colours from the printed sheets, used for the card backs.
 const INK = "#3f3237";
-const BACKS = ["#cfe3f2", "#c9e6dd", "#f1d2be", "#dfd5ec", "#f2e2b8", "#d3e6f5", "#f2d6da", "#d8e7cb"];
+// Every card back is the same colour (and carries the logo), so a card's back never gives its picture away.
+const BACK = "#e7efe4";
 const MATCH_HIGHLIGHT = "#e4eee2";
 const MATCH_BORDER = "#2f7a63";
 
@@ -253,7 +253,7 @@ export default function MatchingPairsPlayer({
                             border: "4px solid #1a1a1a",
                           }
                         : {
-                            background: isFaceUp ? "#fff" : BACKS[card.picture % BACKS.length],
+                            background: isFaceUp ? "#fff" : BACK,
                             border: card.matched ? `3px solid ${MATCH_BORDER}` : "1px solid #d9cfc1",
                             boxShadow: card.matched ? `0 0 0 3px ${MATCH_HIGHLIGHT} inset` : undefined,
                           }
@@ -269,7 +269,11 @@ export default function MatchingPairsPlayer({
                     ) : easyView ? (
                       <span className="absolute inset-0 flex items-center justify-center font-bold" style={{ color: "#fff", fontSize: 44 }}>?</span>
                     ) : (
-                      <span className="absolute inset-2 rounded-lg" style={{ border: "2px solid rgba(63,50,55,0.15)" }} />
+                      <>
+                        <span className="absolute inset-2 rounded-lg" style={{ border: "2px solid rgba(63,50,55,0.15)" }} />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/activity-central-icon.png" alt="" aria-hidden="true" draggable={false} className="absolute inset-0 m-auto" style={{ width: "58%", height: "auto", opacity: 0.9 }} />
+                      </>
                     )}
                     {easyView && card.matched && (
                       <span className="absolute right-1 top-1 rounded-full flex items-center justify-center" style={{ width: 28, height: 28, background: "#1a1a1a" }}>
