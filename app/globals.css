@@ -67,8 +67,6 @@ html {
 /* A game in Dementia friendly mode sits in a white card with a thick black outline. */
 .easy-game { background: #fff; border: 3px solid #1a1a1a; border-radius: 16px; padding: 18px 14px; color: #1a1a1a; }
 
-/* Favourites tab (components/FavouriteTabs.tsx): in the Favourites view, hide the activities that are not starred. */
-[data-fav-view="favs"] [data-template-row]:not([data-fav="1"]) { display: none !important; }
 
 /* Playable activities on a wide screen: the board on the left, the words, options and buttons on the right.
    On a phone everything stays in one column. Put play-two-col on the container, play-board on the board

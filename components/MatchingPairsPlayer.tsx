@@ -13,7 +13,7 @@ const MATCH_BORDER = "#2f7a63";
 
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-const RENDER_SCALE = 2.5; // resolution the page is rendered at before cropping
+const RENDER_SCALE = 2; // resolution the page is rendered at before cropping
 
 // A card in the memory game: which picture it shows (0..N-1), and its
 // position in the shuffled deck.
