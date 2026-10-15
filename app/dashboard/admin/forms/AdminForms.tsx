@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import QrCodeButton from "@/components/QrCodeButton";
 
-type FormRow = { id: string; token: string; title: string; notifyEmail: string; user: { email: string; name: string | null } };
+type FormRow = { id: string; token: string; title: string; notifyEmail: string; copyEmail: string | null; user: { email: string; name: string | null } };
 
 const TEMPLATES = [
   { key: "resident", label: "Resident feedback questionnaire" },
@@ -15,6 +15,7 @@ export default function AdminForms() {
   const [forms, setForms] = useState<FormRow[] | null>(null);
   const [accountEmail, setAccountEmail] = useState("");
   const [notifyEmail, setNotifyEmail] = useState("");
+  const [copyEmail, setCopyEmail] = useState("");
   const [picked, setPicked] = useState<string[]>(["resident", "relatives", "employee"]);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
@@ -37,7 +38,7 @@ export default function AdminForms() {
     const res = await fetch("/api/admin/forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountEmail, notifyEmail, templates: picked }),
+      body: JSON.stringify({ accountEmail, notifyEmail, copyEmail, templates: picked }),
     }).catch(() => null);
     setBusy(false);
     const data = await res?.json().catch(() => ({}));
@@ -75,6 +76,11 @@ export default function AdminForms() {
         <div>
           <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="qa-notify">Send the answers to this email</label>
           <input id="qa-notify" className={field} value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)} placeholder="westclifflodge@gmail.com" />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="qa-copy">Also send a copy to (optional)</label>
+          <input id="qa-copy" className={field} value={copyEmail} onChange={(e) => setCopyEmail(e.target.value)} placeholder="a second address, e.g. the manager" />
+          <p className="text-xs text-inkSoft mt-1">Every response is emailed to both addresses. Nothing is kept on our website.</p>
         </div>
         <div className="space-y-1.5">
           {TEMPLATES.map((t) => (
@@ -125,7 +131,7 @@ export default function AdminForms() {
           <div key={f.id} className="rounded-xl p-4 bg-card border border-line">
             <p className="text-sm font-semibold">{f.title}</p>
             <p className="text-xs text-inkSoft mt-0.5">
-              Account: {f.user.email} · answers go to {f.notifyEmail}
+              Account: {f.user.email} · answers go to {f.notifyEmail}{f.copyEmail ? ` and a copy to ${f.copyEmail}` : ""}
             </p>
             <input readOnly value={urlFor(f.token)} onFocus={(e) => e.currentTarget.select()} className="w-full rounded-lg border border-line px-2.5 py-1.5 text-xs bg-white mt-2" aria-label="Link" />
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-xs font-semibold">

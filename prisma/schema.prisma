@@ -65,6 +65,7 @@ model SharedForm {
   thanks      String   @default("")
   items       Json     // the sections and questions (see lib/forms.ts)
   notifyEmail String
+  copyEmail   String?  // optional second address that gets a copy of every response
   logoPath    String?  // the home's logo, a file under /public (shown on the PDFs)
   brandLines  String?  // address and contact details printed at the foot of the PDFs
   createdAt   DateTime @default(now())
