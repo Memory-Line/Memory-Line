@@ -52,15 +52,14 @@ export async function POST(req: Request, { params }: { params: { token: string }
   }
   const stamp = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // 2026-10-07
   const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
-  const sent = await sendEmail(
-    formSubmissionEmail({
-      to: form.notifyEmail,
-      formTitle: form.title,
-      homeName: form.homeName,
-      receivedOn: date,
-      pdf: { filename: `${slug}-${stamp}.pdf`, base64: Buffer.from(pdfBytes).toString("base64") },
-    })
+  // The home's own address, and the optional second address that gets a copy. Each is its own email, so
+  // one address having trouble doesn't stop the other; it counts as sent if either one went.
+  const addresses = [form.notifyEmail, ...(form.copyEmail && form.copyEmail.toLowerCase() !== form.notifyEmail.toLowerCase() ? [form.copyEmail] : [])];
+  const pdf = { filename: `${slug}-${stamp}.pdf`, base64: Buffer.from(pdfBytes).toString("base64") };
+  const results = await Promise.all(
+    addresses.map((to) => sendEmail(formSubmissionEmail({ to, formTitle: form.title, homeName: form.homeName, receivedOn: date, pdf })))
   );
+  const sent = results.some(Boolean);
   if (!sent) {
     return NextResponse.json({ error: "We couldn't send your answers just now. Please try again in a few minutes." }, { status: 502 });
   }

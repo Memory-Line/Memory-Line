@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import QrCodeButton from "@/components/QrCodeButton";
 
-type Row = { id: string; token: string; title: string; notifyEmail: string };
+type Row = { id: string; token: string; title: string; notifyEmail: string; copyEmail: string | null };
 
 // The account's questionnaires: copy the link, make a QR code, or open the form.
 export default function QuestionnaireList({ forms }: { forms: Row[] }) {
   const [copied, setCopied] = useState<string | null>(null);
-  const urlFor = (token: string) => `${window.location.origin}/q/${token}`;
+  // The page address is only known in the browser, so the links fill in once it has loaded.
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(window.location.origin), []);
+  const urlFor = (token: string) => `${origin}/q/${token}`;
 
   async function copy(token: string) {
     try {
@@ -28,7 +31,7 @@ export default function QuestionnaireList({ forms }: { forms: Row[] }) {
       {forms.map((f) => (
         <div key={f.id} className="rounded-xl p-4 bg-card border border-line">
           <p className="text-sm font-semibold">{f.title}</p>
-          <p className="text-xs text-inkSoft mt-0.5">Answers are emailed to {f.notifyEmail}.</p>
+          <p className="text-xs text-inkSoft mt-0.5">Answers are emailed to {f.notifyEmail}{f.copyEmail ? `, with a copy to ${f.copyEmail}` : ""}.</p>
           <input
             readOnly
             value={urlFor(f.token)}

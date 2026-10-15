@@ -15,7 +15,7 @@ export async function GET() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const forms = await prisma.sharedForm.findMany({
     orderBy: { createdAt: "desc" },
-    select: { id: true, token: true, title: true, notifyEmail: true, createdAt: true, user: { select: { email: true, name: true, features: true } } },
+    select: { id: true, token: true, title: true, notifyEmail: true, copyEmail: true, createdAt: true, user: { select: { email: true, name: true, features: true } } },
   });
   return NextResponse.json({ forms });
 }
@@ -23,6 +23,7 @@ export async function GET() {
 const schema = z.object({
   accountEmail: z.string().trim().email(),
   notifyEmail: z.string().trim().email(),
+  copyEmail: z.string().trim().email().optional().or(z.literal("")),
   templates: z.array(z.enum(["resident", "relatives", "employee"])).min(1, "Tick at least one questionnaire"),
 });
 
@@ -55,6 +56,7 @@ export async function POST(req: Request) {
           thanks: t.def.thanks,
           items: t.def.items as unknown as object,
           notifyEmail: parsed.data.notifyEmail,
+          copyEmail: parsed.data.copyEmail ? parsed.data.copyEmail : null,
           logoPath: t.def.logoPath ?? null,
           brandLines: t.def.brandLines ?? null,
         },
