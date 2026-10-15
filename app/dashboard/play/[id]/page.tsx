@@ -35,7 +35,24 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   const template = await prisma.template.findUnique({ where: { id: params.id } });
   if (!template) notFound();
 
-  const viewer = await getViewer();
+  // Everything below that doesn't depend on the other lookups runs at the same time.
+  const [viewer, categories, siblings] = await Promise.all([
+    getViewer(),
+    getCategories(),
+    // Previous/next within the same shelf (same category, sub-category,
+    // occasion and language), ordered by the sheet's own number, so someone
+    // finishing one activity can move straight to the next without going back
+    // to the list.
+    prisma.template.findMany({
+      where: {
+        category: template.category,
+        subcategory: template.subcategory,
+        occasion: template.occasion,
+        language: template.language,
+      },
+      select: { id: true, fileName: true },
+    }),
+  ]);
   const tracking = viewer.has("completion-tracking");
   const completed =
     tracking && viewer.userId
@@ -44,7 +61,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
         }))
       : false;
   const number = parseInt(template.fileName.split(/[\/]/).pop()?.match(/^(\d+)/)?.[1] ?? "", 10);
-  const category = (await getCategories()).find((c) => c.key === template.category);
+  const category = categories.find((c) => c.key === template.category);
   const common = {
     templateId: template.id,
     tracking,
@@ -56,19 +73,6 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
   let back = { href: `/dashboard/${category?.slug ?? ""}`, label: `All ${template.category}` };
   let player: React.ReactNode = null;
 
-  // Previous/next within the same shelf (same category, sub-category,
-  // occasion and language), ordered by the sheet's own number, so someone
-  // finishing one activity can move straight to the next without going back
-  // to the list.
-  const siblings = await prisma.template.findMany({
-    where: {
-      category: template.category,
-      subcategory: template.subcategory,
-      occasion: template.occasion,
-      language: template.language,
-    },
-    select: { id: true, fileName: true },
-  });
   const numberOf = (fileName: string) => parseInt(fileName.split(/[\/]/).pop()?.match(/^(\d+)/)?.[1] ?? "", 10);
   siblings.sort((a, b) => numberOf(a.fileName) - numberOf(b.fileName));
   const myIndex = siblings.findIndex((s) => s.id === template.id);

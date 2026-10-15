@@ -60,7 +60,7 @@ export default async function TemplateList({
       {sorted.map((t, i) => {
         const categoryLocked = !isPremium && PREMIUM_ONLY_CATEGORIES.has(t.category);
         return (
-        <div key={t.id} data-template-row data-fav={starred.has(t.id) ? "1" : "0"} data-search={`${titles[i]} ${t.fileName}`.toLowerCase()} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line">
+        <div key={t.id} data-template-row data-fav={starred.has(t.id) ? "1" : "0"} data-search={`${titles[i]} ${t.fileName}`.toLowerCase()} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line [content-visibility:auto] [contain-intrinsic-size:auto_96px]">
           <div className="flex items-start gap-2 min-w-0">
             {viewer.userId && <FavouriteStar templateId={t.id} initially={starred.has(t.id)} />}
             <div className="min-w-0">
@@ -74,7 +74,7 @@ export default async function TemplateList({
             ) : (
               <>
                 {playable && (
-                  <Link href={`/dashboard/play/${t.id}`} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
+                  <Link href={`/dashboard/play/${t.id}`} prefetch={false} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
                     <Play size={14} />
                     Play online
                   </Link>
