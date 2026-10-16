@@ -260,13 +260,8 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         {deviceNote && <div style={{ background: "#FFF8E1", border: `2px solid ${LINE}`, borderRadius: 12, padding: "10px 14px", marginBottom: 14, font: "14px Arial", color: "#6B5A2A" }}>{deviceNote}</div>}
 
         {needPerson && (
-          <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 22, padding: "22px 24px", marginBottom: 14, textAlign: "center" }}>
-            <div style={{ fontFamily: "Georgia, serif", fontSize: 26, marginBottom: 4 }}>Who is this board for?</div>
-            <div style={{ fontSize: 14, color: "#6B6252", marginBottom: 14 }}>Polish wording is different for a man and a woman. Choose first.</div>
-            <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-              <button type="button" onClick={() => pickPerson("man")} style={{ background: SAGED, color: "#fff", border: 0, borderRadius: 14, padding: "16px 34px", font: "700 20px Georgia,serif", cursor: "pointer" }}>A man</button>
-              <button type="button" onClick={() => pickPerson("woman")} style={{ background: SAGED, color: "#fff", border: 0, borderRadius: 14, padding: "16px 34px", font: "700 20px Georgia,serif", cursor: "pointer" }}>A woman</button>
-            </div>
+          <div style={{ font: "700 15px Arial", color: CLAY, margin: "-4px 4px 14px" }}>
+            Choose A man or A woman above to show the board. Polish wording is different for each.
           </div>
         )}
 
