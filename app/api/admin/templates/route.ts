@@ -35,6 +35,39 @@ export async function GET(req: Request) {
   });
 }
 
+// Admin only. Give numbered issues new titles:
+// { category, items: [{ subcategory, number, title }] }. The file name keeps its
+// leading number so issues stay in order.
+export async function PATCH(req: Request) {
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  const body = await req.json().catch(() => ({}));
+  const category = typeof body.category === "string" ? body.category : "";
+  const items: { subcategory: string; number: number; title: string }[] = Array.isArray(body.items) ? body.items.slice(0, 500) : [];
+  if (!category || items.length === 0) return NextResponse.json({ error: "Nothing to rename." }, { status: 400 });
+  const rows = await prisma.template.findMany({ where: { category, occasion: null }, select: { id: true, fileName: true, subcategory: true } });
+  let renamed = 0;
+  const missing: string[] = [];
+  for (const it of items) {
+    const title = String(it.title ?? "").trim();
+    if (!title) continue;
+    const row = rows.find((r) => {
+      const n = parseInt((r.fileName.split(/[\/]/).pop() ?? "").match(/^(\d+)/)?.[1] ?? "", 10);
+      return r.subcategory === it.subcategory && n === it.number;
+    });
+    if (!row) {
+      missing.push(`${it.subcategory} ${it.number}`);
+      continue;
+    }
+    const safe = title.replace(/[\\/:*?"<>|]/g, "");
+    await prisma.template.update({
+      where: { id: row.id },
+      data: { title, fileName: `${String(it.number).padStart(3, "0")} ${safe}.pdf` },
+    });
+    renamed++;
+  }
+  return NextResponse.json({ ok: true, renamed, missing });
+}
+
 // Admin only. Delete activities for good, with their stored files: { ids: [...] }.
 export async function DELETE(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
