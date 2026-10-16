@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
+import { NARRATION_VOICES } from "@/lib/narrationScripts";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -10,7 +11,8 @@ const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replac
 
 export async function POST(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-  const { text } = await req.json().catch(() => ({}));
+  const { text, voice } = await req.json().catch(() => ({}));
+  const voiceName = NARRATION_VOICES.some((v) => v.key === voice) ? voice : "en-GB-BellaNeural";
   if (typeof text !== "string" || !text.trim() || text.length > 4000) return NextResponse.json({ error: "Bad text" }, { status: 400 });
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
@@ -18,7 +20,7 @@ export async function POST(req: Request) {
 
   // No extra pauses: Bella already pauses naturally at full stops, so it flows like a person talking.
   const body = esc(text.trim());
-  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="en-GB-BellaNeural"><prosody rate="0%">${body}</prosody></voice></speak>`;
+  const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="${voiceName}"><prosody rate="0%">${body}</prosody></voice></speak>`;
   try {
     const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",

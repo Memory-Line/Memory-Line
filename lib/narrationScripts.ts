@@ -59,8 +59,28 @@ export const NARRATION_SCRIPTS: { title: string; text: string }[] = [
   },
 ];
 
+// British voices the Narration studio can read in (Bella is the default). key is the Azure voice name.
+export const NARRATION_VOICES: { key: string; label: string }[] = [
+  { key: "en-GB-BellaNeural", label: "Bella (woman)" },
+  { key: "en-GB-RyanNeural", label: "Ryan (man)" },
+  { key: "en-GB-ThomasNeural", label: "Thomas (man)" },
+  { key: "en-GB-AlfieNeural", label: "Alfie (man)" },
+  { key: "en-GB-OliverNeural", label: "Oliver (man)" },
+  { key: "en-GB-ElliotNeural", label: "Elliot (man)" },
+  { key: "en-GB-NoahNeural", label: "Noah (man)" },
+];
+
 // TEMPORARY: the how-to videos, one set of slide scripts each (used by the admin Narration studio).
 export const HOWTO_SETS: { key: string; label: string; slides: { title: string; text: string }[] }[] = [
+  { key: "intro", label: "Company intro (for the outreach email)", slides: [
+    { title: "1. Welcome", text: "Welcome to Activity Central." },
+    { title: "2. The problem", text: "Activity Central was created by a care home deputy manager, who knows how hard it is to find activities that suit people living with dementia, and how little time there is to prepare them. It's a library of ready-to-run activities for care home teams." },
+    { title: "3. Print and go", text: "Choose an activity, print it in standard or large print, and you're ready to go. Puzzles, quizzes, sing-alongs and reminiscence newsletters, with answer sheets included." },
+    { title: "4. Play on screen", text: "Prefer to play together on a TV or tablet? Many activities can be played on screen. And one switch makes everything clearer, with high contrast and bigger text." },
+    { title: "5. Bingo and boards", text: "The Bingo caller speaks each number aloud, in English or in other languages. And our talking communication boards speak in a natural voice, in 24 languages, to help residents say what they need." },
+    { title: "6. Calendar and QR codes", text: "There's a printable calendar of holidays and celebrations, and QR codes to share your menu or newsletter with families." },
+    { title: "7. Try it", text: "You can try free samples from every category, with no sign-up, at activitycentral dot co dot uk. We open for subscriptions at the end of October. We'd love to hear what you think." },
+  ] },
   { key: "activities", label: "Finding and using activities", slides: [
     { title: "1. Title", text: "Welcome. In this short video I'll show you how to find an activity, and how to print it or play it on screen. It only takes a couple of minutes, and you can come back to it any time you need a reminder." },
     { title: "2. Your dashboard", text: "This is your dashboard, the first page you see when you log in. There are three ways to find an activity. Type a word into the search bar at the top, like seaside or birds. Or choose a category from the tiles. Or use the menu down the left-hand side, which lists every category." },
