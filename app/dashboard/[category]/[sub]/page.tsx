@@ -32,7 +32,7 @@ export default async function SubcategoryPage({
   return (
     <div>
       <Link href={`/dashboard/${category.slug}`} className="text-xs text-inkSoft">
-        ← All {category.key} levels
+        ← All {category.key} {category.key === "Newsletters" ? "topics" : "levels"}
       </Link>
       <h1 className="font-serif text-[26px] mt-1">
         {sub.label} {category.key}
