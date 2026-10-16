@@ -320,7 +320,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <button type="button" onClick={() => print("a4")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A4</button>
           <button type="button" onClick={() => print("a3")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A3 large print</button>
-          <span style={{ font: "12px Arial", color: "#8A7A6B" }}>Draft translations: to be checked by a fluent speaker before use. Pilot, admin only.</span>
+          <span style={{ font: "12px Arial", color: "#8A7A6B" }}>Translations were created with AI, so they may not always be accurate. Please check with a fluent speaker where it matters.</span>
         </div>
       </div>
 
@@ -364,7 +364,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           <div style={{ font: "600 15px Arial", color: "#333", lineHeight: 1.3 }}>Scan with your phone to hear this board read aloud. Choose English, {otherInfo.name} or both, and a male or female voice.</div>
         </div>
         <div style={{ marginTop: "5mm", display: "flex", justifyContent: "space-between", font: "12px Arial", color: "#777" }}>
-          <span>Activity Central · activitycentral.co.uk · Draft translation: check with a fluent speaker before use.</span>
+          <span>Activity Central · activitycentral.co.uk · Translation created with AI and may not be accurate: check with a fluent speaker where it matters.</span>
           <span>{board.code} · {printSize.toUpperCase()}</span>
         </div>
       </div>
