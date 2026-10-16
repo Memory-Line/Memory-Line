@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { NARRATION_VOICES } from "@/lib/narrationScripts";
 
 type Item = { title: string; text: string };
 type Made = { url: string; blob: Blob; seconds: number };
 
 // Makes the Bella audio for each slide, lets the admin listen and edit, and downloads everything as one zip.
-function Studio({ scripts, zipName }: { scripts: Item[]; zipName: string }) {
+function Studio({ scripts, zipName, voice }: { scripts: Item[]; zipName: string; voice: string }) {
   const [texts, setTexts] = useState(scripts.map((s) => s.text));
   const [made, setMade] = useState<(Made | null)[]>(scripts.map(() => null));
   const [busy, setBusy] = useState<number | null>(null);
@@ -20,7 +21,7 @@ function Studio({ scripts, zipName }: { scripts: Item[]; zipName: string }) {
       const res = await fetch("/api/admin/narration", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: texts[i] }),
+        body: JSON.stringify({ text: texts[i], voice }),
       });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
@@ -138,6 +139,28 @@ type VideoSet = { key: string; label: string; slides: Item[] };
 // Pick which video to make the audio for. Each video has its own zip of slide audio.
 export default function NarrationStudio({ sets }: { sets: VideoSet[] }) {
   const [key, setKey] = useState(sets[0].key);
+  const [voice, setVoice] = useState(NARRATION_VOICES[0].key);
+  const [sample, setSample] = useState<string | null>(null);
+  const [sampling, setSampling] = useState(false);
+
+  // Plays a short line in the chosen voice so the voices can be compared.
+  async function hear() {
+    setSampling(true);
+    try {
+      const res = await fetch("/api/admin/narration", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: "Welcome to Activity Central. Choose an activity, print it, and you're ready to go.", voice }),
+      });
+      if (res.ok) {
+        const url = URL.createObjectURL(await res.blob());
+        setSample(url);
+        new Audio(url).play().catch(() => {});
+      }
+    } finally {
+      setSampling(false);
+    }
+  }
   const set = sets.find((s) => s.key === key) ?? sets[0];
   return (
     <div>
@@ -149,7 +172,22 @@ export default function NarrationStudio({ sets }: { sets: VideoSet[] }) {
           ))}
         </select>
       </label>
-      <Studio key={set.key} scripts={set.slides} zipName={`${set.key}-bella-audio.zip`} />
+      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm font-semibold">
+        <label>
+          Voice
+          <select value={voice} onChange={(e) => { setVoice(e.target.value); setSample(null); }} className="ml-3 rounded-lg border border-line bg-white px-3 py-2 text-sm font-normal">
+            {NARRATION_VOICES.map((v) => (
+              <option key={v.key} value={v.key}>{v.label}</option>
+            ))}
+          </select>
+        </label>
+        <button onClick={hear} disabled={sampling} className="rounded-lg border-2 border-ink px-4 py-1.5 text-sm font-semibold disabled:opacity-60">
+          {sampling ? "Making sample…" : "Hear this voice"}
+        </button>
+        {sample && <audio controls src={sample} className="h-9" />}
+      </div>
+      <p className="text-xs text-inkSoft mt-1">Choosing a different voice clears the audio on this page, so press &ldquo;Make all audio&rdquo; again.</p>
+      <Studio key={`${set.key}-${voice}`} scripts={set.slides} zipName={`${set.key}-${voice.replace("en-GB-", "").replace("Neural", "").toLowerCase()}-audio.zip`} voice={voice} />
     </div>
   );
 }
