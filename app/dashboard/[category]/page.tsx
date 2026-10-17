@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
 import TemplateList from "@/components/TemplateList";
-import { subcategoriesFor } from "@/lib/subcategories";
+import { subcategoriesFor, usesTopics, EARLIER } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import BingoCaller from "@/components/BingoCaller";
@@ -30,7 +30,7 @@ export function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
-// Colours borrowed from the dashboard tiles, one per Newsletter topic.
+// Colours borrowed from the dashboard tiles, one per topic.
 const TOPIC_COLOURS = [
   { color: "#4A7FB5", tint: "#DCE7F2" },
   { color: "#C98B2E", tint: "#F5EBD2" },
@@ -53,13 +53,20 @@ export default async function CategoryPage({ params }: { params: { category: str
   const tracking = viewer.has("completion-tracking");
 
   const subcategories = subcategoriesFor(category.key);
-  if (subcategories) {
-    const counts = await prisma.template.groupBy({
-      by: ["subcategory"],
-      where: { category: category.key, occasion: null },
-      _count: { _all: true },
-    });
-    const countFor = (slug: string) => counts.find((c) => c.subcategory === slug)?._count._all ?? 0;
+  const topics = usesTopics(category.key);
+  const counts = subcategories
+    ? await prisma.template.groupBy({
+        by: ["subcategory"],
+        where: { category: category.key, occasion: null },
+        _count: { _all: true },
+      })
+    : [];
+  const countFor = (slug: string) => counts.find((c) => c.subcategory === slug)?._count._all ?? 0;
+  // A category sorted into topics shows its plain list, as before, until something is in a topic.
+  const showTiles = !!subcategories && (!topics || subcategories.some((s) => countFor(s.slug) > 0));
+  if (subcategories && showTiles) {
+    // Activities made before this category was sorted into topics (no sub-category yet).
+    const earlierCount = topics ? counts.find((c) => c.subcategory === null)?._count._all ?? 0 : 0;
     // With completion tracking, how many of each level this account has done.
     const doneCounts =
       tracking && viewer.userId
@@ -77,11 +84,13 @@ export default async function CategoryPage({ params }: { params: { category: str
     return (
       <div>
         <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
-        <p className="text-clay text-[13px] mt-0.5 mb-5">{category.key === "Newsletters" ? "Choose a topic." : "Choose a level."}</p>
+        <p className="text-clay text-[13px] mt-0.5 mb-5">{topics ? "Choose a topic." : "Choose a level."}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {subcategories.map((s, i) => {
-            // Newsletter topics each get their own dashboard-style colour.
-            const mix = category.key === "Newsletters" ? TOPIC_COLOURS[i % TOPIC_COLOURS.length] : null;
+            // Topics with nothing in them yet are left out.
+            if (topics && countFor(s.slug) === 0) return null;
+            // Topics each get their own dashboard-style colour.
+            const mix = topics ? TOPIC_COLOURS[i % TOPIC_COLOURS.length] : null;
             const tint = mix?.tint ?? category.tint;
             const color = mix?.color ?? category.color;
             return (
@@ -104,6 +113,19 @@ export default async function CategoryPage({ params }: { params: { category: str
             </Link>
             );
           })}
+          {earlierCount > 0 && (
+            <Link
+              href={`/dashboard/${category.slug}/${EARLIER.slug}`}
+              className="rounded-xl p-4 border border-line"
+              style={{ background: category.tint }}
+            >
+              <p className="font-serif text-lg" style={{ color: category.color }}>
+                {EARLIER.label}
+              </p>
+              <p className="text-xs text-inkSoft mt-1">{EARLIER.description}</p>
+              <p className="text-xs font-semibold mt-3">{earlierCount} activities</p>
+            </Link>
+          )}
         </div>
       </div>
     );

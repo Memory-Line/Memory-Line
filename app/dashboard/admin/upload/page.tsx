@@ -7,7 +7,7 @@ import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages"
 import { FEATURES } from "@/lib/featureList";
 import { PLANS, type PlanKey } from "@/lib/plans";
 import { titleFromFilename } from "@/lib/titles";
-import { subcategoriesFor, subcategoryFromPath } from "@/lib/subcategories";
+import { subcategoriesFor, subcategoryFromPath, usesTopics } from "@/lib/subcategories";
 
 // Files picked as part of a folder count as large print when any folder
 // in their path says so (e.g. "A3 Large Print/"), and as answer sheets when
@@ -291,7 +291,7 @@ export default function AdminUploadPage() {
 
       {levels && (
         <>
-          <label className="block text-xs font-semibold text-inkSoft mb-1">Level</label>
+          <label className="block text-xs font-semibold text-inkSoft mb-1">{usesTopics(category) ? "Topic" : "Level"}</label>
           <select
             value={level || levels[0].slug}
             onChange={(e) => setLevel(e.target.value)}
@@ -304,8 +304,9 @@ export default function AdminUploadPage() {
             ))}
           </select>
           <p className="text-xs text-inkSoft mb-4">
-            When you upload a folder, files inside a level folder (e.g. "Beginner") use that
-            level instead.
+            {usesTopics(category)
+              ? 'When you upload a folder, files inside a topic folder (e.g. "Animals and Birds") use that topic instead.'
+              : 'When you upload a folder, files inside a level folder (e.g. "Beginner") use that level instead.'}
           </p>
         </>
       )}

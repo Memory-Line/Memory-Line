@@ -90,9 +90,10 @@ export async function POST(req: Request) {
     // Communication Cards come in several languages; nothing else does.
     const language =
       category === LANGUAGE_CATEGORY ? (formData.get("language") as string | null) || null : null;
-    // Only categories split into sub-categories (e.g. Sudoku levels) have one.
+    // Only categories split into sub-categories (e.g. Sudoku levels, topics) have one, and
+    // calendar-occasion uploads never do (their packs live on the occasion's own page).
     const subcategory =
-      category && subcategoriesFor(category)
+      category && !occasion && subcategoriesFor(category)
         ? (formData.get("subcategory") as string | null) || null
         : null;
 
@@ -108,7 +109,7 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
-    if (subcategoriesFor(category) && !(subcategory && subcategoryBySlug(category, subcategory))) {
+    if (!occasion && subcategoriesFor(category) && !(subcategory && subcategoryBySlug(category, subcategory))) {
       return NextResponse.json(
         { error: `Pick a level for ${category} (got "${subcategory ?? ""}")` },
         { status: 400 }

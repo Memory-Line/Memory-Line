@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategoryBySlug } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
-import { subcategoryBySlug } from "@/lib/subcategories";
+import { subcategoryBySlug, usesTopics, EARLIER } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
 import TemplateList from "@/components/TemplateList";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
@@ -16,11 +16,12 @@ export default async function SubcategoryPage({
   params: { category: string; sub: string };
 }) {
   const category = await getCategoryBySlug(params.category);
-  const sub = category && subcategoryBySlug(category.key, params.sub);
+  // "other" is the tile for activities made before the category was sorted into topics.
+  const sub = category && (subcategoryBySlug(category.key, params.sub) ?? (usesTopics(category.key) && params.sub === EARLIER.slug ? EARLIER : undefined));
   if (!category || !sub) notFound();
 
   const templates = await prisma.template.findMany({
-    where: { category: category.key, occasion: null, subcategory: sub.slug },
+    where: { category: category.key, occasion: null, subcategory: sub.slug === EARLIER.slug && usesTopics(category.key) ? null : sub.slug },
   });
 
   const viewer = await getViewer();
@@ -32,10 +33,10 @@ export default async function SubcategoryPage({
   return (
     <div>
       <Link href={`/dashboard/${category.slug}`} className="text-xs text-inkSoft">
-        ← All {category.key} {category.key === "Newsletters" ? "topics" : "levels"}
+        ← All {category.key} {usesTopics(category.key) ? "topics" : "levels"}
       </Link>
       <h1 className="font-serif text-[26px] mt-1">
-        {sub.label} {category.key}
+        {sub.slug === EARLIER.slug && usesTopics(category.key) ? `${category.key}: earlier activities` : `${sub.label} ${category.key}`}
       </h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         {templates.length} downloadable activities · {sub.description}
