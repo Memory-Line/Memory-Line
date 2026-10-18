@@ -83,7 +83,7 @@ export default function BoardList({
                 const on = favs.has(b.id);
                 return (
                   <div key={b.id} className="relative">
-                    <Link href={`/boards/${b.id}?lang=${lang}&back=${encodeURIComponent(back)}`} className="rounded-xl p-4 pr-14 bg-card border border-line block">
+                    <Link href={`/boards/${b.id}?lang=${lang}&back=${encodeURIComponent(back)}`} className="ac-tile ac-row rounded-xl p-4 pr-14 bg-card border border-line block">
                       <span className="text-[11px] font-bold text-clay">{b.code}{b.signOff ? " · checked by your team" : ""}</span>
                       <div className="font-serif text-[20px]">{b.en}</div>
                       {b.other && <div className="text-sm text-inkSoft" dir={lang === "ur" || lang === "ar" || lang === "fa" ? "rtl" : "ltr"}>{b.other}</div>}
@@ -94,7 +94,7 @@ export default function BoardList({
                       aria-pressed={on}
                       aria-label={on ? "Remove from favourites" : "Add to favourites"}
                       title={on ? "Remove from favourites" : "Add to favourites"}
-                      className="absolute right-3 top-3 rounded-full p-1.5 hover:bg-cardTint"
+                      className="ac-star absolute right-3 top-3 rounded-full p-1.5 hover:bg-cardTint"
                     >
                       <Star size={24} fill={on ? "#E0A82E" : "none"} color={on ? "#B8862A" : "#8A8371"} strokeWidth={2} />
                     </button>
