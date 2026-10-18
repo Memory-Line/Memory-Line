@@ -71,6 +71,37 @@ html {
 .dementia-friendly .ac-tile svg { stroke: #1a1a1a; }
 .dementia-friendly .ac-tile-tall { zoom: 1.12; min-height: 6.5rem; display: flex; flex-direction: column; justify-content: center; padding: 1.1rem !important; }
 .dementia-friendly .ac-tile-tall .text-xs, .dementia-friendly .ac-tile-tall .text-sm { font-size: 1rem; }
+/* The rows in a list of boards (one board per row). */
+.dementia-friendly .ac-row { padding: 1.1rem 4rem 1.1rem 1.1rem !important; }
+.dementia-friendly .ac-row .font-serif { font-size: 1.7rem; line-height: 1.2; }
+.dementia-friendly .ac-row .text-sm { font-size: 1.25rem; }
+.dementia-friendly .ac-star { background: #fff; border: 3px solid #1a1a1a; padding: 0.45rem; }
+
+/* A single board (components/BoardPlayer.tsx) in Dementia friendly mode: yellow boxes, black writing,
+   thick black outlines. Yes, No, Not sure, Stop and Help keep a coloured strip so they stay easy to tell apart. */
+.dementia-friendly .bp-root { background: #fff !important; }
+.dementia-friendly .bp-controls { border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bp-seg { border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bp-segbtn { font-size: 1.2rem !important; color: #1a1a1a !important; background: transparent !important; }
+.dementia-friendly .bp-segbtn[aria-pressed="true"] { background: #1a1a1a !important; color: #FFD23F !important; }
+.dementia-friendly .bp-read { background: #1a1a1a !important; color: #FFD23F !important; font-size: 1.25rem !important; padding: 0.9rem 1.2rem !important; }
+.dementia-friendly .bp-hint { color: #1a1a1a !important; font-size: 1.2rem !important; }
+.dementia-friendly .bp-q { background: #fff !important; border: 4px solid #1a1a1a !important; border-left-width: 14px !important; }
+.dementia-friendly .bp-q * { color: #1a1a1a !important; font-weight: 700; }
+.dementia-friendly .bp-q button { background: #1a1a1a !important; }
+.dementia-friendly .bp-q button, .dementia-friendly .bp-q button * { color: #FFD23F !important; }
+.dementia-friendly .bp-chosen { background: #FFD23F !important; border: 4px solid #1a1a1a !important; color: #1a1a1a !important; }
+.dementia-friendly .bp-chosen * { color: #1a1a1a !important; }
+.dementia-friendly .bp-chosen button { background: #fff !important; border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bp-card { background: #FFD23F !important; border: 4px solid #1a1a1a !important; color: #1a1a1a !important; opacity: 1 !important; }
+.dementia-friendly .bp-card * { color: #1a1a1a !important; font-weight: 800; }
+.dementia-friendly .bp-card[aria-pressed="true"] { outline: 7px solid #1a1a1a; outline-offset: 2px; }
+.dementia-friendly .bp-check { background: #1a1a1a !important; }
+.dementia-friendly .bp-check, .dementia-friendly .bp-check * { color: #FFD23F !important; }
+.dementia-friendly .bp-iconwrap { background: #fff; border-radius: 12px; margin: 0 4px 8px !important; }
+.dementia-friendly .bp-always { background: #FFD23F !important; color: #1a1a1a !important; border: 4px solid #1a1a1a !important; box-shadow: inset 0 -14px 0 var(--bpc); padding-bottom: 20px !important; opacity: 1 !important; }
+.dementia-friendly .bp-always * { color: #1a1a1a !important; font-weight: 800; opacity: 1 !important; }
+.dementia-friendly .bp-printbtn { border: 3px solid #1a1a1a !important; font-size: 1.1rem !important; }
 /* A game in Dementia friendly mode sits in a white card with a thick black outline. */
 .easy-game { background: #fff; border: 3px solid #1a1a1a; border-radius: 16px; padding: 18px 14px; color: #1a1a1a; }
 

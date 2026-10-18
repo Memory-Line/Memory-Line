@@ -3,6 +3,8 @@ import { requireAdmin } from "@/lib/admin";
 import { canUseBoardCode } from "@/lib/boardsAccess";
 import { getBoard, hasLanguage } from "@/lib/boardsDb";
 import BoardPlayer from "@/components/BoardPlayer";
+import { DementiaProvider } from "@/components/EasyView";
+import { getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Communication board", robots: { index: false, follow: false } };
@@ -17,5 +19,11 @@ export default async function BoardPage({ params, searchParams }: { params: { id
   // If this board has not been translated yet, show it in English only.
   const shown = lang !== "en" && !hasLanguage(board, lang) ? "en" : lang;
   const back = searchParams.back?.startsWith("/dashboard/communication-cards/") ? { href: searchParams.back, label: "← Back to the list" } : undefined;
-  return <BoardPlayer board={board} lang={shown} back={back} />;
+  // The Dementia friendly choice belongs to the account, so it follows the person to this page too.
+  const viewer = await getViewer();
+  return (
+    <DementiaProvider initial={viewer.dementiaFriendly}>
+      <BoardPlayer board={board} lang={shown} back={back} />
+    </DementiaProvider>
+  );
 }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ALWAYS, AUDIO, OTHER_LANGS, UI, type Board, type BoardAnswer, type LangCode, type Text3 } from "@/lib/boards";
 import BoardIcon from "@/components/BoardIcon";
+import { DementiaToggle } from "@/components/EasyView";
 
 const LEAF = ["#3E6E96", "#6B4A9B", "#A6822C", "#A05A6A", "#2F7A63", "#B5714A", "#5B8A9E", "#8A6E52"];
 const CREAM = "#F5F0E4", LINE = "#E6DDC8", INK = "#2E2B24", SAGE = "#8BA888", SAGED = "#4C6B4A", CLAY = "#B08968";
@@ -42,9 +43,9 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
   return (
     <div>
       <div style={{ font: "700 12px Arial", letterSpacing: 0.8, color: "#8A7A6B", marginBottom: 6 }}>{label.toUpperCase()}</div>
-      <div role="group" aria-label={label} style={{ display: "flex", gap: 2, background: "#fff", border: `2px solid ${LINE}`, borderRadius: 999, padding: 3 }}>
+      <div role="group" aria-label={label} className="bp-seg" style={{ display: "flex", gap: 2, background: "#fff", border: `2px solid ${LINE}`, borderRadius: 999, padding: 3 }}>
         {options.map(([v, text]) => (
-          <button key={v} type="button" onClick={() => onChange(v)} aria-pressed={value === v}
+          <button key={v} type="button" className="bp-segbtn" onClick={() => onChange(v)} aria-pressed={value === v}
             style={{ padding: "10px 16px", borderRadius: 999, border: 0, cursor: "pointer", font: "700 15px Arial", background: value === v ? SAGED : "transparent", color: value === v ? "#fff" : INK }}>
             {text}
           </button>
@@ -223,7 +224,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
   }
 
   return (
-    <main style={{ background: CREAM, minHeight: "100vh", color: INK }}>
+    <main className="bp-root" style={{ background: CREAM, minHeight: "100vh", color: INK }}>
       <style>{`
         .bp-print{display:none}
         @media print{
@@ -236,6 +237,9 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
       `}</style>
 
       <div className="bp-screen" style={{ maxWidth: 1100, margin: "0 auto", padding: "18px 14px 40px" }}>
+        <div style={{ marginBottom: 14 }}>
+          <DementiaToggle variant="big" />
+        </div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
           <div>
             <div style={{ fontFamily: "Georgia, serif", fontSize: 20 }}>Activity Central</div>
@@ -244,7 +248,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           <Link href={back?.href ?? "/boards"} style={{ color: SAGED, font: "700 14px Arial" }}>{back?.label ?? "All boards"}</Link>
         </div>
 
-        <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
+        <div className="bp-controls" style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 18, padding: "14px 16px", marginBottom: 14, display: "flex", gap: 22, flexWrap: "wrap", alignItems: "flex-end" }}>
           {lang !== "en" && <Seg<Mode> label="Read aloud in" value={mode} onChange={setMode} options={[["en", "English"], ["other", otherInfo.name], ["both", "Both"]]} />}
           {!lang && <Seg<LangCode> label="Other language" value={other} onChange={setOther} options={OTHER_LANGS.map((l) => [l.code, l.name] as [LangCode, string])} />}
           {showOther && (
@@ -252,7 +256,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
           )}
           <Seg<Voice> label="Voice" value={voice} onChange={setVoice} options={[["female", "Female"], ["male", "Male"]]} />
           <Seg<Speed> label="Speed" value={speed} onChange={setSpeed} options={[["slow", "Slow"], ["normal", "Normal"]]} />
-          <button type="button" onClick={readChoices} style={{ marginLeft: "auto", background: CLAY, color: "#fff", border: 0, borderRadius: 12, padding: "13px 18px", font: "700 15px Arial", cursor: "pointer" }}>
+          <button type="button" className="bp-read" onClick={readChoices} style={{ marginLeft: "auto", background: CLAY, color: "#fff", border: 0, borderRadius: 12, padding: "13px 18px", font: "700 15px Arial", cursor: "pointer" }}>
             🔊 {UI.readChoices.en}{showOther && showEn ? "" : ""}
           </button>
         </div>
@@ -260,12 +264,12 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         {deviceNote && <div style={{ background: "#FFF8E1", border: `2px solid ${LINE}`, borderRadius: 12, padding: "10px 14px", marginBottom: 14, font: "14px Arial", color: "#6B5A2A" }}>{deviceNote}</div>}
 
         {needPerson && (
-          <div style={{ font: "700 15px Arial", color: CLAY, margin: "-4px 4px 14px" }}>
+          <div className="bp-hint" style={{ font: "700 15px Arial", color: CLAY, margin: "-4px 4px 14px" }}>
             Choose A man or A woman above to show the board. Polish wording is different for each.
           </div>
         )}
 
-        <div style={{ background: "#fff", border: `2px solid ${LINE}`, borderLeft: `10px solid ${SAGE}`, borderRadius: 22, padding: "20px 24px", marginBottom: 14, display: needPerson ? "none" : "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div className="bp-q" style={{ background: "#fff", border: `2px solid ${LINE}`, borderLeft: `10px solid ${SAGE}`, borderRadius: 22, padding: "20px 24px", marginBottom: 14, display: needPerson ? "none" : "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <button type="button" onClick={readQuestion} aria-label="Read the question aloud" style={{ flex: "none", width: 58, height: 58, borderRadius: "50%", background: SAGED, color: "#fff", border: 0, fontSize: 26, cursor: "pointer" }}>🔊</button>
           <div style={{ flex: 1, minWidth: 200 }}>
           {showEn && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: "clamp(24px,5vw,42px)" }}>{board.question.en}</div>}
@@ -274,7 +278,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         </div>
 
         {chosen && (
-          <div style={{ background: SAGED, color: "#fff", borderRadius: 18, padding: "16px 20px", marginBottom: 14, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }} aria-live="polite">
+          <div className="bp-chosen" style={{ background: SAGED, color: "#fff", borderRadius: 18, padding: "16px 20px", marginBottom: 14, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }} aria-live="polite">
             <div style={{ flex: 1, minWidth: 170 }}>
               {showEn && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: "clamp(20px,3.5vw,28px)", fontWeight: 700 }}>{chosen.say.en}</div>}
               {showOther && <div style={{ ...FIT, fontFamily: "Georgia, serif", fontSize: showEn ? "clamp(15px,2.5vw,19px)" : "clamp(20px,3.5vw,28px)", fontWeight: showEn ? 600 : 700, opacity: showEn ? 0.92 : 1, marginTop: 2 }}>{secondary(chosen.say)}</div>}
@@ -290,11 +294,11 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
             const sel = chosen && board.answers.some((x) => x.id === chosen.id) ? chosen.id === a.id : null;
             const col = LEAF[i % LEAF.length];
             return (
-              <button key={a.id} type="button" onClick={() => choose(a)} aria-pressed={sel === true}
+              <button key={a.id} type="button" className="bp-card" onClick={() => choose(a)} aria-pressed={sel === true}
                 style={{ position: "relative", minWidth: 0, background: sel ? "#EEF3EC" : "#fff", border: sel ? `4px solid ${SAGED}` : `2px solid ${LINE}`, borderRadius: 20, padding: "0 10px 12px", textAlign: "center", overflow: "hidden", cursor: "pointer", opacity: sel === false ? 0.45 : 1, color: INK }}>
                 <div style={{ height: 8, background: col, margin: "0 -10px 10px" }} />
-                {sel && <div style={{ position: "absolute", right: 10, top: 14, width: 30, height: 30, borderRadius: "50%", background: SAGED, color: "#fff", font: "700 19px Arial", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</div>}
-                <div style={{ marginBottom: 4 }}><BoardIcon icon={a.icon} colour={col} size={104} /></div>
+                {sel && <div className="bp-check" style={{ position: "absolute", right: 10, top: 14, width: 30, height: 30, borderRadius: "50%", background: SAGED, color: "#fff", font: "700 19px Arial", display: "flex", alignItems: "center", justifyContent: "center" }}>✓</div>}
+                <div className="bp-iconwrap" style={{ marginBottom: 4 }}><BoardIcon icon={a.icon} colour={col} size={104} /></div>
                 {showEn && <div style={{ ...FIT, font: `700 ${fs(a.label.en, 24, 18)}px Georgia,serif` }}>{a.label.en}</div>}
                 {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other] ?? "", 17, 14)}px Arial` : `700 ${fs(a.label[other] ?? "", 24, 18)}px Georgia,serif`, color: showEn ? "#6B6252" : INK, marginTop: 2 }}>{secondary(a.label)}</div>}
               </button>
@@ -305,7 +309,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         <div style={{ font: "700 13px Arial", letterSpacing: 0.8, color: "#8A7A6B", margin: "0 0 8px" }}>{UI.always.en.toUpperCase()}</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 22 }}>
           {ALWAYS.map((a) => (
-            <button key={a.id} type="button" onClick={() => choose({ ...a, id: `always-${a.id}` })} style={{ flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
+            <button key={a.id} type="button" className="bp-always" onClick={() => choose({ ...a, id: `always-${a.id}` })} style={{ ...({ "--bpc": a.colour } as React.CSSProperties), flex: "1 1 120px", minWidth: 0, background: a.colour, color: "#fff", border: 0, borderRadius: 14, padding: "12px 6px", textAlign: "center", cursor: "pointer" }}>
               {showEn && <div style={{ ...FIT, font: "700 21px Georgia,serif" }}>{a.label.en}</div>}
               {showOther && <div style={{ ...FIT, font: showEn ? `600 ${fs(a.label[other] ?? "", 15, 13)}px Arial` : `700 ${fs(a.label[other] ?? "", 21, 16)}px Georgia,serif`, opacity: 0.92 }}>{secondary(a.label)}</div>}
             </button>
@@ -313,8 +317,8 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-          <button type="button" onClick={() => print("a4")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A4</button>
-          <button type="button" onClick={() => print("a3")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A3 large print</button>
+          <button type="button" className="bp-printbtn" onClick={() => print("a4")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A4</button>
+          <button type="button" className="bp-printbtn" onClick={() => print("a3")} style={{ background: "#fff", border: `2px solid ${LINE}`, borderRadius: 12, padding: "11px 16px", font: "700 15px Arial", cursor: "pointer", color: INK }}>🖨 Print A3 large print</button>
           <span style={{ font: "12px Arial", color: "#8A7A6B" }}>Translations were created with AI, so they may not always be accurate. Please check with a fluent speaker where it matters.</span>
         </div>
       </div>
