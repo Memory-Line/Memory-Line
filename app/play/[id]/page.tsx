@@ -1,8 +1,10 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
+import { getSession, getViewer } from "@/lib/viewer";
+import { ownerIsActive } from "@/lib/ownerAccess";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
@@ -31,6 +33,17 @@ export const dynamic = "force-dynamic";
 // lookup the homepage uses), so it can't be used to play the rest of the
 // library for free by guessing an id.
 export default async function PublicSamplePlayPage({ params }: { params: { id: string } }) {
+  // Anyone signed in with a working account (paid, trialling, free access, or the admin) gets the
+  // full player on the dashboard instead: no "Free sample" label, no sign-up prompt. This is the
+  // same active-account check the rest of the site uses (lib/ownerAccess.ts, as in the dashboard layout).
+  const session = await getSession();
+  if (session?.user?.email) {
+    const viewer = await getViewer();
+    if (ownerIsActive({ plan: viewer.plan, email: session.user.email, subscriptionStatus: session.user.subscriptionStatus })) {
+      redirect(`/dashboard/play/${params.id}`);
+    }
+  }
+
   const template = await prisma.template.findUnique({ where: { id: params.id } });
   if (!template || !PLAYABLE_CATEGORIES.has(template.category)) notFound();
 
