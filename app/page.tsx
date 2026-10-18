@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { categoryLabel } from "@/lib/data";
 import Image from "next/image";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
@@ -144,7 +145,7 @@ export default async function LandingPage() {
                 >
                   <Icon size={20} color={c.color} />
                 </div>
-                <p className="font-semibold text-sm">{c.key}</p>
+                <p className="font-semibold text-sm">{categoryLabel(c.key)}</p>
               </div>
             );
           })}
@@ -204,7 +205,7 @@ export default async function LandingPage() {
               >
                 <div>
                   <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
-                    {Icon && <Icon size={14} />} {t.category}
+                    {Icon && <Icon size={14} />} {categoryLabel(t.category)}
                   </p>
                   <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
@@ -273,7 +274,7 @@ export default async function LandingPage() {
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
-                  {c}
+                  {categoryLabel(c)}
                 </span>
               ))}
             </div>
@@ -307,7 +308,7 @@ export default async function LandingPage() {
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
-                  {c}
+                  {categoryLabel(c)}
                 </span>
               ))}
               {PREMIUM_ONLY_CATEGORIES.map((c) => (
@@ -316,7 +317,7 @@ export default async function LandingPage() {
                   className="rounded-full px-3 py-1.5 text-xs font-semibold border"
                   style={{ background: "#FCEFE7", color: "#B5714A", borderColor: "#E9C4AA" }}
                 >
-                  + {c}
+                  + {categoryLabel(c)}
                 </span>
               ))}
             </div>

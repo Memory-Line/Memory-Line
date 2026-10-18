@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { categoryLabel } from "@/lib/data";
 import { requireAdmin } from "@/lib/admin";
 import { PUBLIC_BOARD_LANGS } from "@/lib/boardsAccess";
 import { LANGUAGE_CATEGORY, HIDDEN_OLD_CARDS, LANGUAGES, NATIVE_NAMES, RTL_LANGUAGES } from "@/lib/languages";
@@ -22,7 +23,7 @@ export default async function CommunicationCardsPage() {
 
   return (
     <div>
-      <h1 className="font-serif text-[26px]">{LANGUAGE_CATEGORY}</h1>
+      <h1 className="font-serif text-[26px]">{categoryLabel(LANGUAGE_CATEGORY)}</h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         Choose a language. Each edition prints English beside the translation.
       </p>
@@ -42,7 +43,7 @@ export default async function CommunicationCardsPage() {
               {NATIVE_NAMES[l.slug] ?? l.label}
             </div>
             <div className="text-[22px] font-semibold mt-1 leading-tight">{l.label}</div>
-            <div className="text-sm mt-3 opacity-90">{HIDDEN_OLD_CARDS.includes(l.slug) ? (isAdmin || PUBLIC_BOARD_LANGS.includes(l.slug) ? "Talking boards" : "New boards coming") : `${countFor(l.slug)} cards`} &nbsp;›</div>
+            <div className="text-sm mt-3 opacity-90">{HIDDEN_OLD_CARDS.includes(l.slug) ? (isAdmin || PUBLIC_BOARD_LANGS.includes(l.slug) ? "Talking boards" : "New boards coming") : PUBLIC_BOARD_LANGS.includes(l.slug) ? `Talking boards + ${countFor(l.slug)} cards` : `${countFor(l.slug)} cards`} &nbsp;›</div>
           </Link>
         ))}
       </div>

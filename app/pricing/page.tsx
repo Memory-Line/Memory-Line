@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { CATEGORIES } from "@/lib/data";
+import { CATEGORIES, categoryLabel } from "@/lib/data";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET, type PlanKey } from "@/lib/plans";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 
@@ -89,7 +89,7 @@ export default function PricingPage() {
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
-                  {c}
+                  {categoryLabel(c)}
                 </span>
               ))}
             </div>
@@ -124,7 +124,7 @@ export default function PricingPage() {
             <div className="flex flex-wrap gap-1.5 mb-8">
               {STANDARD_CATEGORIES.map((c) => (
                 <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
-                  {c}
+                  {categoryLabel(c)}
                 </span>
               ))}
               {PREMIUM_ONLY_CATEGORIES.map((c) => (
@@ -133,7 +133,7 @@ export default function PricingPage() {
                   className="rounded-full px-3 py-1.5 text-xs font-semibold border"
                   style={{ background: "#FCEFE7", color: "#B5714A", borderColor: "#E9C4AA" }}
                 >
-                  + {c}
+                  + {categoryLabel(c)}
                 </span>
               ))}
             </div>

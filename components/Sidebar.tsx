@@ -9,7 +9,7 @@ import {
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
   Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
-import { CATEGORIES } from "@/lib/data";
+import { CATEGORIES, categoryLabel } from "@/lib/data";
 import { customIcon } from "@/lib/categoryIcons";
 
 const ICONS: Record<string, any> = {
@@ -131,7 +131,7 @@ export default function Sidebar({
             key={c.slug}
             href={`/dashboard/${c.slug}`}
             icon={ICONS[c.key] ?? customIcon(c.icon)}
-            label={c.key}
+            label={categoryLabel(c.key)}
             active={pathname === `/dashboard/${c.slug}` || pathname.startsWith(`/dashboard/${c.slug}/`)}
           />
         ))}
