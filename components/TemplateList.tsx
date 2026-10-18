@@ -8,6 +8,12 @@ import { PREMIUM_ONLY_CATEGORIES } from "@/lib/plans";
 
 // The number a file name starts with ("001-…", "23. …"), ignoring any
 // folder path in front; files without one sort after numbered ones.
+// A file name as people see it: without any folder it was uploaded from (a folder upload
+// stores the whole path, e.g. "Some Folder/A4 Standard/001-name.pdf").
+function shownName(fileName: string): string {
+  return fileName.split(/[\/]/).pop() || fileName;
+}
+
 function leadingNumber(fileName: string): number {
   const m = (fileName.split(/[\/]/).pop() ?? fileName).match(/^(\d+)/);
   return m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY;
@@ -51,8 +57,8 @@ export default async function TemplateList({
   const rows: TemplateRow[] = sorted.map((t, i) => ({
     id: t.id,
     title: titles[i],
-    fileName: t.fileName,
-    search: `${titles[i]} ${t.fileName}`.toLowerCase(),
+    fileName: shownName(t.fileName),
+    search: `${titles[i]} ${shownName(t.fileName)}`.toLowerCase(),
     locked: !isPremium && PREMIUM_ONLY_CATEGORIES.has(t.category),
     hasLargePrint: !!t.largePrintFileUrl,
     hasAnswers: !!t.answerFileUrl,
