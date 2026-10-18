@@ -7,7 +7,7 @@ export type Category = {
 
 // Categories shown under a different name from their internal key (the key stays in the
 // database and the web address, so nothing already uploaded or linked moves).
-const DISPLAY_NAMES: Record<string, string> = { "Communication Cards": "Boards" };
+const DISPLAY_NAMES: Record<string, string> = { "Communication Cards": "Communication Boards" };
 export const categoryLabel = (key: string) => DISPLAY_NAMES[key] ?? key;
 
 export const CATEGORIES: Category[] = [

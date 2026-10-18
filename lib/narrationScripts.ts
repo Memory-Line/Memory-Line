@@ -39,7 +39,7 @@ export const NARRATION_SCRIPTS: { title: string; text: string }[] = [
   },
   {
     title: "10. If it isn't working, change the tool",
-    text: "When an activity isn't working, change the tool, not the person. Make the print bigger so it's easier to see, make it simpler with fewer steps, or use someone's own language with pictures or boards. Take it to the bedside if they can't join a group, or make it shorter and quieter. Nobody is being difficult when they don't engage. It usually means the tool doesn't fit yet, so adjust and try again, kindly.",
+    text: "When an activity isn't working, change the tool, not the person. Make the print bigger so it's easier to see, make it simpler with fewer steps, or use someone's own language with pictures or communication boards. Take it to the bedside if they can't join a group, or make it shorter and quieter. Nobody is being difficult when they don't engage. It usually means the tool doesn't fit yet, so adjust and try again, kindly.",
   },
   {
     title: "11. Everyone's job",
@@ -107,7 +107,7 @@ export const HOWTO_SETS: { key: string; label: string; slides: { title: string; 
   ] },
   { key: "boards", label: "Communication boards", slides: [
     { title: "1. Title", text: "Communication boards help someone tell you what they want, using pictures and words, even when you don't share a language. In this video I'll show you how to find a board and how to use it." },
-    { title: "2. Choose a language", text: "Open Boards from the menu and choose a language. There are twenty-four, including English. Each one has talking boards that can read out loud, and the printed cards show English beside the translation." },
+    { title: "2. Choose a language", text: "Open Communication Boards from the menu and choose a language. There are twenty-four, including English. Each one has talking boards that can read out loud, and the printed cards show English beside the translation." },
     { title: "3. Choose a topic and a board", text: "Boards are grouped into topics, like eating and drinking, pain, feelings, family and choice. Search the cards if you know what you want. Then tap a board to open it. The star saves your favourites." },
     { title: "4. Using a board", text: "The settings across the top choose how the board speaks. Read aloud in English, in their language, or both. Some languages use different words for a man and a woman, so choose who it's for. Pick a voice and a speed, then press Read the choices. The person can point to the picture they want." },
     { title: "5. Always available", text: "At the bottom of every board are five answers that are always there: yes, no, not sure, stop and help. And you can print any board on A4, or large print on A3, to keep by the bed or on the table." },
