@@ -54,7 +54,7 @@ const COLOURS = ["#4F7A45", "#3E6E96", "#A9741F", "#6A5A9A", "#A0507A", "#2F7A7C
 export default function TopicTile({ href, slug, name, count, index }: { href: string; slug: string; name: string; count: number; index: number }) {
   const Icon = ICONS[slug] ?? MessageCircle;
   return (
-    <Link href={href} className="block rounded-2xl p-3.5 text-white" style={{ background: COLOURS[index % COLOURS.length] }}>
+    <Link href={href} className="ac-tile ac-tile-tall block rounded-2xl p-3.5 text-white" style={{ background: COLOURS[index % COLOURS.length] }}>
       <div className="flex items-start justify-between">
         <Icon size={28} aria-hidden="true" />
         <span className="text-xs opacity-90">{count}</span>

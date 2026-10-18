@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Bell, LogOut } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { DementiaToggle } from "@/components/EasyView";
 
 export default function TopBar({
   userName,
@@ -50,7 +49,6 @@ export default function TopBar({
       <div className="flex items-center justify-between px-4 py-1.5 bg-topbar">
         <span className="text-[11px] text-[#D8D3C4] truncate mr-3">Signed in as {userName}</span>
         <div className="flex items-center gap-3 shrink-0">
-          <DementiaToggle />
           <button
             onClick={() => signOut({ callbackUrl: "/" })}
             className="flex items-center gap-1 text-[11px] text-[#D8D3C4] hover:text-white"

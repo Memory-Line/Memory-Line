@@ -33,7 +33,7 @@ export default async function CommunicationCardsPage() {
           <Link
             key={l.slug}
             href={`/dashboard/communication-cards/${l.slug}`}
-            className="block rounded-2xl px-4 py-4 text-white"
+            className="ac-tile ac-tile-tall block rounded-2xl px-4 py-4 text-white"
             style={{ background: CARD_COLOURS[i % CARD_COLOURS.length] }}
           >
             <div
