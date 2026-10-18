@@ -245,7 +245,7 @@ export default function ManageContent() {
                   <span className="min-w-0">
                     <span className="font-semibold block">{i.title}</span>
                     <span className="text-[11px] text-inkSoft break-all block">
-                      {i.fileName}
+                      {i.fileName.split("/").pop() || i.fileName}
                       {i.hasAnswers ? " · answers" : ""}
                       {i.hasLargePrint ? " · large print" : ""}
                     </span>
