@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { categoryLabel } from "@/lib/data";
 
 type Cat = { name: string; builtIn: boolean; removed: boolean; count: number; icon?: string };
 type Colour = { name: string; color: string; tint: string };
@@ -199,7 +200,7 @@ export default function ManageContent() {
           >
             {live.map((c) => (
               <option key={c.name} value={c.name}>
-                {c.name} ({c.count})
+                {categoryLabel(c.name)} ({c.count})
               </option>
             ))}
           </select>
