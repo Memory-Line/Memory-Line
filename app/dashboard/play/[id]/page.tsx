@@ -25,7 +25,7 @@ import SnakesAndLaddersPlayer from "@/components/SnakesAndLaddersPlayer";
 import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
-import { DementiaToggle, GameFrame } from "@/components/EasyView";
+import { GameFrame } from "@/components/EasyView";
 
 export const dynamic = "force-dynamic";
 
@@ -200,9 +200,6 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       <h1 className="font-serif text-[26px] mt-1 mb-4 text-center">{displayTitle(template)}</h1>
       {player ? (
         <>
-          <div className="flex justify-center mb-4">
-            <DementiaToggle variant="page" />
-          </div>
           <GameFrame>
             <div className="[&>*]:mx-auto">{player}</div>
           </GameFrame>
