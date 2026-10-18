@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { categoryLabel } from "@/lib/data";
 import { getSession } from "@/lib/viewer";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
@@ -184,7 +185,7 @@ export default async function DashboardHome({
                   </div>
                   <div>
                     <p className="text-[13px] font-semibold">{d.templateName}</p>
-                    <p className="text-[11px] text-inkSoft">Downloaded · {d.category}</p>
+                    <p className="text-[11px] text-inkSoft">Downloaded · {categoryLabel(d.category)}</p>
                   </div>
                 </div>
               );
@@ -224,7 +225,7 @@ export default async function DashboardHome({
                 style={look ? { background: c.tint, border: `2px solid ${look.palette.sage}` } : { background: c.tint }}
               >
                 <Icon size={16} color={c.color} />
-                <span className="text-sm font-semibold">{c.key}</span>
+                <span className="text-sm font-semibold">{categoryLabel(c.key)}</span>
                 {look && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img alt="" aria-hidden="true" src={`/season/${look.icons[c.slug.length % look.icons.length]}.svg`} className="ml-auto" style={{ height: 20, width: "auto", opacity: 0.85 }} />

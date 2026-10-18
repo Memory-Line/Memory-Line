@@ -17,7 +17,7 @@ const HELP = [
   },
   {
     q: "Why can't I see some categories or play on screen?",
-    a: "Communication Cards, BSL Tools and Physical & Exercise come with the Premium plan, and so do large print sheets and the professional calendar. You can upgrade from the Manage subscription button.",
+    a: "Boards, BSL Tools and Physical & Exercise come with the Premium plan, and so do large print sheets and the professional calendar. You can upgrade from the Manage subscription button.",
   },
   {
     q: "An activity looks wrong or won't open",

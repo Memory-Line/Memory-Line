@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { categoryLabel } from "@/lib/data";
 import { HIDDEN_OLD_CARDS, LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
@@ -45,7 +46,7 @@ export default async function CommunicationCardsLanguagePage({
         ← All languages
       </Link>
       <h1 className="font-serif text-[26px] mt-1">
-        {LANGUAGE_CATEGORY}: {language.label}
+        {categoryLabel(LANGUAGE_CATEGORY)}: {language.label}
       </h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
         {oldHidden ? "New talking boards" : `${cards.length} cards${language.slug !== "english" ? ", with English beside each translation" : ""}`}
@@ -74,6 +75,15 @@ export default async function CommunicationCardsLanguagePage({
 
       {cards.length > 0 ? (
         <TemplateList templates={cards} completedIds={done} isPremium={viewer.isPremium} />
+      ) : oldHidden && boardsPublic ? (
+        // The talking boards are live for this language. Anyone who can't open them (not on
+        // Premium) is told why, rather than seeing a "coming soon" line that isn't true.
+        !showBoards && (
+          <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
+            The {language.label} talking boards come with the Premium plan.{" "}
+            <Link href="/pricing" className="text-sageDeep font-semibold underline">See the plans</Link>
+          </p>
+        )
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           {oldHidden ? `New ${language.label} talking boards are on their way.` : `No ${language.label} cards yet.`}
