@@ -43,7 +43,7 @@ export default function TermsPage() {
         <Section title="2. The service">
           <p>
             Activity Central gives subscribers access to a library of activity packs (word
-            searches, trivia, bingo, sing-alongs, communication cards, and similar resources)
+            searches, trivia, bingo, sing-alongs, boards, and similar resources)
             which can be viewed online or downloaded and printed for use in sessions. Depending on
             your plan, the service also includes a calendar, links and QR codes for sharing files,
             and online questionnaires. See <Link href="/pricing" className="text-sageDeep underline">/pricing</Link> for

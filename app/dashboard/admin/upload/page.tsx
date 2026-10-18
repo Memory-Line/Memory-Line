@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CATEGORIES, type Category } from "@/lib/data";
+import { CATEGORIES, categoryLabel, type Category } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { LANGUAGE_CATEGORY, LANGUAGES, languageFromPath } from "@/lib/languages";
 import { FEATURES } from "@/lib/featureList";
@@ -263,7 +263,7 @@ export default function AdminUploadPage() {
       >
         {categoryOptions.map((c) => (
           <option key={c.slug} value={c.key}>
-            {c.key}
+            {categoryLabel(c.key)}
           </option>
         ))}
       </select>
@@ -461,7 +461,7 @@ function RenumberSection({ categories }: { categories: Category[] }) {
         >
           {categories.filter((c) => c.key !== LANGUAGE_CATEGORY && !subcategoriesFor(c.key)).map((c) => (
             <option key={c.slug} value={c.key}>
-              {c.key}
+              {categoryLabel(c.key)}
             </option>
           ))}
         </select>
