@@ -88,7 +88,7 @@ export default async function CategoryPage({ params }: { params: { category: str
             <Link
               key={s.slug}
               href={`/dashboard/${category.slug}/${s.slug}`}
-              className="rounded-xl p-4 border border-line"
+              className="ac-tile ac-tile-tall rounded-xl p-4 border border-line"
               style={{ background: tint }}
             >
               <p className="font-serif text-lg" style={{ color }}>

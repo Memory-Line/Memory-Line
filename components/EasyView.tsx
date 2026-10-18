@@ -37,9 +37,26 @@ export function DementiaProvider({ initial, className, children }: { initial: bo
 }
 
 // The switch. "bar" sits in the top bar; "page" is the same switch on a game page.
-export function DementiaToggle({ variant = "bar" }: { variant?: "bar" | "page" }) {
+export function DementiaToggle({ variant = "bar" }: { variant?: "bar" | "page" | "big" }) {
   const { on, set } = useContext(Ctx);
   const bar = variant === "bar";
+  // "big": the full-width bar at the top of every dashboard page, so the switch can't be missed.
+  if (variant === "big") {
+    return (
+      <button
+        type="button"
+        onClick={() => set(!on)}
+        aria-pressed={on}
+        className="dementia-switch flex w-full items-center justify-between gap-3 rounded-2xl px-5 py-3 text-lg sm:text-xl font-semibold"
+        style={{ border: "3px solid #1a1a1a", background: on ? "#FFD23F" : "#ffffff", color: "#1a1a1a" }}
+      >
+        <span>Dementia friendly view</span>
+        <span className="rounded-full px-4 py-1 text-base sm:text-lg" style={{ background: "#1a1a1a", color: on ? "#FFD23F" : "#ffffff" }}>
+          {on ? "On" : "Off"}
+        </span>
+      </button>
+    );
+  }
   return (
     <button
       type="button"

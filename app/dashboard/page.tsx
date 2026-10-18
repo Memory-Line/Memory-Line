@@ -221,7 +221,7 @@ export default async function DashboardHome({
               <Link
                 key={c.slug}
                 href={`/dashboard/${c.slug}`}
-                className="flex items-center gap-2 rounded-lg p-3"
+                className="ac-tile flex items-center gap-2 rounded-lg p-3"
                 style={look ? { background: c.tint, border: `2px solid ${look.palette.sage}` } : { background: c.tint }}
               >
                 <Icon size={16} color={c.color} />
