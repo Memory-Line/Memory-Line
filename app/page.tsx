@@ -104,7 +104,7 @@ export default async function LandingPage() {
           For care home activity teams
         </p>
         <h1 className="font-serif text-[34px] sm:text-5xl leading-tight text-ink mb-5 sm:mb-6">
-          A ready-made library of dementia engagement activities
+          A ready-made library of engagement activities for care homes
         </h1>
         <p className="text-inkSoft text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-9">
           1000+ downloadable activities across physical &amp; exercise, word puzzles, trivia
