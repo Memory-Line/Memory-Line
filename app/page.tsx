@@ -224,32 +224,32 @@ export default async function LandingPage() {
                 style={{ background: cat?.tint ?? "#F5F1EA", borderColor: cat?.color ?? "#E5DFD3" }}
               >
                 <div>
-                  <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
+                  <p className="flex items-center gap-1.5 text-sm font-bold mb-2" style={{ color: "#1F2A2E" }}>
                     {Icon && <Icon size={14} />} {categoryLabel(t.category)}
                   </p>
                   <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
                 <div className="mt-4 grid gap-2">
                   {PLAYABLE_CATEGORIES.has(t.category) && (
-                    <Link href={`/play/${t.id}`} className={SAMPLE_LINK} style={{ background: "#D6EBE3", color: "#2F7A63" }}>
+                    <Link href={`/play/${t.id}`} className={SAMPLE_LINK} style={{ background: cat?.color ?? "#2F7A63", color: "#FFFFFF" }}>
                       <PlayCircle size={15} className="mr-1.5" /> Play online, free
                     </Link>
                   )}
-                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+                  <a href={t.fileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FFFFFF", color: "#1F2A2E", border: `2px solid ${cat?.color ?? "#6D8C6A"}` }}>
                     Download free sample
                   </a>
                   {t.largePrintFileUrl && (
-                    <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FCEFE7", color: "#B5714A" }}>
+                    <a href={t.largePrintFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FFFFFF", color: "#1F2A2E", border: `2px solid ${cat?.color ?? "#6D8C6A"}` }}>
                       Large Print
                     </a>
                   )}
                   {t.answerFileUrl && (
-                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
+                    <a href={t.answerFileUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FFFFFF", color: "#1F2A2E", border: `2px solid ${cat?.color ?? "#6D8C6A"}` }}>
                       Answers
                     </a>
                   )}
                   {t.videoUrl && (
-                    <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#F3DAD8", color: "#B5453D" }}>
+                    <a href={t.videoUrl} target="_blank" rel="noopener noreferrer" className={SAMPLE_LINK} style={{ background: "#FFFFFF", color: "#1F2A2E", border: `2px solid ${cat?.color ?? "#6D8C6A"}` }}>
                       {/youtube\.com|youtu\.be/.test(t.videoUrl) ? "Watch on YouTube" : "Watch sign video"}
                     </a>
                   )}
@@ -257,6 +257,22 @@ export default async function LandingPage() {
               </div>
             );
           })}
+          <div
+            className="w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border-2 flex flex-col justify-between"
+            style={{ background: "#E4EEE2", borderColor: "#6D8C6A" }}
+          >
+            <div>
+              <p className="flex items-center gap-1.5 text-sm font-bold mb-2" style={{ color: "#1F2A2E" }}>
+                <Languages size={14} /> Communication Boards
+              </p>
+              <p className="font-serif text-base">A talking board: tap an answer and it is read aloud</p>
+            </div>
+            <div className="mt-4 grid gap-2">
+              <Link href="/sample-board" className={SAMPLE_LINK} style={{ background: "#2F7A63", color: "#FFFFFF" }}>
+                <PlayCircle size={15} className="mr-1.5" /> Try a board, free
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
       )}
