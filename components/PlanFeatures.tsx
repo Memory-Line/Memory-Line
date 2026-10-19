@@ -29,6 +29,10 @@ export function StandardFeatures() {
           A <b>Bingo caller</b> that reads each number aloud, in English, then up to 5 other languages
         </Tick>
         <Tick>
+          <b>Dementia friendly view</b> — one switch turns the site into big yellow boxes with black writing, easier to
+          see and use
+        </Tick>
+        <Tick>
           Your own <b>account area</b> to manage your subscription, email choices and suggestions
         </Tick>
         <Tick>Help by email</Tick>
