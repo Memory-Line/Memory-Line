@@ -6,6 +6,7 @@ import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { getSession, getViewer } from "@/lib/viewer";
 import { ownerIsActive } from "@/lib/ownerAccess";
 import { COMING_SOON } from "@/lib/launch";
+import { usesTopics } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
@@ -47,6 +48,8 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
 
   const template = await prisma.template.findUnique({ where: { id: params.id } });
   if (!template || !PLAYABLE_CATEGORIES.has(template.category)) notFound();
+  // Redone, topic-sorted activities have no on-screen puzzle yet.
+  if (template.subcategory && usesTopics(template.category)) notFound();
 
   const officialSample = await prisma.template.findFirst({
     where: {

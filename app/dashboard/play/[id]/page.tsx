@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
 import { getCategories } from "@/lib/categories";
 import { displayTitle } from "@/lib/titles";
-import { subcategoryBySlug } from "@/lib/subcategories";
+import { subcategoryBySlug, usesTopics } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
@@ -34,6 +34,8 @@ export const dynamic = "force-dynamic";
 export default async function PlayPage({ params }: { params: { id: string } }) {
   const template = await prisma.template.findUnique({ where: { id: params.id } });
   if (!template) notFound();
+  // Redone, topic-sorted activities have no on-screen puzzle yet: the built-in puzzles are numbered for the older ones.
+  if (template.subcategory && usesTopics(template.category)) notFound();
 
   // Everything below that doesn't depend on the other lookups runs at the same time.
   const [viewer, categories, siblings] = await Promise.all([
