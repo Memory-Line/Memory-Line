@@ -9,7 +9,7 @@ export const metadata = { title: "Free sample communication board", robots: { in
 // A free, no-signup taste of the talking boards, linked from the home page. It only ever shows one
 // English board (a drink question if there is one), so it cannot be used to open the rest of the boards.
 export default async function SampleBoardPage() {
-  const boards = await getBoards();
+  const boards = await getBoards().catch(() => []);
   const board = boards.find((b) => /drink/i.test(b.question.en ?? "")) ?? boards[0];
   const viewer = await getViewer();
   if (!board) return <main className="max-w-xl mx-auto p-8">No sample board is available yet.</main>;
