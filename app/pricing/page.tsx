@@ -8,6 +8,7 @@ import Image from "next/image";
 import { CATEGORIES, categoryLabel } from "@/lib/data";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET, type PlanKey } from "@/lib/plans";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
+import { COMING_SOON } from "@/lib/launch";
 
 // Same source of truth the site's own Standard/Premium gating uses, so this
 // page can't drift out of sync with what Standard accounts actually get.
@@ -66,6 +67,9 @@ export default function PricingPage() {
 
         <h1 className="font-serif text-2xl mb-2">Choose your plan</h1>
         <p className="text-inkSoft mb-8">Choose Standard or Premium. Cancel anytime.</p>
+        {COMING_SOON && status !== "authenticated" && (
+          <p className="text-sm text-inkSoft mb-8 -mt-4">New sign-ups aren&apos;t open yet. Existing members can log in to manage their plan.</p>
+        )}
 
         {session?.user && (
           <p className="text-xs text-inkSoft mb-6">Signed in as {session.user.email}</p>

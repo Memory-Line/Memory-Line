@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmail } from "@/lib/email";
 import { joinMailingList } from "@/lib/mailing";
+import { COMING_SOON } from "@/lib/launch";
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -15,6 +16,11 @@ const schema = z.object({
 });
 
 export async function POST(req: Request) {
+  // New accounts are closed for now (lib/launch.ts). Existing accounts are not affected.
+  if (COMING_SOON) {
+    return NextResponse.json({ error: "New sign-ups aren't open yet. If you already have an account, please log in." }, { status: 403 });
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
 
