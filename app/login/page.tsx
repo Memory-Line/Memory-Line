@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { COMING_SOON } from "@/lib/launch";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 
@@ -88,9 +89,15 @@ export default function LoginPage() {
           </form>
 
           <p className="text-xs text-inkSoft text-center mt-5">
-            Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-sageDeep font-semibold">Sign up</Link>
-            {" · "}
+            {COMING_SOON ? (
+              <>New sign-ups open soon{" · "}</>
+            ) : (
+              <>
+                Don&apos;t have an account?{" "}
+                <Link href="/signup" className="text-sageDeep font-semibold">Sign up</Link>
+                {" · "}
+              </>
+            )}
             <Link href="/support" className="text-sageDeep font-semibold">Need help?</Link>
           </p>
         </div>

@@ -5,6 +5,7 @@ import { displayTitle } from "@/lib/titles";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { getSession, getViewer } from "@/lib/viewer";
 import { ownerIsActive } from "@/lib/ownerAccess";
+import { COMING_SOON } from "@/lib/launch";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
@@ -130,16 +131,25 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
       {player}
 
       <div className="mt-8 rounded-2xl border border-sage bg-card p-5 sm:p-6 text-center">
-        <p className="font-serif text-lg mb-1">Like what you see?</p>
+        <p className="font-serif text-lg mb-1">{COMING_SOON ? "Opening soon" : "Like what you see?"}</p>
         <p className="text-sm text-inkSoft mb-4">
           This is one of {template.category} — there are hundreds more like it across 17 categories.
         </p>
-        <Link
-          href="/signup"
-          className="inline-block rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
-        >
-          Sign up
-        </Link>
+        {COMING_SOON ? (
+          <Link
+            href="/login"
+            className="inline-block rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
+          >
+            Members: log in
+          </Link>
+        ) : (
+          <Link
+            href="/signup"
+            className="inline-block rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
+          >
+            Sign up
+          </Link>
+        )}
       </div>
     </div>
   );

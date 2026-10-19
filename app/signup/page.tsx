@@ -1,185 +1,36 @@
-"use client";
-
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import Image from "next/image";
+import { COMING_SOON } from "@/lib/launch";
+import SignupForm from "./SignupForm";
 
+export const metadata = { title: "Sign up | Activity Central" };
+
+// While COMING_SOON is on (lib/launch.ts) nobody can create an account; the sign-up form is kept
+// exactly as it was in SignupForm.tsx and comes straight back when the switch is turned off.
 export default function SignupPage() {
-  const router = useRouter();
-  // A care home account is named after the home, not a person.
-  const [accountType, setAccountType] = useState<"care-home" | "personal">("care-home");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  // Unticked by default: nobody is signed up to promotional emails unless they choose to be.
-  const [marketing, setMarketing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-
-    if (password !== confirmPassword) {
-      setError("Those passwords don't match — please check and try again.");
-      return;
-    }
-
-    setLoading(true);
-
-    const res = await fetch("/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, accountType, marketing }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setError(data.error ?? "Something went wrong. Please try again.");
-      setLoading(false);
-      return;
-    }
-
-    const signInResult = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    setLoading(false);
-
-    if (signInResult?.error) {
-      setError("Account created — please log in.");
-      router.push("/login");
-      return;
-    }
-
-    router.push("/pricing");
-  }
-
+  if (!COMING_SOON) return <SignupForm />;
   return (
-    <main className="min-h-screen flex items-center justify-center px-6">
+    <main className="min-h-screen flex items-center justify-center px-6 py-10">
       <div className="w-full max-w-sm">
         <Link href="/" className="flex items-center gap-2 justify-center mb-8">
           <Image src="/activity-central-icon.png" alt="Activity Central" width={60} height={60} />
           <span className="font-serif text-xl">Activity Central</span>
         </Link>
-
-        <div className="rounded-2xl border border-line bg-card p-7">
-          <h1 className="font-serif text-2xl mb-1">Create your account</h1>
-          <p className="text-inkSoft text-sm mb-1">
-            Create your account, then choose a plan to unlock the activities.
+        <div className="rounded-2xl border border-line bg-card p-7 text-center">
+          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-xs px-3 py-1 mb-3">Opening soon</p>
+          <h1 className="font-serif text-2xl mb-2">New sign-ups aren&apos;t open yet</h1>
+          <p className="text-inkSoft text-sm mb-5">
+            We&apos;re getting ready to open to new members. If you already have an account, you can log in as usual.
           </p>
-          <p className="text-inkSoft text-sm mb-6">
-            Want a look first? <Link href="/#samples" className="text-sageDeep font-semibold underline">Try the free samples</Link> on
-            the homepage, no account needed.
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <p className="block text-xs font-semibold text-inkSoft mb-1">This account is for</p>
-              <div className="grid grid-cols-2 gap-2">
-                {(
-                  [
-                    ["care-home", "A care home"],
-                    ["personal", "Personal use"],
-                  ] as const
-                ).map(([value, label]) => (
-                  <label
-                    key={value}
-                    className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer ${
-                      accountType === value ? "border-sage bg-cardTint font-semibold" : "border-line"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="accountType"
-                      value={value}
-                      checked={accountType === value}
-                      onChange={() => setAccountType(value)}
-                    />
-                    {label}
-                  </label>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-inkSoft mb-1">
-                {accountType === "care-home" ? "Care home name" : "Your name"}
-              </label>
-              <input
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
-                placeholder={accountType === "care-home" ? "Westcliff Lodge" : "Priya Sharma"}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-inkSoft mb-1">Email</label>
-              <input
-                required
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
-                placeholder={accountType === "care-home" ? "manager@carehome.co.uk" : "you@example.co.uk"}
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-inkSoft mb-1">Password</label>
-              <input
-                required
-                type="password"
-                minLength={8}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
-                placeholder="At least 8 characters"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-inkSoft mb-1">Confirm password</label>
-              <input
-                required
-                type="password"
-                minLength={8}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full rounded-lg border border-line px-3 py-2 text-sm outline-none focus:border-sage"
-                placeholder="Type it again"
-              />
-            </div>
-
-            <label className="flex items-start gap-2 text-xs text-inkSoft cursor-pointer">
-              <input
-                type="checkbox"
-                checked={marketing}
-                onChange={(e) => setMarketing(e.target.checked)}
-                className="mt-0.5"
-              />
-              <span>
-                Send me occasional news, new activities and offers by email. You can unsubscribe at any time.
-              </span>
-            </label>
-
-            {error && <p className="text-xs text-red-600">{error}</p>}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-sage text-white py-2.5 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-60"
-            >
-              {loading ? "Creating account..." : "Create account"}
-            </button>
-          </form>
-
-          <p className="text-xs text-inkSoft text-center mt-5">
-            Already have an account?{" "}
-            <Link href="/login" className="text-sageDeep font-semibold">Log in</Link>
+          <Link href="/login" className="block w-full rounded-lg bg-sage text-white py-2.5 font-semibold text-sm hover:bg-sageDeep transition-colors">
+            Log in
+          </Link>
+          <Link href="/#samples" className="block mt-3 text-sageDeep font-semibold text-sm">
+            Try the free samples
+          </Link>
+          <p className="text-xs text-inkSoft mt-5">
+            Questions? Write to{" "}
+            <a href="mailto:support@activitycentral.co.uk" className="text-sageDeep font-semibold">support@activitycentral.co.uk</a>
           </p>
         </div>
       </div>

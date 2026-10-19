@@ -12,6 +12,7 @@ import { customIcon } from "@/lib/categoryIcons";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
+import { COMING_SOON } from "@/lib/launch";
 import { displayTitle } from "@/lib/titles";
 
 // The free samples come from the database, but they change rarely (only
@@ -86,20 +87,25 @@ export default async function LandingPage() {
           <span className="font-serif text-base sm:text-xl leading-tight">Activity Central</span>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
-          <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
+          {!COMING_SOON && <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>}
           <Link href="/support" className="hidden sm:inline text-inkSoft hover:text-ink">Support</Link>
           <Link href="/login" className="whitespace-nowrap text-inkSoft hover:text-ink">Log in</Link>
-          <Link
-            href="/signup"
-            className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
-          >
-            Sign up
-          </Link>
+          {!COMING_SOON && (
+            <Link
+              href="/signup"
+              className="whitespace-nowrap rounded-lg bg-sage text-white px-3 sm:px-4 py-2 font-semibold hover:bg-sageDeep transition-colors"
+            >
+              Sign up
+            </Link>
+          )}
         </div>
       </header>
 
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-14 sm:pb-20 text-center">
+        {COMING_SOON && (
+          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-sm px-4 py-1.5 mb-5">Opening soon</p>
+        )}
         <p className="text-clay font-semibold text-sm tracking-wide uppercase mb-4">
           For care home activity teams
         </p>
@@ -111,18 +117,31 @@ export default async function LandingPage() {
           and games, colouring, communication tools, and more — built for carers who need
           something meaningful ready to run in minutes, not hours.
         </p>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
-          <Link
-            href="/signup"
-            className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
-          >
-            Sign up
-          </Link>
-          <a href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
-            See pricing
-          </a>
-        </div>
-        <p className="text-xs text-inkSoft mt-4">Try samples from every category free, no card or signup needed.</p>
+        {COMING_SOON ? (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <a href="#samples" className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors">
+              Try the free samples
+            </a>
+            <Link href="/login" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
+              Members: log in
+            </Link>
+          </div>
+        ) : (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
+            <Link
+              href="/signup"
+              className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors"
+            >
+              Sign up
+            </Link>
+            <a href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
+              See pricing
+            </a>
+          </div>
+        )}
+        <p className="text-xs text-inkSoft mt-4">
+          {COMING_SOON ? "We're opening to new members soon. Try samples from every category free, no card or signup needed." : "Try samples from every category free, no card or signup needed."}
+        </p>
       </section>
 
       {/* Categories */}
@@ -253,85 +272,89 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
-        <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
-        <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
+      {!COMING_SOON && (
+        <>
+        {/* Pricing */}
+        <section id="pricing" className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
+          <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
+          <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
 
-        <div className="flex flex-col sm:flex-row items-start gap-6">
+          <div className="flex flex-col sm:flex-row items-start gap-6">
 
-          {/* Standard */}
-          <div className="flex-1 w-full flex flex-col rounded-2xl border-2 border-line bg-card p-6 sm:p-8 sm:mt-7">
-            <p className="font-serif text-lg text-sageDeep mb-1">Standard</p>
-            <p className="font-serif text-5xl text-ink mb-1">
-              £18<span className="text-lg text-inkSoft">/month</span>
-            </p>
-            <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
+            {/* Standard */}
+            <div className="flex-1 w-full flex flex-col rounded-2xl border-2 border-line bg-card p-6 sm:p-8 sm:mt-7">
+              <p className="font-serif text-lg text-sageDeep mb-1">Standard</p>
+              <p className="font-serif text-5xl text-ink mb-1">
+                £18<span className="text-lg text-inkSoft">/month</span>
+              </p>
+              <p className="text-xs text-inkSoft mb-6">per account, billed monthly, cancel anytime</p>
 
-            <StandardFeatures />
+              <StandardFeatures />
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">{STANDARD_CATEGORIES.length} of {categories.length} categories</p>
-            <div className="flex flex-wrap gap-1.5 mb-8">
-              {STANDARD_CATEGORIES.map((c) => (
-                <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
-                  {categoryLabel(c)}
-                </span>
-              ))}
+              <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">{STANDARD_CATEGORIES.length} of {categories.length} categories</p>
+              <div className="flex flex-wrap gap-1.5 mb-8">
+                {STANDARD_CATEGORIES.map((c) => (
+                  <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold bg-cardTint text-ink">
+                    {categoryLabel(c)}
+                  </span>
+                ))}
+              </div>
+
+              <Link
+                href="/signup"
+                className="mt-auto inline-block text-center rounded-xl bg-cardTint text-ink px-8 py-3 font-semibold hover:bg-line transition-colors"
+              >
+                Sign up
+              </Link>
             </div>
 
-            <Link
-              href="/signup"
-              className="mt-auto inline-block text-center rounded-xl bg-cardTint text-ink px-8 py-3 font-semibold hover:bg-line transition-colors"
-            >
-              Sign up
-            </Link>
-          </div>
+            {/* Premium */}
+            <div className="flex-1 w-full relative flex flex-col rounded-2xl border-[3px] border-clay bg-card p-6 sm:p-8 shadow-[0_18px_36px_-14px_rgba(176,137,104,0.4)]">
+              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">
+                Recommended for care homes
+              </span>
 
-          {/* Premium */}
-          <div className="flex-1 w-full relative flex flex-col rounded-2xl border-[3px] border-clay bg-card p-6 sm:p-8 shadow-[0_18px_36px_-14px_rgba(176,137,104,0.4)]">
-            <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">
-              Recommended for care homes
-            </span>
+              <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
+              <p className="font-serif text-5xl text-ink mb-1">
+                £28<span className="text-lg text-inkSoft">/month</span>
+              </p>
+              <p className="text-xs text-inkSoft mb-2">per account, billed monthly, cancel anytime</p>
+              <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+                Just £10/month more for the full experience
+              </p>
 
-            <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
-            <p className="font-serif text-5xl text-ink mb-1">
-              £28<span className="text-lg text-inkSoft">/month</span>
-            </p>
-            <p className="text-xs text-inkSoft mb-2">per account, billed monthly, cancel anytime</p>
-            <p className="inline-block w-fit text-xs font-bold rounded-lg px-2.5 py-1 mb-6" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
-              Just £10/month more for the full experience
-            </p>
+              <PremiumFeatures total={categories.length} />
 
-            <PremiumFeatures total={categories.length} />
+              <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All {categories.length} categories</p>
+              <div className="flex flex-wrap gap-1.5 mb-8">
+                {STANDARD_CATEGORIES.map((c) => (
+                  <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
+                    {categoryLabel(c)}
+                  </span>
+                ))}
+                {PREMIUM_ONLY_CATEGORIES.map((c) => (
+                  <span
+                    key={c}
+                    className="rounded-full px-3 py-1.5 text-xs font-semibold border"
+                    style={{ background: "#FCEFE7", color: "#B5714A", borderColor: "#E9C4AA" }}
+                  >
+                    + {categoryLabel(c)}
+                  </span>
+                ))}
+              </div>
 
-            <p className="text-xs font-bold tracking-wide uppercase text-inkSoft mb-2">All {categories.length} categories</p>
-            <div className="flex flex-wrap gap-1.5 mb-8">
-              {STANDARD_CATEGORIES.map((c) => (
-                <span key={c} className="rounded-full px-3 py-1.5 text-xs font-semibold" style={{ background: "#E4EEE2", color: "#4C6B4A" }}>
-                  {categoryLabel(c)}
-                </span>
-              ))}
-              {PREMIUM_ONLY_CATEGORIES.map((c) => (
-                <span
-                  key={c}
-                  className="rounded-full px-3 py-1.5 text-xs font-semibold border"
-                  style={{ background: "#FCEFE7", color: "#B5714A", borderColor: "#E9C4AA" }}
-                >
-                  + {categoryLabel(c)}
-                </span>
-              ))}
+              <Link
+                href="/signup"
+                className="mt-auto inline-block text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold hover:opacity-90 transition-opacity"
+              >
+                Sign up
+              </Link>
             </div>
 
-            <Link
-              href="/signup"
-              className="mt-auto inline-block text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold hover:opacity-90 transition-opacity"
-            >
-              Sign up
-            </Link>
           </div>
-
-        </div>
-      </section>
+        </section>
+        </>
+      )}
 
       <footer className="border-t border-line py-8 px-5 sm:px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
         <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
