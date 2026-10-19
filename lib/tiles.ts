@@ -14,7 +14,7 @@ export const TOPIC_COLOURS = [
 
 // Categories whose activities are shown as multi-coloured tiles (with tick boxes to print several at
 // once) instead of plain rows.
-export const TILE_CATEGORIES = new Set(["Physical & Exercise", "Sing-Alongs", "Snakes and Ladders", "Bingo"]);
+export const TILE_CATEGORIES = new Set(["Physical & Exercise", "Sing-Alongs", "Snakes and Ladders", "Bingo", "BSL Tools"]);
 
 // The most activities that can be printed in one go.
 export const MAX_PRINT_PACK = 50;
