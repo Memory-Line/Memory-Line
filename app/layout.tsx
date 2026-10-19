@@ -9,10 +9,27 @@ import { seasonVars } from "@/lib/seasons";
 // Pages follow the date (a seasonal look can switch on or off), so none of them is built once and kept.
 export const dynamic = "force-dynamic";
 
+const SITE_TITLE = "Activity Central – Engagement activities for care home staff";
+const SITE_DESCRIPTION =
+  "A subscription library of ready-to-use engagement activities for care homes: puzzles and games, quizzes, sing-alongs, reminiscence newsletters and talking communication boards, ready to print or play on screen.";
+
+// openGraph and twitter are what Facebook, LinkedIn and similar sites show when the link is shared.
 export const metadata: Metadata = {
-  title: "Activity Central – Engagement activities for care home staff",
-  description:
-     "A subscription library of dementia engagement activities for care home activity teams — reminiscence, seasonal, music, arts & crafts, and conversation resources, ready to download.",
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    siteName: "Activity Central",
+    type: "website",
+    locale: "en_GB",
+    url: "https://activitycentral.co.uk",
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

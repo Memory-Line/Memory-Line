@@ -26,7 +26,7 @@ export default function PrivacyPage() {
       </Link>
 
       <h1 className="font-serif text-3xl text-ink mb-2">Privacy Policy</h1>
-      <p className="text-xs text-inkSoft mb-10">Last updated: 9 October 2026</p>
+      <p className="text-xs text-inkSoft mb-10">Last updated: 19 October 2026</p>
 
       <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
         <Section title="1. Who we are">
@@ -89,8 +89,9 @@ export default function PrivacyPage() {
             contract with you (providing the subscription you've signed up for). We process basic
             usage records (downloads and completions) on the basis of our legitimate interest in
             understanding how the library is used and keeping it useful, in a way that doesn't
-            override your own rights and interests. We send news and offers by email only if you
-            have agreed (your consent), and you can withdraw that at any time.
+            override your own rights and interests. We send news and offers by email to account holders and
+            subscribers only if you have agreed (your consent), and you can withdraw that at any
+            time. Emails to care home businesses are covered in section 6.
           </p>
         </Section>
 
@@ -112,6 +113,7 @@ export default function PrivacyPage() {
             <li>Our hosting provider (Vercel) and our database provider, to run the website and store account data securely.</li>
             <li>Our file storage provider (Vercel), to store files you upload to shared links.</li>
             <li>Our email provider (Resend), to send account emails, support replies and, if you agreed, news and offers.</li>
+            <li>Our business email provider (Microsoft Outlook, supplied through GoDaddy), which carries our support mailbox and the personal emails we send to care home businesses.</li>
           </ul>
           <p>
             We don't sell your personal data, and we don't share it with anyone for their own
@@ -119,7 +121,45 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="6. Cookies">
+        <Section title="6. Emails to care home businesses">
+          <p>
+            We may email care homes and care providers (limited companies and similar
+            organisations) to tell them about Activity Central.
+          </p>
+          <p>
+            <strong>Whose details we use.</strong> We use general business contact details that
+            organisations publish themselves, such as the contact email address on a care home&apos;s
+            own website, and public registers such as the Care Quality Commission&apos;s directory of
+            services. We don&apos;t use personal email addresses, and we don&apos;t send this kind of email to
+            sole traders or partnerships.
+          </p>
+          <p>
+            <strong>What we send.</strong> A small number of personal emails, sent from our own
+            business mailbox and not through an automated mailing service. Each one says who we are,
+            where we found the contact details, and how to opt out. If we don&apos;t hear back, we may send
+            one follow-up.
+          </p>
+          <p>
+            <strong>Why we&apos;re allowed to.</strong> Our legitimate interest in telling relevant
+            businesses about a service that is relevant to their work (UK GDPR), together with the
+            electronic marketing rules, which allow us to email the business addresses of companies.
+            You can object at any time.
+          </p>
+          <p>
+            <strong>How to unsubscribe.</strong> Reply &ldquo;stop&rdquo; or &ldquo;no thanks&rdquo; to any of our emails, or
+            write to support@activitycentral.co.uk. We&apos;ll stop straight away and keep your email
+            address on a do-not-contact list so that we don&apos;t contact you again. We keep it only for
+            that reason. If you have also signed up for our news and offers, each of those emails has
+            an unsubscribe link.
+          </p>
+          <p>
+            We keep a business&apos;s contact details only for as long as we need them for this, and we
+            keep opt-out requests so that we can honour them. To ask where we found your details, to
+            have them removed, or to use any of your other rights, see &ldquo;Your rights&rdquo; below.
+          </p>
+        </Section>
+
+        <Section title="7. Cookies">
           <p>
             We use a small number of cookies to keep you signed in and to support secure payment.
             See our <Link href="/cookies" className="text-sageDeep underline">Cookie Policy</Link> for
@@ -127,7 +167,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="7. Your rights">
+        <Section title="8. Your rights">
           <p>Under UK GDPR, you have the right to:</p>
           <ul className="list-disc pl-5 space-y-1.5">
             <li>Access the personal data we hold about you.</li>
@@ -144,7 +184,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="8. Children's data">
+        <Section title="9. Children's data">
           <p>
             Activity Central is intended for use by care home staff and adults supporting people
             living with dementia. It is not intended for use by children, and we do not knowingly
@@ -152,7 +192,7 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="9. International transfers">
+        <Section title="10. International transfers">
           <p>
             Some of our hosting and infrastructure providers may process data on servers located
             outside the UK. Where this happens, we rely on providers who put appropriate
@@ -161,14 +201,14 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="10. Changes to this policy">
+        <Section title="11. Changes to this policy">
           <p>
             We may update this policy from time to time. We'll post any changes on this page with
             a new "last updated" date.
           </p>
         </Section>
 
-        <Section title="11. Contact us">
+        <Section title="12. Contact us">
           <p>
             If you have questions about this policy or how we handle your data, contact us at
             support@activitycentral.co.uk.
