@@ -102,6 +102,12 @@ html {
 .dementia-friendly .bp-always { background: #FFD23F !important; color: #1a1a1a !important; border: 4px solid #1a1a1a !important; box-shadow: inset 0 -14px 0 var(--bpc); padding-bottom: 20px !important; opacity: 1 !important; }
 .dementia-friendly .bp-always * { color: #1a1a1a !important; font-weight: 800; opacity: 1 !important; }
 .dementia-friendly .bp-printbtn { border: 3px solid #1a1a1a !important; font-size: 1.1rem !important; }
+/* Activity tiles (components/TemplateRows.tsx): yellow like the other tiles, with plain bordered buttons. */
+.dementia-friendly .ac-tilecard .ac-btn { background: #fff !important; border: 3px solid #1a1a1a !important; color: #1a1a1a !important; font-size: 1.05rem; padding: 0.55rem 0.9rem; }
+.dementia-friendly .ac-tilecard .ac-btn-play { background: #1a1a1a !important; color: #FFD23F !important; }
+.dementia-friendly .ac-tilecard .ac-btn-play * { color: #FFD23F !important; }
+.dementia-friendly .ac-tilecard .ac-check { width: 1.7rem; height: 1.7rem; accent-color: #1a1a1a !important; }
+.dementia-friendly .ac-tilecard .font-serif { font-size: 1.5rem; }
 /* A game in Dementia friendly mode sits in a white card with a thick black outline. */
 .easy-game { background: #fff; border: 3px solid #1a1a1a; border-radius: 16px; padding: 18px 14px; color: #1a1a1a; }
 
