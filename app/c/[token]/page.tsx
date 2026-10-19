@@ -191,7 +191,7 @@ export default async function SharedCalendarPage({ params }: { params: { token: 
         <div className="sc-no-print" style={{ background: "#fff", border: "1px solid #EAE4D6", borderRadius: 16, padding: "18px 18px 20px", textAlign: "center" }}>
           <p style={{ fontFamily: "Georgia, serif", fontSize: 20, margin: "0 0 4px" }}>Activities for every one of these dates</p>
           <p style={{ fontSize: 14, color: "#6B5F57", margin: "0 0 14px" }}>
-            Activity Central has thousands of ready-to-print activities for care homes. Try some free, no account or card needed.
+            Activity Central has ready-to-print activities for care homes. Try some free, no account or card needed.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
             <Link href="/#samples" style={{ background: "#B5714A", color: "#fff", fontWeight: 700, fontSize: 14, padding: "10px 18px", borderRadius: 10, textDecoration: "none" }}>

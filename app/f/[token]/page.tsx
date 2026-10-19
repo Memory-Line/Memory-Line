@@ -128,7 +128,7 @@ export default async function SharedFilePage({ params, searchParams }: { params:
         <div style={{ background: "#fff", border: "1px solid #EAE4D6", borderRadius: 16, padding: "18px 18px 20px", textAlign: "center", marginTop: 16 }}>
           <p style={{ fontFamily: "Georgia, serif", fontSize: 20, margin: "0 0 4px" }}>Activities for care homes, ready to print</p>
           <p style={{ fontSize: 14, color: "#6B5F57", margin: "0 0 14px" }}>
-            Activity Central has thousands of activities for care home teams. Try some free, no account or card needed.
+            Activity Central has activities for care home teams. Try some free, no account or card needed.
           </p>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
             <Link href="/#samples" style={{ background: "#B5714A", color: "#fff", fontWeight: 700, fontSize: 14, padding: "10px 18px", borderRadius: 10, textDecoration: "none" }}>

@@ -133,7 +133,7 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
       <div className="mt-8 rounded-2xl border border-sage bg-card p-5 sm:p-6 text-center">
         <p className="font-serif text-lg mb-1">{COMING_SOON ? "Opening soon" : "Like what you see?"}</p>
         <p className="text-sm text-inkSoft mb-4">
-          This is one of {template.category} — there are hundreds more like it across 17 categories.
+          This is one of {template.category} — there are more like it across 17 categories.
         </p>
         {COMING_SOON ? (
           <Link
