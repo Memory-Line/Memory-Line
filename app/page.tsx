@@ -13,7 +13,6 @@ import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
 import { COMING_SOON } from "@/lib/launch";
-import { usesTopics } from "@/lib/subcategories";
 import { displayTitle } from "@/lib/titles";
 
 // The free samples come from the database, but they change rarely (only
@@ -230,7 +229,7 @@ export default async function LandingPage() {
                   <p className="font-serif text-base">{displayTitle(t)}</p>
                 </div>
                 <div className="mt-4 grid gap-2">
-                  {PLAYABLE_CATEGORIES.has(t.category) && !(usesTopics(t.category) && t.subcategory) && (
+                  {PLAYABLE_CATEGORIES.has(t.category) && (
                     <Link href={`/play/${t.id}`} className={SAMPLE_LINK} style={{ background: "#D6EBE3", color: "#2F7A63" }}>
                       <PlayCircle size={15} className="mr-1.5" /> Play online, free
                     </Link>

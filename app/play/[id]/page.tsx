@@ -6,7 +6,6 @@ import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { getSession, getViewer } from "@/lib/viewer";
 import { ownerIsActive } from "@/lib/ownerAccess";
 import { COMING_SOON } from "@/lib/launch";
-import { usesTopics } from "@/lib/subcategories";
 import { isSudokuLevel, SUDOKU_LEVELS, sudokuPuzzle } from "@/lib/sudoku";
 import { wordSearch } from "@/lib/wordSearch";
 import { crossword } from "@/lib/crossword";
@@ -48,8 +47,6 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
 
   const template = await prisma.template.findUnique({ where: { id: params.id } });
   if (!template || !PLAYABLE_CATEGORIES.has(template.category)) notFound();
-  // Redone, topic-sorted activities have no on-screen puzzle yet.
-  if (template.subcategory && usesTopics(template.category)) notFound();
 
   const officialSample = await prisma.template.findFirst({
     where: {
@@ -83,10 +80,10 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
       );
     }
   } else if (template.category === "Word Searches") {
-    const data = wordSearch(number);
+    const data = wordSearch(number, template.subcategory);
     if (data) player = <WordSearchPlayer {...common} grid={data.grid} words={data.words} />;
   } else if (template.category === "Crosswords") {
-    const data = crossword(number);
+    const data = crossword(number, template.subcategory);
     if (data) {
       player = (
         <CrosswordPlayer
@@ -101,16 +98,16 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
       );
     }
   } else if (template.category === "Guess the Word") {
-    const data = guessTheWord(number);
+    const data = guessTheWord(number, template.subcategory);
     if (data) player = <GuessTheWordPlayer {...common} clue={data.clue} answer={data.answer} tries={data.tries} />;
   } else if (template.category === "Trivia") {
-    const data = triviaQuiz(number);
+    const data = triviaQuiz(number, template.subcategory);
     if (data) player = <TriviaPlayer {...common} questions={data.questions} />;
   } else if (template.category === "Snakes and Ladders") {
     const data = snakesAndLaddersBoard(number);
     if (data) player = <SnakesAndLaddersPlayer {...common} moves={data.moves} squares={data.squares} />;
   } else if (template.category === "Colouring Pages") {
-    const data = colouringPage(number);
+    const data = colouringPage(number, template.subcategory);
     if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
   } else if (template.category === "Matching Pairs") {
     const data = matchingPairsSet(number);

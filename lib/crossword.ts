@@ -1,4 +1,5 @@
 import crosswords from "@/lib/data/crosswords.json";
+import redone from "@/lib/data/redone/crosswords.json";
 
 // The grid and clues behind each Crossword PDF, for playing online. Read out
 // of the answer sheets by scripts/crossword/extract_crosswords.py; entry n is
@@ -22,7 +23,11 @@ export type Crossword = {
   down: CrosswordClue[];
 };
 
-export function crossword(n: number): Crossword | null {
+// The redone Crosswords are numbered 1-50 within each topic, so they are found by topic and number.
+const REDONE = new Map((redone as unknown as (Crossword & { t: string })[]).map((e) => [`${e.t}/${e.n}`, e]));
+
+export function crossword(n: number, topic?: string | null): Crossword | null {
+  if (topic) return REDONE.get(`${topic}/${n}`) ?? null;
   const entry = (crosswords as Crossword[])[n - 1];
   return entry && entry.n === n ? entry : null;
 }

@@ -1,4 +1,5 @@
 import colouringPages from "@/lib/data/colouringPages.json";
+import redone from "@/lib/data/redone/colouringPages.json";
 
 // The picture frame on each Colouring Page PDF, for playing online. Read out
 // of the PDFs by scripts/colouring/extract_colouring.py; entry n is the sheet
@@ -9,7 +10,11 @@ import colouringPages from "@/lib/data/colouringPages.json";
 export type ColouringFrame = { x: number; y: number; w: number; h: number };
 export type ColouringPage = { n: number; frame: ColouringFrame };
 
-export function colouringPage(n: number): ColouringPage | null {
+// The redone Colouring Pages are numbered 1-50 within each topic, so they are found by topic and number.
+const REDONE = new Map((redone as (ColouringPage & { t: string })[]).map((e) => [`${e.t}/${e.n}`, e]));
+
+export function colouringPage(n: number, topic?: string | null): ColouringPage | null {
+  if (topic) return REDONE.get(`${topic}/${n}`) ?? null;
   const entry = (colouringPages as ColouringPage[]).find((e) => e.n === n);
   return entry ?? null;
 }

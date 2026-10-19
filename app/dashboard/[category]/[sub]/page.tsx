@@ -28,8 +28,7 @@ export default async function SubcategoryPage({
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, templates.map((t) => t.id))
     : undefined;
-  // Topic-sorted activities have no on-screen puzzle yet (Play online uses the older built-in puzzles).
-  const playable = PLAYABLE_CATEGORIES.has(category.key) && !(usesTopics(category.key) && sub.slug !== EARLIER.slug);
+  const playable = PLAYABLE_CATEGORIES.has(category.key);
 
   return (
     <div>
