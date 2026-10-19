@@ -56,6 +56,24 @@ async function addWatermark(bytes: ArrayBuffer, whoFor: string): Promise<Uint8Ar
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
+    // Visitors who are not signed in can still be sent the home page's free sample for its category
+    // (the on-screen players for pictures read the sheet's own PDF). It is the same file the
+    // "Download free sample" button already links to, so nothing else is opened up.
+    const wanted = new URL(req.url).searchParams.get("file") ?? "standard";
+    const t = await prisma.template.findUnique({ where: { id: params.id } });
+    if (wanted === "standard" && t?.fileUrl && !PREMIUM_ONLY_CATEGORIES.has(t.category)) {
+      const official = await prisma.template.findFirst({
+        where: { category: t.category, occasion: null, language: null, ...(t.category === "Sudoku" ? { subcategory: "beginner" } : {}) },
+        orderBy: { fileName: "asc" },
+        select: { id: true },
+      });
+      if (official?.id === t.id) {
+        const file = await fetch(t.fileUrl);
+        if (file.ok) {
+          return new NextResponse(await file.arrayBuffer(), { headers: { "Content-Type": "application/pdf", "Content-Disposition": "inline" } });
+        }
+      }
+    }
     return NextResponse.redirect(new URL("/login?next=/dashboard", req.url));
   }
 
