@@ -220,7 +220,8 @@ export default async function LandingPage() {
             return (
               <div
                 key={t.id}
-                className="w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border border-line bg-card flex flex-col justify-between"
+                className="w-full sm:w-[calc(50%-0.5rem)] md:w-[calc(33.333%-0.75rem)] rounded-2xl p-5 border-2 flex flex-col justify-between"
+                style={{ background: cat?.tint ?? "#F5F1EA", borderColor: cat?.color ?? "#E5DFD3" }}
               >
                 <div>
                   <p className="flex items-center gap-1.5 text-xs font-semibold mb-2" style={{ color: cat?.color }}>
