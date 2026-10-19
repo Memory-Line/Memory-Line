@@ -60,23 +60,30 @@ export default async function LandingPage() {
   const FREE_SAMPLE_CATEGORIES = categories.map((c) => c.key);
   const PREMIUM_ONLY_CATEGORIES = categories.map((c) => c.key).filter((k) => PREMIUM_ONLY_CATEGORIES_SET.has(k));
   const STANDARD_CATEGORIES = categories.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
-  const freeSamples = (
-    await Promise.all(
-      FREE_SAMPLE_CATEGORIES.map((category) =>
-        prisma.template.findFirst({
-          where: {
-            category,
-            occasion: null,
-            language: null,
-            // A gentle first taste for Sudoku, rather than whichever level
-            // happens to sort first by file name.
-            ...(category === "Sudoku" ? { subcategory: "beginner" } : {}),
-          },
-          orderBy: { fileName: "asc" },
-        })
-      )
-    )
-  ).filter((t): t is NonNullable<typeof t> => t !== null);
+  // A few lookups at a time, and the page still opens (without samples) if the database is busy or
+  // refusing connections, rather than the whole home page showing a server error.
+  const sampleFor = (category: string) =>
+    prisma.template.findFirst({
+      where: {
+        category,
+        occasion: null,
+        language: null,
+        // A gentle first taste for Sudoku, rather than whichever level
+        // happens to sort first by file name.
+        ...(category === "Sudoku" ? { subcategory: "beginner" } : {}),
+      },
+      orderBy: { fileName: "asc" },
+    });
+  let found: Awaited<ReturnType<typeof sampleFor>>[] = [];
+  try {
+    for (let i = 0; i < FREE_SAMPLE_CATEGORIES.length; i += 4) {
+      found = found.concat(await Promise.all(FREE_SAMPLE_CATEGORIES.slice(i, i + 4).map(sampleFor)));
+    }
+  } catch (err) {
+    console.error("Home page samples could not be loaded:", err);
+    found = [];
+  }
+  const freeSamples = found.filter((t): t is NonNullable<typeof t> => t !== null);
 
   return (
     <main>
