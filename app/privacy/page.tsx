@@ -146,7 +146,9 @@ export default function PrivacyPage() {
             You can object at any time.
           </p>
           <p>
-            <strong>How to unsubscribe.</strong> Reply &ldquo;stop&rdquo; or &ldquo;no thanks&rdquo; to any of our emails, or
+            <strong>How to unsubscribe.</strong> Reply &ldquo;stop&rdquo; or &ldquo;no thanks&rdquo; to any of our emails, use our
+            unsubscribe page at{" "}
+            <a href="https://activitycentral.co.uk/stop" className="text-sageDeep underline">https://activitycentral.co.uk/stop</a>, or
             write to support@activitycentral.co.uk. We&apos;ll stop straight away and keep your email
             address on a do-not-contact list so that we don&apos;t contact you again. We keep it only for
             that reason. If you have also signed up for our news and offers, each of those emails has
