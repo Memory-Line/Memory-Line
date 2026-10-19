@@ -98,10 +98,10 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       );
     }
   } else if (template.category === "Word Searches" && !template.occasion) {
-    const data = wordSearch(number);
+    const data = wordSearch(number, template.subcategory);
     if (data) player = <WordSearchPlayer {...common} grid={data.grid} words={data.words} />;
   } else if (template.category === "Crosswords" && !template.occasion) {
-    const data = crossword(number);
+    const data = crossword(number, template.subcategory);
     if (data) {
       player = (
         <CrosswordPlayer
@@ -116,16 +116,16 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       );
     }
   } else if (template.category === "Guess the Word" && !template.occasion) {
-    const data = guessTheWord(number);
+    const data = guessTheWord(number, template.subcategory);
     if (data) player = <GuessTheWordPlayer {...common} clue={data.clue} answer={data.answer} tries={data.tries} />;
   } else if (template.category === "Trivia" && !template.occasion) {
-    const data = triviaQuiz(number);
+    const data = triviaQuiz(number, template.subcategory);
     if (data) player = <TriviaPlayer {...common} questions={data.questions} />;
   } else if (template.category === "Snakes and Ladders" && !template.occasion) {
     const data = snakesAndLaddersBoard(number);
     if (data) player = <SnakesAndLaddersPlayer {...common} moves={data.moves} squares={data.squares} />;
   } else if (template.category === "Colouring Pages" && !template.occasion) {
-    const data = colouringPage(number);
+    const data = colouringPage(number, template.subcategory);
     if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
   } else if (template.category === "Matching Pairs" && !template.occasion) {
     const data = matchingPairsSet(number);

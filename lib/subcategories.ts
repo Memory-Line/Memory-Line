@@ -5,6 +5,45 @@
 // but have their own pages (lib/languages.ts).
 export type Subcategory = { slug: string; label: string; description: string };
 
+// The ten topics every redone category is sorted into (Newsletters, Crosswords, ...).
+const TOPICS: Subcategory[] = [
+  { slug: "animals-and-birds", label: "Animals & Birds", description: "Pets, farm animals, wildlife and the birds of Britain" },
+  { slug: "flowers-and-gardening", label: "Flowers & Gardening", description: "Gardens, flowers, shows and growing things" },
+  { slug: "seasons-and-nature", label: "Seasons & Nature", description: "The changing year, weather and the countryside" },
+  { slug: "food-and-drink", label: "Food & Drink", description: "Favourite foods, drinks and kitchen memories" },
+  { slug: "home-and-everyday-life", label: "Home & Everyday Life", description: "Life at home, school days, shopping and household things" },
+  { slug: "work-and-occupations", label: "Work & Occupations", description: "Jobs, trades and the working lives of the past" },
+  { slug: "places-and-travel", label: "Places & Travel", description: "Journeys, railways, ships and famous places" },
+  { slug: "hobbies-and-leisure", label: "Hobbies & Leisure", description: "Sport, games, crafts and pastimes" },
+  { slug: "music-and-entertainment", label: "Music & Entertainment", description: "Songs, shows, radio, television and the cinema" },
+  { slug: "celebrations-and-special-occasions", label: "Celebrations & Special Occasions", description: "Festivals, holidays, weddings and traditions" },
+];
+
+// Categories sorted into the ten topics (add a category here when its redone activities are ready).
+export const TOPIC_CATEGORIES = [
+  "Word Searches",
+  "Crosswords",
+  "Guess the Word",
+  "Trivia",
+  "Colouring Pages",
+];
+
+function topicsWith(descriptions: Record<string, string>): Subcategory[] {
+  return TOPICS.map((t) => ({ ...t, description: descriptions[t.slug] ?? t.description }));
+}
+
+export function usesTopics(categoryKey: string): boolean {
+  return categoryKey === "Newsletters" || TOPIC_CATEGORIES.includes(categoryKey);
+}
+
+// Activities uploaded before a category was sorted into topics have no sub-category. They stay
+// reachable under this tile (shown only while there are any), so nothing disappears.
+export const EARLIER: Subcategory = {
+  slug: "other",
+  label: "Earlier activities",
+  description: "Activities not yet sorted into a topic",
+};
+
 export const SUBCATEGORIES: Record<string, Subcategory[]> = {
   Sudoku: [
     { slug: "beginner", label: "Beginner", description: "4×4 grids, numbers 1 to 4" },
@@ -13,18 +52,20 @@ export const SUBCATEGORIES: Record<string, Subcategory[]> = {
     { slug: "expert", label: "Expert", description: "9×9 grids, fewer starting numbers" },
     { slug: "master", label: "Master", description: "9×9 grids, the toughest of the four" },
   ],
-  Newsletters: [
-    { slug: "animals-and-birds", label: "Animals & Birds", description: "Pets, wildlife, famous animals and the birds of Britain" },
-    { slug: "flowers-and-gardening", label: "Flowers & Gardening", description: "Gardens, flowers, shows and the people who grow them" },
-    { slug: "seasons-and-nature", label: "Seasons & Nature", description: "Weather, countryside, national parks and the changing year" },
-    { slug: "food-and-drink", label: "Food & Drink", description: "Favourite foods, drinks, shops and kitchen memories" },
-    { slug: "home-and-everyday-life", label: "Home & Everyday Life", description: "Life at home, school days, shopping and household inventions" },
-    { slug: "work-and-occupations", label: "Work & Occupations", description: "Jobs, trades, factories and the working lives of the past" },
-    { slug: "places-and-travel", label: "Places & Travel", description: "Journeys, bridges, railways, ships and famous places" },
-    { slug: "hobbies-and-leisure", label: "Hobbies & Leisure", description: "Sport, games, crafts and pastimes" },
-    { slug: "music-and-entertainment", label: "Music & Entertainment", description: "Songs, shows, radio, television and the cinema" },
-    { slug: "celebrations-and-special-occasions", label: "Celebrations & Special Occasions", description: "Festivals, holidays, weddings and traditions through the year" },
-  ],
+  Newsletters: topicsWith({
+    "animals-and-birds": "Pets, wildlife, famous animals and the birds of Britain",
+    "flowers-and-gardening": "Gardens, flowers, shows and the people who grow them",
+    "seasons-and-nature": "Weather, countryside, national parks and the changing year",
+    "food-and-drink": "Favourite foods, drinks, shops and kitchen memories",
+    "home-and-everyday-life": "Life at home, school days, shopping and household inventions",
+    "work-and-occupations": "Jobs, trades, factories and the working lives of the past",
+    "places-and-travel": "Journeys, bridges, railways, ships and famous places",
+    "hobbies-and-leisure": "Sport, games, crafts and pastimes",
+    "music-and-entertainment": "Songs, shows, radio, television and the cinema",
+    "celebrations-and-special-occasions": "Festivals, holidays, weddings and traditions through the year",
+  }),
+  // The same ten topics for every redone category.
+  ...Object.fromEntries(TOPIC_CATEGORIES.map((k) => [k, topicsWith({})])),
 };
 
 export function subcategoriesFor(categoryKey: string): Subcategory[] | undefined {
