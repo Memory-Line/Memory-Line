@@ -30,6 +30,7 @@ export default async function TemplateList({
   completedIds,
   playable = false,
   isPremium = true,
+  tiles = false,
 }: {
   templates: Template[];
   completedIds?: string[];
@@ -37,6 +38,8 @@ export default async function TemplateList({
   // Standard accounts: false. Defaults to true so callers that haven't been
   // updated yet (there shouldn't be any) don't accidentally lock everyone out.
   isPremium?: boolean;
+  // Show the activities as multi-coloured tiles with tick boxes for printing several at once.
+  tiles?: boolean;
 }) {
   const done = completedIds ? new Set(completedIds) : null;
   // Which of these the signed-in person has starred.
@@ -75,6 +78,7 @@ export default async function TemplateList({
       showComplete={!!done}
       playable={playable}
       isPremium={isPremium}
+      tiles={tiles}
     />
   );
 }

@@ -7,6 +7,7 @@ import { subcategoriesFor, usesTopics, EARLIER } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import BingoCaller from "@/components/BingoCaller";
+import { TOPIC_COLOURS, TILE_CATEGORIES } from "@/lib/tiles";
 
 export function generateStaticParams() {
   return [
@@ -29,20 +30,6 @@ export function generateStaticParams() {
 }
 
 export const dynamic = "force-dynamic";
-
-// Colours borrowed from the dashboard tiles, one per topic.
-const TOPIC_COLOURS = [
-  { color: "#4A7FB5", tint: "#DCE7F2" },
-  { color: "#C98B2E", tint: "#F5EBD2" },
-  { color: "#2F7A63", tint: "#D6EBE3" },
-  { color: "#B05F6C", tint: "#F1DEDE" },
-  { color: "#8B6FB0", tint: "#E5DEEF" },
-  { color: "#C97B5A", tint: "#EFDCCB" },
-  { color: "#5B9AA0", tint: "#D9E7E6" },
-  { color: "#7A9B5E", tint: "#E5EDDD" },
-  { color: "#6E56A0", tint: "#E0D7EE" },
-  { color: "#B5453D", tint: "#F3DAD8" },
-];
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const category = await getCategoryBySlug(params.category);
@@ -160,6 +147,7 @@ export default async function CategoryPage({ params }: { params: { category: str
           completedIds={done}
           playable={PLAYABLE_CATEGORIES.has(category.key)}
           isPremium={viewer.isPremium}
+          tiles={TILE_CATEGORIES.has(category.key)}
         />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
