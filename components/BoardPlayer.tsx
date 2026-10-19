@@ -55,7 +55,7 @@ function Seg<T extends string>({ label, value, options, onChange }: { label: str
   );
 }
 
-export default function BoardPlayer({ board, lang, back }: { board: Board; lang?: string; back?: { href: string; label: string } }) {
+export default function BoardPlayer({ board, lang, back, sample }: { board: Board; lang?: string; back?: { href: string; label: string }; sample?: boolean }) {
   const [mode, setMode] = useState<Mode>("en");
   const [other, setOther] = useState<LangCode>(lang && lang !== "en" ? (lang as LangCode) : "pl");
   const [voice, setVoice] = useState<Voice>("female");
@@ -97,7 +97,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
     return new Promise((resolve) => {
       if (id !== runId.current) return resolve();
       const saved = AUDIO[`${lang}|${voice}|${text}`];
-      const src = saved ?? `/api/boards/speak?lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
+      const src = saved ?? `/api/boards/speak?${sample ? "use=sample&" : ""}lang=${lang}&voice=${voice}&text=${encodeURIComponent(text)}`;
       const a = audioRef.current ?? (audioRef.current = new Audio());
       const ready = saved ? Promise.resolve(null) : warm.current.get(src) ?? Promise.resolve(null);
       ready.then((made) => {
@@ -167,7 +167,7 @@ export default function BoardPlayer({ board, lang, back }: { board: Board; lang?
         if (!text) continue;
         const spoken = forPerson(text, l, person);
         if (AUDIO[`${l}|${voice}|${spoken}`]) continue;
-        urls.push(`/api/boards/speak?lang=${l}&voice=${voice}&text=${encodeURIComponent(spoken)}`);
+        urls.push(`/api/boards/speak?${sample ? "use=sample&" : ""}lang=${l}&voice=${voice}&text=${encodeURIComponent(spoken)}`);
       }
     }
     let next = 0;

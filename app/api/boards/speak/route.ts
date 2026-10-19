@@ -99,7 +99,11 @@ export async function GET(req: Request) {
   const text = (u.searchParams.get("text") ?? "").trim();
   const isAdmin = !!(await requireAdmin());
   if (!isAdmin) {
-    if (u.searchParams.get("use") === "bingo") {
+    if (u.searchParams.get("use") === "sample") {
+      // The free sample board on the home page: English only, and only the board phrases (a fixed
+      // list, each made once and then saved), so it cannot be used to make arbitrary speech.
+      if (lang !== "en" || !boardPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+    } else if (u.searchParams.get("use") === "bingo") {
       // The Bingo caller: any signed-in account, any language, but only the Bingo calls.
       const v = await getViewer();
       if (!v.userId || !bingoPhrases().has(text)) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
