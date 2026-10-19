@@ -26,6 +26,9 @@ export function StandardFeatures() {
           <b>Ready-to-print activities</b>, with answer sheets where they apply
         </Tick>
         <Tick>
+          A <b>Bingo caller</b> that reads each number aloud, in English, then up to 5 other languages
+        </Tick>
+        <Tick>
           Your own <b>account area</b> to manage your subscription, email choices and suggestions
         </Tick>
         <Tick>Help by email</Tick>

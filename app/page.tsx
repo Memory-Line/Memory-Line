@@ -87,7 +87,7 @@ export default async function LandingPage() {
           <span className="font-serif text-base sm:text-xl leading-tight">Activity Central</span>
         </div>
         <div className="flex items-center gap-3 sm:gap-4 text-sm font-medium">
-          {!COMING_SOON && <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>}
+          <a href="#pricing" className="hidden sm:inline text-inkSoft hover:text-ink">Pricing</a>
           <Link href="/support" className="hidden sm:inline text-inkSoft hover:text-ink">Support</Link>
           <Link href="/login" className="whitespace-nowrap text-inkSoft hover:text-ink">Log in</Link>
           {!COMING_SOON && (
@@ -121,6 +121,9 @@ export default async function LandingPage() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3">
             <a href="#samples" className="rounded-xl bg-sage text-white px-6 py-3 font-semibold hover:bg-sageDeep transition-colors">
               Try the free samples
+            </a>
+            <a href="#pricing" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
+              See pricing
             </a>
             <Link href="/login" className="rounded-xl border border-line px-6 py-3 font-semibold text-ink hover:bg-card transition-colors">
               Members: log in
@@ -289,9 +292,9 @@ export default async function LandingPage() {
         </div>
       </section>
 
-      {!COMING_SOON && (
+      {true && (
         <>
-        {/* Pricing */}
+        {/* Pricing (shown while sign-ups are closed too; the Sign up buttons become "Opening soon") */}
         <section id="pricing" className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
           <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
           <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
@@ -317,12 +320,16 @@ export default async function LandingPage() {
                 ))}
               </div>
 
+              {COMING_SOON ? (
+                <p className="mt-auto text-center rounded-xl bg-cardTint text-sageDeep px-8 py-3 font-semibold">Opening soon</p>
+              ) : (
               <Link
                 href="/signup"
                 className="mt-auto inline-block text-center rounded-xl bg-cardTint text-ink px-8 py-3 font-semibold hover:bg-line transition-colors"
               >
                 Sign up
               </Link>
+              )}
             </div>
 
             {/* Premium */}
@@ -360,12 +367,16 @@ export default async function LandingPage() {
                 ))}
               </div>
 
+              {COMING_SOON ? (
+                <p className="mt-auto text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold">Opening soon</p>
+              ) : (
               <Link
                 href="/signup"
                 className="mt-auto inline-block text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold hover:opacity-90 transition-opacity"
               >
                 Sign up
               </Link>
+              )}
             </div>
 
           </div>

@@ -50,7 +50,7 @@ export const SUBCATEGORIES: Record<string, Subcategory[]> = {
     { slug: "intermediate", label: "Intermediate", description: "6×6 grids, numbers 1 to 6" },
     { slug: "advanced", label: "Advanced", description: "9×9 grids, numbers 1 to 9" },
     { slug: "expert", label: "Expert", description: "9×9 grids, fewer starting numbers" },
-    { slug: "master", label: "Master", description: "9×9 grids, the toughest of the four" },
+    { slug: "master", label: "Master", description: "9×9 grids, the toughest of the five" },
   ],
   Newsletters: topicsWith({
     "animals-and-birds": "Pets, wildlife, famous animals and the birds of Britain",
