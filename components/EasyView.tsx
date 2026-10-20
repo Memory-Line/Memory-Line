@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 // "Dementia friendly" mode for the whole dashboard: black on white, a little larger, thick outlines,
 // yellow highlights. The choice belongs to the account (User.dementiaFriendly), so it follows the
@@ -13,6 +13,30 @@ export const useEasyView = () => useContext(Ctx).on;
 
 export function DementiaProvider({ initial, className, children }: { initial: boolean; className?: string; children: React.ReactNode }) {
   const [on, setOn] = useState(initial);
+  const touched = useRef(false);
+
+  // The page can be one the browser kept from earlier (coming back from the calendar with the back button,
+  // or a screen cached before the choice was changed), so check the account's real choice when it appears.
+  useEffect(() => {
+    let live = true;
+    const check = () =>
+      fetch("/api/preferences/dementia-friendly", { cache: "no-store" })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((d) => {
+          if (live && d && typeof d.on === "boolean" && !touched.current) setOn(d.on);
+        })
+        .catch(() => {});
+    check();
+    const show = (e: PageTransitionEvent) => { if (e.persisted) { touched.current = false; check(); } };
+    const visible = () => { if (document.visibilityState === "visible") { touched.current = false; check(); } };
+    window.addEventListener("pageshow", show);
+    document.addEventListener("visibilitychange", visible);
+    return () => {
+      live = false;
+      window.removeEventListener("pageshow", show);
+      document.removeEventListener("visibilitychange", visible);
+    };
+  }, []);
 
   // The sky strip, scene and falling items sit outside this wrapper, so the page body carries the flag too.
   useEffect(() => {
@@ -21,6 +45,7 @@ export function DementiaProvider({ initial, className, children }: { initial: bo
   }, [on]);
 
   function set(v: boolean) {
+    touched.current = true;
     setOn(v);
     fetch("/api/preferences/dementia-friendly", {
       method: "POST",
