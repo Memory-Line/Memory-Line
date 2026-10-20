@@ -1,14 +1,10 @@
 import Link from "next/link";
 import { categoryLabel } from "@/lib/data";
 import Image from "next/image";
-import {
-  Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
-  Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, PlayCircle,
-  CalendarDays, Share2, FileText, Newspaper,
-} from "lucide-react";
+import { PlayCircle, CalendarDays, QrCode, Files, Megaphone, Play, Volume2, Eye, Printer } from "lucide-react";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 import { getCategories } from "@/lib/categories";
-import { customIcon } from "@/lib/categoryIcons";
+import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/plans";
 import { prisma } from "@/lib/prisma";
@@ -33,25 +29,6 @@ export const revalidate = 600;
 const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
 
-const ICONS: Record<string, any> = {
-  "Physical & Exercise": Footprints,
-  Crosswords: Grid3x3,
-  "Word Searches": Search,
-  "Guess the Word": HelpCircle,
-  Trivia: Brain,
-  Bingo: Hash,
-  "Snakes and Ladders": Dices,
-  "Remembrance Cards": Heart,
-  "Colouring Pages": Palette,
-  "Conversation Starters": MessageCircle,
-  "Matching Pairs": Copy,
-  "Spot the Difference": Eye,
-  "Sing-Alongs": Music,
-  "Communication Cards": Languages,
-  "BSL Tools": Hand,
-  Newsletters: Newspaper,
-  Sudoku: Grid2x2,
-};
 
 export default async function LandingPage() {
   // The categories come from the database (so ones made or removed on the admin page show here
@@ -169,10 +146,10 @@ export default async function LandingPage() {
                 className="rounded-2xl p-4 sm:p-5 text-center border border-line bg-card"
               >
                 <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center mx-auto mb-3"
-                  style={{ background: c.tint }}
+                  className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                  style={{ background: c.color }}
                 >
-                  <Icon size={20} color={c.color} />
+                  <Icon size={24} color="#fff" aria-hidden="true" />
                 </div>
                 <p className="font-semibold text-sm">{categoryLabel(c.key)}</p>
               </div>
@@ -185,30 +162,69 @@ export default async function LandingPage() {
       <section className="max-w-5xl mx-auto px-5 sm:px-8 pb-14 sm:pb-20">
         <h2 className="font-serif text-2xl text-center mb-2">More than a library</h2>
         <p className="text-inkSoft text-center mb-10">Tools that make planning, printing and sharing easier.</p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             {
               Icon: CalendarDays,
+              colour: "#4A7FB5",
               title: "Holidays & Celebrations calendar",
               plan: "Premium",
               text: "Nearly 60 dates a year already filled in. Add your own events, then print a whole month or any week on A4 or A3, with a notes box and space to write.",
             },
             {
-              Icon: Share2,
+              Icon: QrCode,
+              colour: "#2F7A63",
               title: "Share your calendar",
               plan: "Premium",
               text: "Get a link or QR code for your website, newsletter or noticeboard, so families can see what's coming up.",
             },
             {
-              Icon: FileText,
+              Icon: Files,
+              colour: "#C98B2E",
               title: "Shared files",
               plan: "Premium",
               text: "Upload your menu, newsletter or room photos and get a link or QR code. Swap in next week's menu and the link stays the same.",
             },
-          ].map(({ Icon, title, plan, text }) => (
+            {
+              Icon: Megaphone,
+              colour: "#B5453D",
+              title: "Talking communication boards",
+              plan: "Premium",
+              text: "Tap an answer and it is read aloud, in 24 languages, so residents and carers can understand each other.",
+            },
+            {
+              Icon: Play,
+              colour: "#7A9B5E",
+              title: "Play online",
+              plan: "Premium",
+              text: "Puzzles and games on screen, so you can run a spontaneous session with no printer needed.",
+            },
+            {
+              Icon: Volume2,
+              colour: "#B05F6C",
+              title: "Bingo caller",
+              plan: "Every plan",
+              text: "Reads each number aloud, and can say it in other languages too.",
+            },
+            {
+              Icon: Eye,
+              colour: "#E0A82E",
+              dark: true,
+              title: "Dementia friendly view",
+              plan: "Every plan",
+              text: "One switch turns the site into big yellow boxes with black writing, easier to see and use.",
+            },
+            {
+              Icon: Printer,
+              colour: "#6E56A0",
+              title: "Print several at once",
+              plan: "Every plan",
+              text: "Tick up to 50 sheets and print them together in one go, or print any single sheet with one button.",
+            },
+          ].map(({ Icon, colour, dark, title, plan, text }) => (
             <div key={title} className="rounded-2xl border border-line bg-card p-5 sm:p-6">
-              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3 bg-cardTint">
-                <Icon size={20} className="text-sageDeep" />
+              <div className="w-11 h-11 rounded-full flex items-center justify-center mb-3" style={{ background: colour }}>
+                <Icon size={22} color={dark ? "#2C2C2A" : "#fff"} aria-hidden="true" />
               </div>
               <p className="text-clay font-semibold text-[11px] tracking-wide uppercase mb-1">{plan}</p>
               <h3 className="font-serif text-lg mb-1.5">{title}</h3>
@@ -273,7 +289,7 @@ export default async function LandingPage() {
           >
             <div>
               <p className="flex items-center gap-1.5 text-sm font-bold mb-2" style={{ color: "#1F2A2E" }}>
-                <Languages size={14} /> Communication Boards
+                <Megaphone size={14} /> Communication Boards
               </p>
               <p className="font-serif text-base">A talking board: tap an answer and it is read aloud</p>
             </div>
