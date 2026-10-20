@@ -26,6 +26,7 @@ export const TOPIC_CATEGORIES = [
   "Guess the Word",
   "Trivia",
   "Colouring Pages",
+  "Conversation Starters",
 ];
 
 function topicsWith(descriptions: Record<string, string>): Subcategory[] {
