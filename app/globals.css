@@ -124,3 +124,22 @@ html {
 
 /* Dementia friendly mode keeps the page plain: no sky strip, scene or falling items. */
 body.dementia-on .season-sky, body.dementia-on .season-ground, body.dementia-on .season-fall, body.dementia-on .festive-banner { display: none !important; }
+
+/* The Bingo caller in Dementia friendly mode: yellow and black like the other screens. */
+.dementia-friendly .bc-root { background: #fff !important; border: 4px solid #1a1a1a !important; }
+.dementia-friendly .bc-root, .dementia-friendly .bc-root .text-inkSoft { color: #1a1a1a !important; }
+.dementia-friendly .bc-now { background: #FFD23F !important; border: 4px solid #1a1a1a !important; }
+.dementia-friendly .bc-now * { color: #1a1a1a !important; font-weight: 800; }
+.dementia-friendly .bc-call { background: #1a1a1a !important; color: #FFD23F !important; font-size: 1.3rem !important; padding: 0.9rem 1.5rem !important; }
+.dementia-friendly .bc-btn { background: #fff !important; color: #1a1a1a !important; border: 3px solid #1a1a1a !important; font-size: 1.05rem !important; }
+.dementia-friendly .bc-panel { background: #FFD23F !important; border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bc-panel * { color: #1a1a1a !important; }
+.dementia-friendly .bc-pill { background: #fff !important; color: #1a1a1a !important; border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bc-pill[aria-pressed="true"] { background: #1a1a1a !important; color: #FFD23F !important; }
+.dementia-friendly .bc-chip { background: #fff !important; border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bc-root select, .dementia-friendly .bc-root input[type="text"], .dementia-friendly .bc-root input:not([type]) { background: #fff !important; color: #1a1a1a !important; border: 3px solid #1a1a1a !important; }
+.dementia-friendly .bc-letter { background: #1a1a1a !important; color: #FFD23F !important; }
+.dementia-friendly .bc-cell { background: #fff !important; color: #1a1a1a !important; border: 2px solid #1a1a1a !important; font-weight: 800 !important; font-size: clamp(11px, 1.9vw, 16px) !important; }
+.dementia-friendly .bc-cell.bc-on { background: #FFD23F !important; border-width: 3px !important; }
+.dementia-friendly .bc-cell.bc-latest { background: #1a1a1a !important; color: #FFD23F !important; }
+.dementia-friendly .bc-big { background: #fff !important; }
