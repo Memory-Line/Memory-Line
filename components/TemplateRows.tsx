@@ -33,25 +33,10 @@ function Upgrade() {
 
 const btnBase = "ac-btn flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-semibold";
 
-// The activities of a tile category: multi-coloured boxes like the topic boxes, each with its buttons, a Print
-// button, and a tick box so several can be printed together.
-function TileGrid({
-  shown,
-  loggedIn,
-  starred,
-  toggleStar,
-  showComplete,
-  playable,
-  isPremium,
-}: {
-  shown: TemplateRow[];
-  loggedIn: boolean;
-  starred: Set<string>;
-  toggleStar: (id: string) => void;
-  showComplete: boolean;
-  playable: boolean;
-  isPremium: boolean;
-}) {
+type PrintPack = ReturnType<typeof usePrintPack>;
+
+// The ticked sheets and the printing of them, shared by the tile and row layouts.
+function usePrintPack(shown: TemplateRow[]) {
   const [picked, setPicked] = useState<Set<string>>(() => new Set());
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<{ text: string; url?: string } | null>(null);
@@ -79,8 +64,14 @@ function TileGrid({
     setBusy(false);
   }
 
+  return { picked, setPicked, busy, note, open, chosen, withLarge, withAnswers, toggle, run };
+}
+
+// "Print several at once": tick boxes, then print the ticked sheets as one job.
+function PrintBar({ p, isPremium }: { p: PrintPack; isPremium: boolean }) {
+  const { picked, setPicked, busy, note, open, chosen, withLarge, withAnswers, run } = p;
   return (
-    <div>
+    <>
       {open.length > 0 && (
         <div className="mb-4 rounded-xl border border-line bg-card p-3 flex flex-wrap items-center gap-2">
           <span className="text-sm font-semibold mr-1">Print several at once:</span>
@@ -121,6 +112,35 @@ function TileGrid({
           )}
         </div>
       )}
+    </>
+  );
+}
+
+// The activities of a tile category: multi-coloured boxes like the topic boxes, each with its buttons, a Print
+// button, and a tick box so several can be printed together.
+function TileGrid({
+  shown,
+  loggedIn,
+  starred,
+  toggleStar,
+  showComplete,
+  playable,
+  isPremium,
+}: {
+  shown: TemplateRow[];
+  loggedIn: boolean;
+  starred: Set<string>;
+  toggleStar: (id: string) => void;
+  showComplete: boolean;
+  playable: boolean;
+  isPremium: boolean;
+}) {
+  const p = usePrintPack(shown);
+  const { picked, busy, open, run } = p;
+
+  return (
+    <div>
+      <PrintBar p={p} isPremium={isPremium} />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {shown.map((t, i) => {
@@ -138,7 +158,7 @@ function TileGrid({
                     <input
                       type="checkbox"
                       checked={on}
-                      onChange={() => toggle(t.id)}
+                      onChange={() => p.toggle(t.id)}
                       aria-label={`Tick ${t.title} to print`}
                       className="ac-check mt-1 h-5 w-5 shrink-0 cursor-pointer"
                       style={{ accentColor: mix.color }}
@@ -204,6 +224,107 @@ function TileGrid({
         })}
       </div>
     </div>
+  );
+}
+
+// The activities of an ordinary category: one row each, with a tick box and a Print button.
+function RowList({
+  shown,
+  loggedIn,
+  starred,
+  toggleStar,
+  showComplete,
+  playable,
+  isPremium,
+}: {
+  shown: TemplateRow[];
+  loggedIn: boolean;
+  starred: Set<string>;
+  toggleStar: (id: string) => void;
+  showComplete: boolean;
+  playable: boolean;
+  isPremium: boolean;
+}) {
+  const p = usePrintPack(shown);
+  const { picked, busy, run } = p;
+  return (
+    <>
+      <PrintBar p={p} isPremium={isPremium} />
+        <div className="space-y-3">
+          {shown.map((t) => (
+            <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line [content-visibility:auto] [contain-intrinsic-size:auto_96px]">
+              <div className="flex items-start gap-2 min-w-0">
+                {!t.locked && (
+                  <input
+                    type="checkbox"
+                    checked={picked.has(t.id)}
+                    onChange={() => p.toggle(t.id)}
+                    aria-label={`Tick ${t.title} to print`}
+                    className="ac-check mt-2 h-5 w-5 shrink-0 cursor-pointer"
+                  />
+                )}
+                {loggedIn && (
+                  <button
+                    type="button"
+                    onClick={() => toggleStar(t.id)}
+                    aria-pressed={starred.has(t.id)}
+                    aria-label={starred.has(t.id) ? "Remove from favourites" : "Add to favourites"}
+                    title={starred.has(t.id) ? "Remove from favourites" : "Add to favourites"}
+                    className="shrink-0 rounded-full p-1.5 hover:bg-cardTint"
+                  >
+                    <Star size={22} fill={starred.has(t.id) ? "#E0A82E" : "none"} color={starred.has(t.id) ? "#B8862A" : "#8A8371"} strokeWidth={2} />
+                  </button>
+                )}
+                <div className="min-w-0">
+                  <p className="text-[15px] font-bold">{t.title}</p>
+                  <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap sm:justify-end gap-2 shrink-0 sm:max-w-[65%]">
+                {t.locked ? (
+                  <Upgrade />
+                ) : (
+                  <>
+                    {playable && (
+                      <Link href={`/dashboard/play/${t.id}`} prefetch={false} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
+                        <Play size={14} />
+                        Play online
+                      </Link>
+                    )}
+                    <button type="button" disabled={busy} onClick={() => run([t.id], "standard")} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold border border-line bg-white disabled:opacity-60">
+                      <Printer size={14} />
+                      Print
+                    </button>
+                    <a href={`/api/download/${t.id}?file=standard`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
+                      <Download size={14} />
+                      Standard
+                    </a>
+                    {t.hasLargePrint &&
+                      (isPremium ? (
+                        <a href={`/api/download/${t.id}?file=large-print`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
+                          Large Print
+                        </a>
+                      ) : (
+                        <Upgrade />
+                      ))}
+                    {t.hasAnswers && (
+                      <a href={`/api/download/${t.id}?file=answers`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
+                        Answers
+                      </a>
+                    )}
+                    {t.video && (
+                      <a href={t.video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
+                        {/youtube\.com|youtu\.be/.test(t.video) ? "Watch on YouTube" : "Watch sign video"}
+                      </a>
+                    )}
+                  </>
+                )}
+                {showComplete && <CompleteButton templateId={t.id} initiallyCompleted={t.completed} />}
+              </div>
+            </div>
+          ))}
+        </div>
+    </>
   );
 }
 
@@ -334,67 +455,7 @@ export default function TemplateRows({
       {tiles ? (
         <TileGrid shown={shown} loggedIn={loggedIn} starred={starred} toggleStar={toggleStar} showComplete={showComplete} playable={playable} isPremium={isPremium} />
       ) : (
-        <div className="space-y-3">
-          {shown.map((t) => (
-            <div key={t.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl p-4 bg-card border border-line [content-visibility:auto] [contain-intrinsic-size:auto_96px]">
-              <div className="flex items-start gap-2 min-w-0">
-                {loggedIn && (
-                  <button
-                    type="button"
-                    onClick={() => toggleStar(t.id)}
-                    aria-pressed={starred.has(t.id)}
-                    aria-label={starred.has(t.id) ? "Remove from favourites" : "Add to favourites"}
-                    title={starred.has(t.id) ? "Remove from favourites" : "Add to favourites"}
-                    className="shrink-0 rounded-full p-1.5 hover:bg-cardTint"
-                  >
-                    <Star size={22} fill={starred.has(t.id) ? "#E0A82E" : "none"} color={starred.has(t.id) ? "#B8862A" : "#8A8371"} strokeWidth={2} />
-                  </button>
-                )}
-                <div className="min-w-0">
-                  <p className="text-[15px] font-bold">{t.title}</p>
-                  <p className="text-[11px] text-inkSoft mt-0.5 break-all">{t.fileName}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap sm:justify-end gap-2 shrink-0 sm:max-w-[65%]">
-                {t.locked ? (
-                  <Upgrade />
-                ) : (
-                  <>
-                    {playable && (
-                      <Link href={`/dashboard/play/${t.id}`} prefetch={false} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
-                        <Play size={14} />
-                        Play online
-                      </Link>
-                    )}
-                    <a href={`/api/download/${t.id}?file=standard`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E4EEE2", color: "#6D8C6A" }}>
-                      <Download size={14} />
-                      Standard
-                    </a>
-                    {t.hasLargePrint &&
-                      (isPremium ? (
-                        <a href={`/api/download/${t.id}?file=large-print`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#FCEFE7", color: "#B5714A" }}>
-                          Large Print
-                        </a>
-                      ) : (
-                        <Upgrade />
-                      ))}
-                    {t.hasAnswers && (
-                      <a href={`/api/download/${t.id}?file=answers`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#E7ECFA", color: "#4C5FA8" }}>
-                        Answers
-                      </a>
-                    )}
-                    {t.video && (
-                      <a href={t.video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
-                        {/youtube\.com|youtu\.be/.test(t.video) ? "Watch on YouTube" : "Watch sign video"}
-                      </a>
-                    )}
-                  </>
-                )}
-                {showComplete && <CompleteButton templateId={t.id} initiallyCompleted={t.completed} />}
-              </div>
-            </div>
-          ))}
-        </div>
+        <RowList shown={shown} loggedIn={loggedIn} starred={starred} toggleStar={toggleStar} showComplete={showComplete} playable={playable} isPremium={isPremium} />
       )}
 
       {matches.length > shown.length && (
