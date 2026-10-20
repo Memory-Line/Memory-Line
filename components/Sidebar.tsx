@@ -10,27 +10,8 @@ import {
   Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES, categoryLabel } from "@/lib/data";
-import { customIcon } from "@/lib/categoryIcons";
+import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
 
-const ICONS: Record<string, any> = {
-  "Physical & Exercise": Footprints,
-  Crosswords: Grid3x3,
-  "Word Searches": Search,
-  "Guess the Word": HelpCircle,
-  Trivia: Brain,
-  Bingo: Hash,
-  "Snakes and Ladders": Dices,
-  "Remembrance Cards": Heart,
-  "Colouring Pages": Palette,
-  "Conversation Starters": MessageCircle,
-  "Matching Pairs": Copy,
-  "Spot the Difference": Eye,
-  "Sing-Alongs": Music,
-  "Communication Cards": Languages,
-  "BSL Tools": Hand,
-  Newsletters: Newspaper,
-  Sudoku: Grid2x2,
-};
 
 // One colour per nav item, used only on hover
 const HOVER_COLORS: Record<string, string> = {

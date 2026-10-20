@@ -1,4 +1,8 @@
-import { Star, Heart, Music, Palette, BookOpen, Sun, Gift, Smile, Camera, Coffee, Flower2, Leaf, Home, Puzzle, Footprints } from "lucide-react";
+import {
+  Star, Heart, Music, Palette, BookOpen, Sun, Gift, Smile, Camera, Coffee, Flower2, Leaf, Home, Puzzle, Footprints,
+  PersonStanding, LayoutGrid, Grid3x3, Search, CircleHelp, Lightbulb, Hash, Dices, MessagesSquare, Layers, Eye, Mic,
+  Megaphone, Hand, Newspaper,
+} from "lucide-react";
 
 // Icons (and colours) the admin can pick for a category they make themselves.
 export const ICON_BY_NAME: Record<string, any> = {
@@ -21,3 +25,25 @@ export const COLOUR_CHOICES = [
 export function customIcon(name: string | undefined) {
   return (name && ICON_BY_NAME[name]) || Footprints;
 }
+
+// The symbol for each built-in category, shown in a solid coloured circle on the home page, the
+// dashboard and the menu.
+export const CATEGORY_ICONS: Record<string, any> = {
+  "Physical & Exercise": PersonStanding,
+  Crosswords: LayoutGrid,
+  Sudoku: Grid3x3,
+  "Word Searches": Search,
+  "Guess the Word": CircleHelp,
+  Trivia: Lightbulb,
+  Bingo: Hash,
+  "Snakes and Ladders": Dices,
+  "Remembrance Cards": Heart,
+  "Colouring Pages": Palette,
+  "Conversation Starters": MessagesSquare,
+  "Matching Pairs": Layers,
+  "Spot the Difference": Eye,
+  "Sing-Alongs": Mic,
+  "Communication Cards": Megaphone,
+  "BSL Tools": Hand,
+  Newsletters: Newspaper,
+};

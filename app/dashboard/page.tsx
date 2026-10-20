@@ -3,7 +3,7 @@ import { categoryLabel } from "@/lib/data";
 import { getSession } from "@/lib/viewer";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
-import { customIcon } from "@/lib/categoryIcons";
+import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
 import { getActiveSeason } from "@/lib/seasonDb";
 import { occasionHref } from "@/lib/occasions";
 import {
@@ -11,25 +11,6 @@ import {
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Newspaper,
 } from "lucide-react";
 
-const ICONS: Record<string, any> = {
-  "Physical & Exercise": Footprints,
-  Crosswords: Grid3x3,
-  "Word Searches": Search,
-  "Guess the Word": HelpCircle,
-  Trivia: Brain,
-  Bingo: Hash,
-  "Snakes and Ladders": Dices,
-  "Remembrance Cards": Heart,
-  "Colouring Pages": Palette,
-  "Conversation Starters": MessageCircle,
-  "Matching Pairs": Copy,
-  "Spot the Difference": Eye,
-  "Sing-Alongs": Music,
-  "Communication Cards": Languages,
-  "BSL Tools": Hand,
-  Newsletters: Newspaper,
-  Sudoku: Grid2x2,
-};
 
 export default async function DashboardHome({
   searchParams,
@@ -224,7 +205,9 @@ export default async function DashboardHome({
                 className="ac-tile flex items-center gap-2 rounded-lg p-3"
                 style={look ? { background: c.tint, border: `2px solid ${look.palette.sage}` } : { background: c.tint }}
               >
-                <Icon size={16} color={c.color} />
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: c.color }}>
+                  <Icon size={19} color="#fff" aria-hidden="true" />
+                </span>
                 <span className="text-sm font-semibold">{categoryLabel(c.key)}</span>
                 {look && (
                   // eslint-disable-next-line @next/next/no-img-element
