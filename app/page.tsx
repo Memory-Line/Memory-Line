@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { categoryLabel } from "@/lib/data";
 import Image from "next/image";
-import { PlayCircle, CalendarDays, QrCode, Files, Megaphone, Play, Volume2, Eye, Printer } from "lucide-react";
+import { PlayCircle, CalendarDays, QrCode, Files, MessageSquareText, Play, Volume2, ALargeSmall, Printer } from "lucide-react";
 import { StandardFeatures, PremiumFeatures } from "@/components/PlanFeatures";
 import { getCategories } from "@/lib/categories";
 import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
@@ -186,7 +186,7 @@ export default async function LandingPage() {
               text: "Upload your menu, newsletter or room photos and get a link or QR code. Swap in next week's menu and the link stays the same.",
             },
             {
-              Icon: Megaphone,
+              Icon: MessageSquareText,
               colour: "#B5453D",
               title: "Talking communication boards",
               plan: "Premium",
@@ -207,7 +207,7 @@ export default async function LandingPage() {
               text: "Reads each number aloud, and can say it in other languages too.",
             },
             {
-              Icon: Eye,
+              Icon: ALargeSmall,
               colour: "#E0A82E",
               dark: true,
               title: "Dementia friendly view",
@@ -289,7 +289,7 @@ export default async function LandingPage() {
           >
             <div>
               <p className="flex items-center gap-1.5 text-sm font-bold mb-2" style={{ color: "#1F2A2E" }}>
-                <Megaphone size={14} /> Communication Boards
+                <MessageSquareText size={14} /> Communication Boards
               </p>
               <p className="font-serif text-base">A talking board: tap an answer and it is read aloud</p>
             </div>
