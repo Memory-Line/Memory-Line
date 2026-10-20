@@ -1,8 +1,9 @@
 import {
   Star, Heart, Music, Palette, BookOpen, Sun, Gift, Smile, Camera, Coffee, Flower2, Leaf, Home, Puzzle, Footprints,
   PersonStanding, LayoutGrid, Grid3x3, Search, CircleHelp, Lightbulb, Hash, Dices, MessagesSquare, Layers, Eye, Mic,
-  Megaphone, Hand, Newspaper,
+  MessageSquareText, Hand, Newspaper,
 } from "lucide-react";
+import { createElement } from "react";
 
 // Icons (and colours) the admin can pick for a category they make themselves.
 export const ICON_BY_NAME: Record<string, any> = {
@@ -26,6 +27,15 @@ export function customIcon(name: string | undefined) {
   return (name && ICON_BY_NAME[name]) || Footprints;
 }
 
+// A ladder, drawn to match the other symbols (the icon set has none).
+export function LadderIcon({ size = 24, color = "currentColor", strokeWidth = 2, ...rest }: { size?: number; color?: string; strokeWidth?: number; [k: string]: any }) {
+  return createElement(
+    "svg",
+    { xmlns: "http://www.w3.org/2000/svg", width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: color, strokeWidth, strokeLinecap: "round", strokeLinejoin: "round", ...rest },
+    createElement("path", { d: "M7 3v18M17 3v18M7 8h10M7 12h10M7 16h10" })
+  );
+}
+
 // The symbol for each built-in category, shown in a solid coloured circle on the home page, the
 // dashboard and the menu.
 export const CATEGORY_ICONS: Record<string, any> = {
@@ -36,14 +46,14 @@ export const CATEGORY_ICONS: Record<string, any> = {
   "Guess the Word": CircleHelp,
   Trivia: Lightbulb,
   Bingo: Hash,
-  "Snakes and Ladders": Dices,
+  "Snakes and Ladders": LadderIcon,
   "Remembrance Cards": Heart,
   "Colouring Pages": Palette,
   "Conversation Starters": MessagesSquare,
   "Matching Pairs": Layers,
   "Spot the Difference": Eye,
   "Sing-Alongs": Mic,
-  "Communication Cards": Megaphone,
+  "Communication Cards": MessageSquareText,
   "BSL Tools": Hand,
   Newsletters: Newspaper,
 };
