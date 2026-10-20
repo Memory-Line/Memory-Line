@@ -227,7 +227,7 @@ export default function BingoCaller() {
       {[0, 1, 2, 3, 4].map((row) => (
         <div key={row} className="contents">
           <div
-            className="flex items-center justify-center rounded-md font-bold"
+            className="bc-letter flex items-center justify-center rounded-md font-bold"
             style={{ background: LETTER_COLOURS[row], color: INK, fontSize: big ? "min(5.6vh, 3.6vw)" : 14, padding: big ? "0 1.6vh" : "0 6px" }}
           >
             {"BINGO"[row]}
@@ -238,7 +238,7 @@ export default function BingoCaller() {
             return (
               <div
                 key={n}
-                className="flex items-center justify-center rounded-md font-bold"
+                className={`bc-cell${on ? " bc-on" : ""}${latest ? " bc-latest" : ""} flex items-center justify-center rounded-md font-bold`}
                 style={{
                   aspectRatio: "1",
                   fontSize: big ? "min(5.2vh, 3.3vw)" : "clamp(9px, 1.6vw, 13px)",
@@ -256,7 +256,7 @@ export default function BingoCaller() {
   );
 
   return (
-    <section className="rounded-xl bg-card border border-line p-4 sm:p-5 mb-6">
+    <section className="bc-root rounded-xl bg-card border border-line p-4 sm:p-5 mb-6">
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h2 className="font-serif text-xl flex items-center gap-2">
           <Megaphone size={18} /> Bingo caller
@@ -266,7 +266,7 @@ export default function BingoCaller() {
 
       <div className="flex flex-wrap gap-5 items-start mb-4">
         {/* The latest number, big. */}
-        <div className="rounded-xl bg-white border border-line px-6 py-4 text-center min-w-[180px]">
+        <div className="bc-now rounded-xl bg-white border border-line px-6 py-4 text-center min-w-[180px]">
           {current ? (
             <>
               <p className="font-bold leading-none" style={{ fontSize: 56, color: INK }}>
@@ -285,15 +285,15 @@ export default function BingoCaller() {
             <button
               onClick={callNext}
               disabled={called.length >= 75}
-              className="rounded-lg px-5 py-3 text-base font-bold text-white disabled:opacity-50"
+              className="bc-call rounded-lg px-5 py-3 text-base font-bold text-white disabled:opacity-50"
               style={{ background: CALLED }}
             >
               Call next number
             </button>
-            <button onClick={undo} disabled={!called.length} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50">
+            <button onClick={undo} disabled={!called.length} className="bc-btn flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50">
               <Undo2 size={14} /> Undo
             </button>
-            <button onClick={openBigScreen} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+            <button onClick={openBigScreen} className="bc-btn flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
               <Maximize2 size={14} /> Big screen
             </button>
             {confirmNew ? (
@@ -302,12 +302,12 @@ export default function BingoCaller() {
                 <button onClick={newGame} className="rounded-lg px-3 py-2 font-semibold text-white" style={{ background: "#b5714a" }}>
                   Yes
                 </button>
-                <button onClick={() => setConfirmNew(false)} className="rounded-lg px-3 py-2 font-semibold bg-cardTint">
+                <button onClick={() => setConfirmNew(false)} className="bc-btn rounded-lg px-3 py-2 font-semibold bg-cardTint">
                   No
                 </button>
               </span>
             ) : (
-              <button onClick={() => setConfirmNew(true)} className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
+              <button onClick={() => setConfirmNew(true)} className="bc-btn flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint">
                 <RotateCcw size={14} /> New game
               </button>
             )}
@@ -335,7 +335,7 @@ export default function BingoCaller() {
             </label>
           </div>
           {speak && (
-            <div className="mt-3 rounded-xl bg-white border border-line p-3 space-y-3">
+            <div className="bc-panel mt-3 rounded-xl bg-white border border-line p-3 space-y-3">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="font-semibold">Voice:</span>
                 {(["female", "male"] as const).map((v) => (
@@ -344,7 +344,7 @@ export default function BingoCaller() {
                     type="button"
                     aria-pressed={voice === v}
                     onClick={() => { setVoice(v); persist({ voice: v }); }}
-                    className={`rounded-full px-4 py-1.5 font-semibold border-2 ${voice === v ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line"}`}
+                    className={`bc-pill rounded-full px-4 py-1.5 font-semibold border-2 ${voice === v ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line"}`}
                   >
                     {v === "female" ? "Female" : "Male"}
                   </button>
@@ -356,7 +356,7 @@ export default function BingoCaller() {
                 </p>
                 <div className="flex flex-wrap items-center gap-2">
                   {langs.map((code, i) => (
-                    <span key={code} className="flex items-center gap-1.5 rounded-full border-2 border-line bg-cardTint pl-3 pr-1.5 py-1 font-semibold">
+                    <span key={code} className="bc-chip flex items-center gap-1.5 rounded-full border-2 border-line bg-cardTint pl-3 pr-1.5 py-1 font-semibold">
                       {i + 1}. {BINGO_LANGS.find((l) => l.code === code)?.name}
                       <button
                         type="button"
@@ -451,7 +451,7 @@ export default function BingoCaller() {
       {/* Big screen for a TV. */}
       <div
         ref={bigRef}
-        className={bigScreen ? "fixed inset-0 z-50 flex flex-col p-[3vh] gap-[2vh]" : "hidden"}
+        className={bigScreen ? "bc-big fixed inset-0 z-50 flex flex-col p-[3vh] gap-[2vh]" : "hidden"}
         style={{ background: "#f5f0e4" }}
       >
         <div className="flex items-start justify-between">
