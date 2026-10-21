@@ -6,6 +6,7 @@ import type { ColouringFrame } from "@/lib/colouring";
 import { useEasyView } from "@/components/EasyView";
 
 // Names for the swatches in Dementia friendly mode, in the same order as PALETTE below.
+import { openPdf } from "@/lib/pdfPage";
 const COLOUR_NAMES = ["Red", "Orange", "Yellow", "Light green", "Green", "Teal", "Blue", "Indigo", "Purple", "Pink", "Soft pink", "Peach", "Pale blue", "Lilac", "Brown", "Grey"];
 const DARK_SWATCHES = new Set(["#e74c3c", "#8bc34a", "#2ecc71", "#1abc9c", "#3498db", "#5c6bc0", "#9b59b6", "#e84393", "#8d6e63", "#4a4a4a", "#e67e22"]);
 
@@ -29,8 +30,6 @@ const PALETTE = [
   "#4a4a4a", // charcoal
 ];
 
-const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
 
 // How large the picture is rendered at, relative to the PDF's own points
 // (792x612). Kept high so tapping is precise and the "Save my picture" PNG
@@ -178,6 +177,7 @@ function safeSet(key: string, value: string) {
 // colouring itself stays only on this device — nothing is uploaded.
 export default function ColouringPlayer({
   templateId,
+  pdfUrl,
   frame,
   tracking,
   initiallyCompleted,
@@ -185,6 +185,7 @@ export default function ColouringPlayer({
   isPremium,
 }: {
   templateId: string;
+  pdfUrl?: string;
   frame: ColouringFrame;
   tracking: boolean;
   initiallyCompleted: boolean;
@@ -241,16 +242,7 @@ export default function ColouringPlayer({
 
     async function load() {
       try {
-        // Loaded from the CDN as a genuine ES module dynamic import — written
-        // this way (rather than a plain import()) so the bundler doesn't try
-        // to resolve or bundle a remote URL at build time.
-        const importModule = new Function("specifier", "return import(specifier)") as (
-          specifier: string
-        ) => Promise<any>;
-        const pdfjsLib = await importModule(PDFJS_URL);
-        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
-
-        const doc = await pdfjsLib.getDocument(`/api/download/${templateId}?file=standard`).promise;
+        const doc = await openPdf(pdfUrl ?? `/api/download/${templateId}?file=standard`);
         const page = await doc.getPage(1);
         const viewport = page.getViewport({ scale: RENDER_SCALE });
 
@@ -338,7 +330,7 @@ export default function ColouringPlayer({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId]);
+  }, [templateId, pdfUrl]);
 
   useEffect(
     () => () => {

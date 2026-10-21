@@ -105,16 +105,16 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
     if (data) player = <TriviaPlayer {...common} questions={data.questions} />;
   } else if (template.category === "Snakes and Ladders") {
     const data = snakesAndLaddersBoard(number);
-    if (data) player = <SnakesAndLaddersPlayer {...common} moves={data.moves} squares={data.squares} />;
+    if (data) player = <SnakesAndLaddersPlayer {...common} pdfUrl={template.fileUrl ?? undefined} moves={data.moves} squares={data.squares} />;
   } else if (template.category === "Colouring Pages") {
     const data = colouringPage(number, template.subcategory);
-    if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
+    if (data) player = <ColouringPlayer {...common} pdfUrl={template.fileUrl ?? undefined} frame={data.frame} />;
   } else if (template.category === "Matching Pairs") {
     const data = matchingPairsSet(number, template.subcategory);
-    if (data) player = <MatchingPairsPlayer {...common} theme={data.theme} pictures={data.pictures} />;
+    if (data) player = <MatchingPairsPlayer {...common} pdfUrl={template.fileUrl ?? undefined} theme={data.theme} pictures={data.pictures} />;
   } else if (template.category === "Spot the Difference") {
     const data = spotDifference(number);
-    if (data) player = <SpotDifferencePlayer {...common} pictureA={data.pictureA} pictureB={data.pictureB} />;
+    if (data) player = <SpotDifferencePlayer {...common} pdfUrl={template.fileUrl ?? undefined} pictureA={data.pictureA} pictureB={data.pictureB} />;
   }
 
   if (!player) notFound();

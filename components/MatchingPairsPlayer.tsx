@@ -5,14 +5,13 @@ import { Check, Printer, RotateCcw } from "lucide-react";
 import type { MatchingPairsPicture } from "@/lib/matchingPairs";
 import { useEasyView } from "@/components/EasyView";
 
+import { openPdf } from "@/lib/pdfPage";
 const INK = "#3f3237";
 // Every card back is the same colour (and carries the logo), so a card's back never gives its picture away.
 const BACK = "#e7efe4";
 const MATCH_HIGHLIGHT = "#e4eee2";
 const MATCH_BORDER = "#2f7a63";
 
-const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
 const RENDER_SCALE = 2; // resolution the page is rendered at before cropping
 
 // A card in the memory game: which picture it shows (0..N-1), and its
@@ -38,6 +37,7 @@ function shuffledDeck(pictureCount: number): Card[] {
 // a moment. Progress and the Easier setting are kept on this device.
 export default function MatchingPairsPlayer({
   templateId,
+  pdfUrl,
   theme,
   pictures,
   tracking,
@@ -46,6 +46,7 @@ export default function MatchingPairsPlayer({
   isPremium,
 }: {
   templateId: string;
+  pdfUrl?: string;
   theme: string;
   pictures: MatchingPairsPicture[];
   tracking: boolean;
@@ -68,9 +69,7 @@ export default function MatchingPairsPlayer({
     let cancelled = false;
     async function load() {
       try {
-        const pdfjsLib: any = await import(/* webpackIgnore: true */ PDFJS_URL);
-        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
-        const doc = await pdfjsLib.getDocument(`/api/download/${templateId}?file=standard`).promise;
+        const doc = await openPdf(pdfUrl ?? `/api/download/${templateId}?file=standard`);
         const page = await doc.getPage(1);
         const viewport = page.getViewport({ scale: RENDER_SCALE });
         const pageCanvas = document.createElement("canvas");
@@ -100,7 +99,7 @@ export default function MatchingPairsPlayer({
     return () => {
       cancelled = true;
     };
-  }, [templateId, pictures]);
+  }, [templateId, pdfUrl, pictures]);
 
   // Restore saved progress once (mode, deck order and which pairs are matched).
   useEffect(() => {
