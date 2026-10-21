@@ -16,7 +16,12 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 function datasourceUrl(): string | undefined {
   const url = process.env.DATABASE_URL;
   if (!url || !/^postgres(ql)?:\/\//.test(url) || /[?&]connection_limit=/.test(url)) return undefined;
-  return `${url}${url.includes("?") ? "&" : "?"}connection_limit=3&pool_timeout=30`;
+  // The pooled address (host starts "pooled.") shares a few real connections between every copy of the site, so each
+  // copy can use a few; PgBouncer's transaction mode also needs pgbouncer=true. The direct address has very few
+  // connections in all, so each copy holds just one.
+  const pooled = /@pooled\./.test(url);
+  const extra = pooled ? "pgbouncer=true&connection_limit=3&pool_timeout=30" : "connection_limit=1&pool_timeout=30";
+  return `${url}${url.includes("?") ? "&" : "?"}${extra}`;
 }
 
 export const prisma =
