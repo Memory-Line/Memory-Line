@@ -1,4 +1,5 @@
 import sets from "@/lib/data/matchingPairs.json";
+import redone from "@/lib/data/redone/matchingPairs.json";
 
 // The eight picture positions behind each Matching Pairs Standard PDF, for
 // playing online. Read out of the PDFs by
@@ -9,7 +10,11 @@ import sets from "@/lib/data/matchingPairs.json";
 export type MatchingPairsPicture = { left: number; top: number; right: number; bottom: number };
 export type MatchingPairsSet = { n: number; theme: string; pictures: MatchingPairsPicture[] };
 
-export function matchingPairsSet(n: number): MatchingPairsSet | null {
+// The redone Matching Pairs are numbered 1-50 within each topic, so they are found by topic and number.
+const REDONE = new Map((redone as (MatchingPairsSet & { t: string })[]).map((e) => [`${e.t}/${e.n}`, e]));
+
+export function matchingPairsSet(n: number, topic?: string | null): MatchingPairsSet | null {
+  if (topic) return REDONE.get(`${topic}/${n}`) ?? null;
   const entry = (sets as MatchingPairsSet[]).find((s) => s.n === n);
   return entry ?? null;
 }

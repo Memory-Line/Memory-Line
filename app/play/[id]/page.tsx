@@ -110,7 +110,7 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
     const data = colouringPage(number, template.subcategory);
     if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
   } else if (template.category === "Matching Pairs") {
-    const data = matchingPairsSet(number);
+    const data = matchingPairsSet(number, template.subcategory);
     if (data) player = <MatchingPairsPlayer {...common} theme={data.theme} pictures={data.pictures} />;
   } else if (template.category === "Spot the Difference") {
     const data = spotDifference(number);
