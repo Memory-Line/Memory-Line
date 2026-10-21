@@ -128,7 +128,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     const data = colouringPage(number, template.subcategory);
     if (data) player = <ColouringPlayer {...common} frame={data.frame} />;
   } else if (template.category === "Matching Pairs" && !template.occasion) {
-    const data = matchingPairsSet(number);
+    const data = matchingPairsSet(number, template.subcategory);
     if (data) player = <MatchingPairsPlayer {...common} theme={data.theme} pictures={data.pictures} />;
   } else if (template.category === "Spot the Difference" && !template.occasion) {
     const data = spotDifference(number);
