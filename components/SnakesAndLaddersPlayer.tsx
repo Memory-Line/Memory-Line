@@ -30,7 +30,7 @@ function sleep(ms: number) {
 }
 
 
-import { openPdf } from "@/lib/pdfPage";
+import SnakesBoard, { NATIVE_SQUARES } from "@/components/SnakesBoard";
 
 type SavedState = {
   playerCount: number;
@@ -58,18 +58,14 @@ function defaultState(): SavedState {
 // counter with a friendly message. Progress is kept on this device.
 export default function SnakesAndLaddersPlayer({
   templateId,
-  pdfUrl,
   moves,
-  squares,
   tracking,
   initiallyCompleted,
   hasLargePrint,
   isPremium,
 }: {
   templateId: string;
-  pdfUrl?: string;
   moves: SnakesAndLaddersMove[];
-  squares: Record<string, [number, number]>;
   tracking: boolean;
   initiallyCompleted: boolean;
   hasLargePrint: boolean;
@@ -81,10 +77,7 @@ export default function SnakesAndLaddersPlayer({
   const [dice, setDice] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [completed, setCompleted] = useState(initiallyCompleted);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [boardReady, setBoardReady] = useState(false);
-  const [boardError, setBoardError] = useState(false);
-  const [aspect, setAspect] = useState(842 / 595); // A4 portrait fallback
+  const squares = NATIVE_SQUARES;
 
   // Restore progress kept on this device.
   useEffect(() => {
@@ -126,39 +119,6 @@ export default function SnakesAndLaddersPlayer({
       // not marked; they can still use the Completed button on the list
     }
   }
-
-  // Draw the board's own Standard PDF, page 1, into a canvas with pdf.js
-  // loaded straight from the CDN (no picture is copied anywhere new).
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const doc = await openPdf(pdfUrl ?? `/api/download/${templateId}?file=standard`);
-        const page = await doc.getPage(1);
-        const base = page.getViewport({ scale: 1 });
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const targetWidth = 900 * dpr;
-        const scale = targetWidth / base.width;
-        const viewport = page.getViewport({ scale });
-        if (cancelled) return;
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        if (cancelled) return;
-        setAspect(viewport.height / viewport.width);
-        setBoardReady(true);
-      } catch {
-        if (!cancelled) setBoardError(true);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [templateId, pdfUrl]);
 
   const { playerCount, names, positions, turn, winner, rolls } = state;
   const started = rolls > 0;
@@ -253,20 +213,14 @@ export default function SnakesAndLaddersPlayer({
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div
-        className="relative rounded-xl bg-white border border-line overflow-hidden"
-        style={{ width: "min(94vw, 620px)", aspectRatio: `1 / ${aspect}` }}
+        className="relative rounded-xl bg-white overflow-hidden"
+        style={{
+          width: ev ? "min(94vw, 500px)" : "min(94vw, 640px)",
+          aspectRatio: "1 / 1",
+          border: ev ? "4px solid #1a1a1a" : "1px solid #e5dfd3",
+        }}
       >
-        <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
-        {!boardReady && !boardError && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-inkSoft">
-            Loading the board…
-          </div>
-        )}
-        {boardError && (
-          <div className="absolute inset-0 flex items-center justify-center text-sm text-inkSoft p-4 text-center">
-            The board picture couldn't be loaded — but you can still play, or print it below.
-          </div>
-        )}
+        <SnakesBoard moves={moves} dem={ev} />
         {Array.from({ length: playerCount }).map((_, i) => {
           const sq = positions[i];
           if (sq < 1) return null;
@@ -305,7 +259,7 @@ export default function SnakesAndLaddersPlayer({
         })}
       </div>
 
-      <div className="max-w-[330px] lg:sticky lg:top-4">
+      <div className={`max-w-[330px] lg:sticky lg:top-4${ev ? " order-first" : ""}`}>
         {ev && (
           <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 12px" }}>
             <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>{winner !== null ? "WELL DONE" : "YOUR TURN"}</p>

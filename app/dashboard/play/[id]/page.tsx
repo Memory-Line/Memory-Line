@@ -123,7 +123,7 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
     if (data) player = <TriviaPlayer {...common} questions={data.questions} />;
   } else if (template.category === "Snakes and Ladders" && !template.occasion) {
     const data = snakesAndLaddersBoard(number);
-    if (data) player = <SnakesAndLaddersPlayer {...common} pdfUrl={template.fileUrl ?? undefined} moves={data.moves} squares={data.squares} />;
+    if (data) player = <SnakesAndLaddersPlayer {...common} moves={data.moves} />;
   } else if (template.category === "Colouring Pages" && !template.occasion) {
     const data = colouringPage(number, template.subcategory);
     if (data) player = <ColouringPlayer {...common} pdfUrl={template.fileUrl ?? undefined} frame={data.frame} />;
