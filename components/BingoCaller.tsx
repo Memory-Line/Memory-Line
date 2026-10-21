@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize2, Megaphone, RotateCcw, Search, Undo2, Volume2, VolumeX, X } from "lucide-react";
 import { BINGO_CALLS, BINGO_CARDS, bingoLetter } from "@/lib/bingo";
 import { BINGO_LANGS, MAX_BINGO_LANGS } from "@/lib/bingoLangs";
+import { bingoWord } from "@/lib/bingoWords";
 
 const INK = "#3f3237";
 const CALLED = "#2f7a63";
@@ -66,7 +67,7 @@ export default function BingoCaller() {
   function phrasesFor(n: number): { lang: string; text: string }[] {
     const list = [{ lang: "en", text: `${bingoLetter(n)}. ${n}.` }];
     if (showCalls && BINGO_CALLS[n]) list.push({ lang: "en", text: `${BINGO_CALLS[n]}.` });
-    for (const code of langs) list.push({ lang: code, text: String(n) });
+    for (const code of langs) list.push({ lang: code, text: bingoWord(code, n) });
     return list;
   }
 
