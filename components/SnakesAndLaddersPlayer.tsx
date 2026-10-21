@@ -29,10 +29,8 @@ function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// A dynamic import that's opaque to both webpack (so it isn't bundled —
-// this is loaded straight from the CDN at runtime) and to TypeScript (so it
-// doesn't try, and fail, to resolve types for a URL).
-const importFromCdn = new Function("url", "return import(url)") as (url: string) => Promise<any>;
+
+import { openPdf } from "@/lib/pdfPage";
 
 type SavedState = {
   playerCount: number;
@@ -60,6 +58,7 @@ function defaultState(): SavedState {
 // counter with a friendly message. Progress is kept on this device.
 export default function SnakesAndLaddersPlayer({
   templateId,
+  pdfUrl,
   moves,
   squares,
   tracking,
@@ -68,6 +67,7 @@ export default function SnakesAndLaddersPlayer({
   isPremium,
 }: {
   templateId: string;
+  pdfUrl?: string;
   moves: SnakesAndLaddersMove[];
   squares: Record<string, [number, number]>;
   tracking: boolean;
@@ -133,10 +133,7 @@ export default function SnakesAndLaddersPlayer({
     let cancelled = false;
     (async () => {
       try {
-        const pdfjs = await importFromCdn("https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs");
-        pdfjs.GlobalWorkerOptions.workerSrc =
-          "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
-        const doc = await pdfjs.getDocument(`/api/download/${templateId}?file=standard`).promise;
+        const doc = await openPdf(pdfUrl ?? `/api/download/${templateId}?file=standard`);
         const page = await doc.getPage(1);
         const base = page.getViewport({ scale: 1 });
         const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -161,7 +158,7 @@ export default function SnakesAndLaddersPlayer({
     return () => {
       cancelled = true;
     };
-  }, [templateId]);
+  }, [templateId, pdfUrl]);
 
   const { playerCount, names, positions, turn, winner, rolls } = state;
   const started = rolls > 0;

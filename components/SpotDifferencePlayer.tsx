@@ -4,9 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Check, Printer, RotateCcw, Undo2 } from "lucide-react";
 import type { PictureRect } from "@/lib/spotDifference";
 import { useEasyView } from "@/components/EasyView";
+import { openPdf } from "@/lib/pdfPage";
 
-const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs";
-const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs";
 const RENDER_SCALE = 2.2;
 const TARGET = 7;
 const MARK = "#b5714a";
@@ -93,6 +92,7 @@ function Picture({
 // marks a circle right or wrong.
 export default function SpotDifferencePlayer({
   templateId,
+  pdfUrl,
   pictureA,
   pictureB,
   tracking,
@@ -101,6 +101,7 @@ export default function SpotDifferencePlayer({
   isPremium,
 }: {
   templateId: string;
+  pdfUrl?: string;
   pictureA: PictureRect;
   pictureB: PictureRect;
   tracking: boolean;
@@ -162,9 +163,7 @@ export default function SpotDifferencePlayer({
 
     async function load() {
       try {
-        const pdfjsLib: any = await import(/* webpackIgnore: true */ PDFJS_URL);
-        pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_WORKER_URL;
-        const doc = await pdfjsLib.getDocument(`/api/download/${templateId}?file=standard`).promise;
+        const doc = await openPdf(pdfUrl ?? `/api/download/${templateId}?file=standard`);
         const page = await doc.getPage(1);
         const viewport = page.getViewport({ scale: RENDER_SCALE });
         const pageCanvas = document.createElement("canvas");
@@ -204,7 +203,7 @@ export default function SpotDifferencePlayer({
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId]);
+  }, [templateId, pdfUrl]);
 
   const total = marksA.length + marksB.length;
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Download, Lock, Play, Printer, Search, Star, X } from "lucide-react";
 import CompleteButton from "@/components/CompleteButton";
 import { MAX_PRINT_PACK, TOPIC_COLOURS } from "@/lib/tiles";
 import { printPack, type PrintFile } from "@/lib/printPack";
+import { warmPdfJs } from "@/lib/pdfPage";
 
 export type TemplateRow = {
   id: string;
@@ -354,6 +355,11 @@ export default function TemplateRows({
   const [view, setView] = useState<"all" | "favs">("all");
   const [starred, setStarred] = useState<Set<string>>(() => new Set(rows.filter((r) => r.starred).map((r) => r.id)));
   const [limit, setLimit] = useState(FIRST);
+
+  // Playing a picture game needs the pdf.js library; fetch it now so Play opens quickly.
+  useEffect(() => {
+    if (playable) warmPdfJs();
+  }, [playable]);
 
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
   const active = query.trim().toLowerCase();
