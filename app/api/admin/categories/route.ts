@@ -1,3 +1,4 @@
+import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
 import { deleteStoredFiles } from "@/lib/storedFiles";
 import { prisma } from "@/lib/prisma";
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
 
   if (body.action === "restore") {
     await prisma.removedCategory.deleteMany({ where: { name: String(body.name ?? "") } });
+    revalidateTag("categories");
     return NextResponse.json({ ok: true });
   }
 
@@ -51,6 +53,7 @@ export async function POST(req: Request) {
   const icon = ICON_CHOICES.includes(body.icon) ? body.icon : "Star";
   const position = await prisma.customCategory.count();
   await prisma.customCategory.create({ data: { name, slug, icon, color: colour.color, tint: colour.tint, position } });
+  revalidateTag("categories");
   return NextResponse.json({ ok: true }, { status: 201 });
 }
 
@@ -75,5 +78,6 @@ export async function DELETE(req: Request) {
   await deleteStoredFiles(rows);
   if (custom) await prisma.customCategory.delete({ where: { name } });
   else await prisma.removedCategory.upsert({ where: { name }, create: { name }, update: {} });
+  revalidateTag("categories");
   return NextResponse.json({ ok: true, deleted: rows.length });
 }

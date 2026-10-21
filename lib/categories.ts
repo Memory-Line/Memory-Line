@@ -11,8 +11,9 @@ export function slugify(name: string) {
   return name.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-// Read from the database at most every 30 seconds (an admin's change shows within that), not on every page.
-export const getCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 30 });
+// Read from the database at most every five minutes, not on every page. The admin's category screen clears it
+// straight away (tag "categories"), so a change shows at once.
+export const getCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 300, tags: ["categories"] });
 
 async function readCategories(): Promise<SiteCategory[]> {
   try {
