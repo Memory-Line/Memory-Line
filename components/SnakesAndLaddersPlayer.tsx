@@ -254,7 +254,7 @@ export default function SnakesAndLaddersPlayer({
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div
         className="relative rounded-xl bg-white border border-line overflow-hidden"
-        style={{ width: "min(92vw, 420px)", aspectRatio: `1 / ${aspect}` }}
+        style={{ width: "min(94vw, 620px)", aspectRatio: `1 / ${aspect}` }}
       >
         <canvas ref={canvasRef} style={{ width: "100%", height: "100%", display: "block" }} />
         {!boardReady && !boardError && (
@@ -305,7 +305,7 @@ export default function SnakesAndLaddersPlayer({
         })}
       </div>
 
-      <div className="max-w-[340px]">
+      <div className="max-w-[330px] lg:sticky lg:top-4">
         {ev && (
           <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 12px" }}>
             <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>{winner !== null ? "WELL DONE" : "YOUR TURN"}</p>
