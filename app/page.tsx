@@ -10,6 +10,7 @@ import { PREMIUM_ONLY_CATEGORIES as PREMIUM_ONLY_CATEGORIES_SET } from "@/lib/pl
 import { prisma } from "@/lib/prisma";
 import { COMING_SOON } from "@/lib/launch";
 import { displayTitle } from "@/lib/titles";
+import { unstable_cache } from "next/cache";
 
 // The free samples come from the database, but they change rarely (only
 // when a new category's first upload changes), so the page is cached and
@@ -30,15 +31,7 @@ const SAMPLE_LINK =
   "flex items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold";
 
 
-export default async function LandingPage() {
-  // The categories come from the database (so ones made or removed on the admin page show here
-  // within a few minutes, see revalidate above); the Premium-only list is lib/plans.ts.
-  const categories = await getCategories();
-  const FREE_SAMPLE_CATEGORIES = categories.map((c) => c.key);
-  const PREMIUM_ONLY_CATEGORIES = categories.map((c) => c.key).filter((k) => PREMIUM_ONLY_CATEGORIES_SET.has(k));
-  const STANDARD_CATEGORIES = categories.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
-  // A few lookups at a time, and the page still opens (without samples) if the database is busy or
-  // refusing connections, rather than the whole home page showing a server error.
+async function findFreeSamples(categories: string[]) {
   const sampleFor = (category: string) =>
     prisma.template.findFirst({
       where: {
@@ -52,15 +45,30 @@ export default async function LandingPage() {
       orderBy: { fileName: "asc" },
     });
   let found: Awaited<ReturnType<typeof sampleFor>>[] = [];
+  for (let i = 0; i < categories.length; i += 4) {
+    found = found.concat(await Promise.all(categories.slice(i, i + 4).map(sampleFor)));
+  }
+  return found.filter((t): t is NonNullable<typeof t> => t !== null);
+}
+
+const keptSamples = unstable_cache(findFreeSamples, ["home-free-samples"], { revalidate: 600 });
+
+export default async function LandingPage() {
+  // The categories come from the database (so ones made or removed on the admin page show here
+  // within a few minutes, see revalidate above); the Premium-only list is lib/plans.ts.
+  const categories = await getCategories();
+  const FREE_SAMPLE_CATEGORIES = categories.map((c) => c.key);
+  const PREMIUM_ONLY_CATEGORIES = categories.map((c) => c.key).filter((k) => PREMIUM_ONLY_CATEGORIES_SET.has(k));
+  const STANDARD_CATEGORIES = categories.map((c) => c.key).filter((k) => !PREMIUM_ONLY_CATEGORIES_SET.has(k));
+  // The samples are looked up once and kept for ten minutes (the whole site is built fresh on every visit, so
+  // without this each visitor made the database answer seventeen questions). If the database is busy or
+  // refusing connections the page still opens, without samples, and nothing is kept.
+  let freeSamples: Awaited<ReturnType<typeof findFreeSamples>> = [];
   try {
-    for (let i = 0; i < FREE_SAMPLE_CATEGORIES.length; i += 4) {
-      found = found.concat(await Promise.all(FREE_SAMPLE_CATEGORIES.slice(i, i + 4).map(sampleFor)));
-    }
+    freeSamples = await keptSamples(FREE_SAMPLE_CATEGORIES);
   } catch (err) {
     console.error("Home page samples could not be loaded:", err);
-    found = [];
   }
-  const freeSamples = found.filter((t): t is NonNullable<typeof t> => t !== null);
 
   return (
     <main>
