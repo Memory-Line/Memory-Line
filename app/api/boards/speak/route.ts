@@ -6,6 +6,7 @@ import { canUseBoardCode } from "@/lib/boardsAccess";
 import seed from "@/data/boards.seed.json";
 import { ALWAYS, UI } from "@/lib/boards";
 import { BINGO_CALLS, bingoLetter } from "@/lib/bingo";
+import numberWords from "@/lib/data/bingoNumberWords.json";
 import { getViewer } from "@/lib/viewer";
 
 export const dynamic = "force-dynamic";
@@ -67,6 +68,7 @@ function bingoPhrases() {
       set.add(`${call}.`);
     }
   }
+  for (const list of Object.values(numberWords as Record<string, string[]>)) for (const w of list) set.add(w);
   bingoAllowed = set;
   return set;
 }
@@ -98,6 +100,9 @@ export async function GET(req: Request) {
   const voice = u.searchParams.get("voice") ?? "";
   const text = (u.searchParams.get("text") ?? "").trim();
   const isAdmin = !!(await requireAdmin());
+  // The admin page that prepares every Bingo recording in advance asks for a short "done" reply instead of the audio.
+  const prepare = isAdmin && u.searchParams.get("prepare") === "1";
+  const reply = (url: string) => (prepare ? NextResponse.json({ ok: true }) : NextResponse.redirect(url, 302));
   if (!isAdmin) {
     if (u.searchParams.get("use") === "sample") {
       // The free sample board on the home page: English only, and only the board phrases (a fixed
@@ -124,11 +129,11 @@ export async function GET(req: Request) {
     const direct = savedUrl(pathname);
     if (direct) {
       const head = await fetch(direct, { method: "HEAD" }).catch(() => null);
-      if (head?.ok) return NextResponse.redirect(direct, 302);
+      if (head?.ok) return reply(direct);
     }
     // Not found the quick way (or the address could not be worked out): check the storage properly.
     const found = await list({ prefix: pathname, limit: 1 });
-    if (found.blobs[0]) return NextResponse.redirect(found.blobs[0].url, 302);
+    if (found.blobs[0]) return reply(found.blobs[0].url);
 
     if (!key || !region) return NextResponse.json({ error: "Speech is not set up" }, { status: 503 });
     const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}"><prosody rate="-6%">${esc(text)}</prosody></voice></speak>`;
@@ -145,7 +150,7 @@ export async function GET(req: Request) {
     if (!res.ok) return NextResponse.json({ error: "Speech failed" }, { status: 502 });
     const audio = Buffer.from(await res.arrayBuffer());
     const saved = await put(pathname, audio, { access: "public", addRandomSuffix: false, contentType: "audio/mpeg" });
-    return NextResponse.redirect(saved.url, 302);
+    return reply(saved.url);
   } catch {
     return NextResponse.json({ error: "Speech failed" }, { status: 502 });
   }

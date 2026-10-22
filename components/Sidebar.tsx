@@ -192,6 +192,12 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/boards"}
           />
           <NavItem
+            href="/dashboard/admin/bingo-voices"
+            icon={Hash}
+            label="Bingo voices"
+            active={pathname === "/dashboard/admin/bingo-voices"}
+          />
+          <NavItem
             href="/dashboard/admin/upload-calendar"
             icon={Upload}
             label="Upload calendar packs"
