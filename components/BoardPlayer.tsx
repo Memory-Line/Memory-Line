@@ -197,7 +197,8 @@ export default function BoardPlayer({ board, lang, back, sample }: { board: Boar
         const mod = await importFromCdn(QR_URL);
         const qrcode = mod.default ?? mod;
         const qr = qrcode(0, "M");
-        qr.addData(`${window.location.origin}/boards/${board.id}`);
+        // The scanned page opens this board in the printed language (a Premium account signs in first).
+        qr.addData(`${window.location.origin}/boards/${board.id}${lang && lang !== "en" ? `?lang=${other}` : ""}`);
         qr.make();
         if (!cancelled && qrRef.current) {
           qrRef.current.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 0, scalable: true });
@@ -208,7 +209,7 @@ export default function BoardPlayer({ board, lang, back, sample }: { board: Boar
       } catch {}
     })();
     return () => { cancelled = true; };
-  }, [board.id]);
+  }, [board.id, lang, other]);
 
   const showEn = true;
   const showOther = lang !== "en";
