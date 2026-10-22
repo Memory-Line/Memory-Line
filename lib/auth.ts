@@ -3,6 +3,10 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+// The last subscription details read for each account, kept briefly on each copy of the site.
+const STATUS_CACHE_MS = 30_000;
+const STATUS_CACHE = new Map<string, { status: string; renews: string | null; at: number }>();
+
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
@@ -46,14 +50,24 @@ export const authOptions: NextAuthOptions = {
         token.subscriptionRenewsAt = (user as any).subscriptionRenewsAt ?? null;
         return token;
       }
-      // Refresh subscription status on every token issuance so it stays current
+      // Refresh subscription status so it stays current. It is read from the database at most every 30 seconds per
+      // account on each copy of the site (every page, picture and voice request used to cost a database trip).
       if (token.userId) {
+        const id = token.userId as string;
+        const hit = STATUS_CACHE.get(id);
+        if (hit && Date.now() - hit.at < STATUS_CACHE_MS) {
+          token.subscriptionStatus = hit.status;
+          token.subscriptionRenewsAt = hit.renews;
+          return token;
+        }
         const dbUser = await prisma.user.findUnique({
-          where: { id: token.userId as string },
+          where: { id },
           select: { subscriptionStatus: true, subscriptionRenewsAt: true },
         });
         token.subscriptionStatus = dbUser?.subscriptionStatus ?? "inactive";
-                token.subscriptionRenewsAt = dbUser?.subscriptionRenewsAt?.toISOString() ?? null;
+        token.subscriptionRenewsAt = dbUser?.subscriptionRenewsAt?.toISOString() ?? null;
+        if (STATUS_CACHE.size > 500) STATUS_CACHE.clear();
+        STATUS_CACHE.set(id, { status: token.subscriptionStatus as string, renews: token.subscriptionRenewsAt as string | null, at: Date.now() });
       }
       return token;
     },
