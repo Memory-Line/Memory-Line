@@ -329,12 +329,11 @@ function RowList({
   );
 }
 
-// The rows of a long list of activities, with the search box, theme buttons and Favourites tab.
+// The rows of a long list of activities, with the search box and Favourites tab.
 // The server (components/TemplateList.tsx) sends just the facts about each activity; only the
 // first few dozen rows are drawn, so a 200-activity category opens quickly even on a slow computer.
 export default function TemplateRows({
   rows,
-  themes,
   filterable,
   loggedIn,
   showComplete,
@@ -429,27 +428,6 @@ export default function TemplateRows({
               </button>
             )}
           </div>
-          {themes.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 mt-2.5">
-              <span className="text-xs font-semibold text-inkSoft mr-1">Themes:</span>
-              {themes.map((t) => {
-                const on = active === t.toLowerCase();
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => { setQuery(on ? "" : t); setLimit(FIRST); }}
-                    aria-pressed={on}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold border transition-colors ${
-                      on ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line hover:bg-cardTint"
-                    }`}
-                  >
-                    {t[0].toUpperCase() + t.slice(1)}
-                  </button>
-                );
-              })}
-            </div>
-          )}
           {active && (
             <p className="text-xs text-inkSoft mt-2" aria-live="polite">
               {matches.length === 0 ? "Nothing matches that. Try a different word, or clear the search." : `Showing ${matches.length} of ${rows.length}`}
