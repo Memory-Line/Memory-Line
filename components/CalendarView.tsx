@@ -547,7 +547,7 @@ export default function CalendarView({
           .cal-dementia .cal-day-cell-inner { background: #fff !important; }
           .cal-dementia .cal-day-plain { font-size: 22px !important; color: #1a1a1a !important; }
           .cal-dementia .cal-event-tab { background: #FFD23F !important; color: #1a1a1a !important; border: 2px solid #1a1a1a !important; font-size: 14px !important; font-weight: 700 !important; }
-          .cal-dementia .cal-toolbar button { border: 2px solid #1a1a1a !important; background: #fff !important; color: #1a1a1a !important; font-weight: 700 !important; }
+          .cal-dementia .cal-toolbar button, .cal-dementia .cal-toolbar a { border: 2px solid #1a1a1a !important; background: #fff !important; color: #1a1a1a !important; font-weight: 700 !important; }
         }
         @media screen and (max-width: 640px) {
           .cal-dementia .cal-day-plain { font-size: 15px !important; }
@@ -643,6 +643,14 @@ export default function CalendarView({
           >
             ← Previous
           </button>
+          {signedIn && (
+            <Link
+              href="/dashboard"
+              style={{ padding: "10px 18px", borderRadius: 10, border: "1px solid #5B7A5E", background: "#5B7A5E", fontWeight: 600, color: "#fff", textDecoration: "none" }}
+            >
+              Dashboard
+            </Link>
+          )}
           <button
             onClick={() => {
               if (monthIndex === 11) setYear((y) => y + 1);
