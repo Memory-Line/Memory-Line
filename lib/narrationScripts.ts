@@ -72,6 +72,18 @@ export const NARRATION_VOICES: { key: string; label: string }[] = [
 
 // TEMPORARY: the how-to videos, one set of slide scripts each (used by the admin Narration studio).
 export const HOWTO_SETS: { key: string; label: string; slides: { title: string; text: string }[] }[] = [
+  { key: "demo", label: "Demo video (coming soon)", slides: [
+    { title: "1. Title", text: "On a busy shift, finding something meaningful to do shouldn't take an hour. Activity Central is built by someone working in care, for carers." },
+    { title: "2. Everything in one place", text: "Everything is in one place: puzzles, trivia, bingo, colouring, sing-alongs, exercise and more." },
+    { title: "3. Pick a topic", text: "Pick a category, then a topic, like animals, food or music, and choose an activity." },
+    { title: "4. Print", text: "Print one sheet with a click, or tick several and print them together. Answers are included, and Premium adds large print." },
+    { title: "5. Play on screen", text: "Premium members can also play on screen. Just drag along a word to find it." },
+    { title: "6. Bingo caller", text: "The Bingo caller reads every number aloud, and can say it in other languages too." },
+    { title: "7. Dementia friendly view", text: "One switch gives you a dementia friendly view, with big yellow boxes and clear black writing." },
+    { title: "8. Calendar", text: "Premium adds the Holidays and Celebrations calendar, which you can print and share." },
+    { title: "9. Talking boards", text: "And talking communication boards, in twenty-four languages. Tap an answer and it's read aloud." },
+    { title: "10. Close", text: "Activity Central. Coming soon. Try the free samples at activity central dot co dot uk." },
+  ] },
   { key: "intro", label: "Company intro (for the outreach email)", slides: [
     { title: "1. Welcome", text: "Welcome to Activity Central." },
     { title: "2. The problem", text: "Activity Central was created by a care home deputy manager, who knows how hard it is to find activities that suit people living with dementia, and how little time there is to prepare them. It's a library of ready-to-run activities for care home teams." },
