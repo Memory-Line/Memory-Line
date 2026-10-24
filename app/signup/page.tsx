@@ -17,7 +17,7 @@ export default function SignupPage() {
           <span className="font-serif text-xl">Activity Central</span>
         </Link>
         <div className="rounded-2xl border border-line bg-card p-7 text-center">
-          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-xs px-3 py-1 mb-3">Opening soon</p>
+          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-xs px-3 py-1 mb-3">Coming soon</p>
           <h1 className="font-serif text-2xl mb-2">New sign-ups aren&apos;t open yet</h1>
           <p className="text-inkSoft text-sm mb-5">
             We&apos;re getting ready to open to new members. If you already have an account, you can log in as usual.
