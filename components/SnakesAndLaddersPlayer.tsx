@@ -211,11 +211,11 @@ export default function SnakesAndLaddersPlayer({
   const DiceIcon = dice ? DICE_ICONS[dice - 1] : Dices;
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 items-start">
       <div
         className="relative rounded-xl bg-white overflow-hidden"
         style={{
-          width: ev ? "min(94vw, 500px)" : "min(94vw, 640px)",
+          width: ev ? "min(94vw, 500px)" : "min(94vw, 560px)",
           aspectRatio: "1 / 1",
           border: ev ? "4px solid #1a1a1a" : "1px solid #e5dfd3",
         }}
@@ -259,7 +259,7 @@ export default function SnakesAndLaddersPlayer({
         })}
       </div>
 
-      <div className={`max-w-[330px] lg:sticky lg:top-4${ev ? " order-first" : ""}`}>
+      <div className={`max-w-[320px] flex-1 min-w-[260px] lg:sticky lg:top-4${ev ? " order-first" : ""}`}>
         {ev && (
           <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 12px" }}>
             <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>{winner !== null ? "WELL DONE" : "YOUR TURN"}</p>
