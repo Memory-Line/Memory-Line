@@ -4,6 +4,7 @@ import { handleUpload, type HandleUploadBody } from "@vercel/blob/client";
 import { authOptions } from "@/lib/auth";
 import { ALLOWED_CONTENT_TYPES, MAX_SHARED_FILE_BYTES, blobPrefixFor } from "@/lib/sharedFiles";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 // storage (so files can be bigger than a normal request allows). Only a signed-in
 // Premium account, only PDF/JPG/PNG, only up to the size limit, and only into its
 // own folder. The file is checked again when it is attached to a link.
-export async function POST(request: Request) {
+async function POST_(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -38,3 +39,5 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "The upload did not work. Please try again." }, { status: 400 });
   }
 }
+
+export const POST = withErrors(POST_, "api/shared-files/upload:POST");

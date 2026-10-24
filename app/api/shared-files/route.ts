@@ -8,12 +8,13 @@ import { listOwnedLinks, getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { userHasFeature } from "@/lib/features";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // The signed-in account's links (each with its sections and files) and its id
 // (the browser needs the id to upload into its own storage folder).
-export async function GET() {
+async function GET_() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const links = await listOwnedLinks(session.user.id);
@@ -28,7 +29,7 @@ export async function GET() {
 // JSON: { title, allowDownload, categories: [{ name, blobUrls: [...] }] }.
 // Each category is a section the visitor taps (Menu, Calendar...). A single
 // category with no name means no sections: the files just show one after another.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -95,3 +96,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "The upload did not work. Please try again." }, { status: 500 });
   }
 }
+
+export const GET = withErrors(GET_, "api/shared-files:GET");
+export const POST = withErrors(POST_, "api/shared-files:POST");

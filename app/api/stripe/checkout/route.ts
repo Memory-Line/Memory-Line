@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { isPlanKey, type PlanKey } from "@/lib/plans";
+import { withErrors } from "@/lib/apiHandler";
 
 // The Price ID for each plan comes from Vercel's env vars, read fresh on
 // every request (not baked in at build time), so setting them in Vercel
@@ -18,7 +19,7 @@ function priceIdForPlan(plan: PlanKey): string {
   return id;
 }
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -79,3 +80,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withErrors(POST_, "api/stripe/checkout:POST");

@@ -7,12 +7,13 @@ import { MAX_ITEMS_PER_CATEGORY } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Replace one file on a link with a new one the browser has already uploaded (the
 // link stays the same). JSON: { blobUrl }.
-export async function PUT(req: Request, { params }: { params: { id: string; itemId: string } }) {
+async function PUT_(req: Request, { params }: { params: { id: string; itemId: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -42,7 +43,7 @@ export async function PUT(req: Request, { params }: { params: { id: string; item
 
 // Move one file to another section of the link. JSON: { categoryId } (empty = not
 // in a section).
-export async function PATCH(req: Request, { params }: { params: { id: string; itemId: string } }) {
+async function PATCH_(req: Request, { params }: { params: { id: string; itemId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const link = await getOwnedLink(params.id, session.user.id);
@@ -66,7 +67,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string; it
 
 // Remove one file from a link. A link always keeps at least one file; to
 // remove the last one, delete the whole link.
-export async function DELETE(_req: Request, { params }: { params: { id: string; itemId: string } }) {
+async function DELETE_(_req: Request, { params }: { params: { id: string; itemId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const link = await getOwnedLink(params.id, session.user.id);
@@ -81,3 +82,7 @@ export async function DELETE(_req: Request, { params }: { params: { id: string; 
   const updated = await getOwnedLink(link.id, session.user.id);
   return NextResponse.json({ file: updated ? publicShape(updated) : null });
 }
+
+export const PUT = withErrors(PUT_, "api/shared-files/[id]/items/[itemId]:PUT");
+export const PATCH = withErrors(PATCH_, "api/shared-files/[id]/items/[itemId]:PATCH");
+export const DELETE = withErrors(DELETE_, "api/shared-files/[id]/items/[itemId]:DELETE");

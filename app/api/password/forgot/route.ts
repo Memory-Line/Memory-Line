@@ -3,6 +3,7 @@ import { createHash, randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { passwordResetEmail, sendEmail, siteUrl } from "@/lib/email";
+import { withErrors } from "@/lib/apiHandler";
 
 const schema = z.object({ email: z.string().email() });
 
@@ -10,7 +11,7 @@ const schema = z.object({ email: z.string().email() });
 // this can't be used to find out who is a customer.
 const SAME_ANSWER = { ok: true };
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Enter a valid email address" }, { status: 400 });
 
@@ -38,3 +39,5 @@ export async function POST(req: Request) {
   await sendEmail(passwordResetEmail(user.email, user.name, `${siteUrl()}/reset-password?token=${secret}`));
   return NextResponse.json(SAME_ANSWER);
 }
+
+export const POST = withErrors(POST_, "api/password/forgot:POST");

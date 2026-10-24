@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { WESTCLIFF_TEMPLATES } from "@/lib/westcliffForms";
 import { loadLogo, makeFormPdf, todayInLondon } from "@/lib/formPdf";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export const dynamic = "force-dynamic";
 // code. ?template=resident|relatives|employee and ?sample=1 fills in example
 // answers (otherwise the PDF is blank, every question showing "No answer").
 // ?download=1 saves it as a file instead of opening it in the browser.
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const url = new URL(req.url);
   const t = WESTCLIFF_TEMPLATES.find((x) => x.key === url.searchParams.get("template")) ?? WESTCLIFF_TEMPLATES[0];
@@ -44,3 +45,5 @@ export async function GET(req: Request) {
     },
   });
 }
+
+export const GET = withErrors(GET_, "api/admin/forms/preview:GET");

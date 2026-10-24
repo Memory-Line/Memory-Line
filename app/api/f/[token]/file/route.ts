@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getLinkByToken } from "@/lib/sharedFilesDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export const dynamic = "force-dynamic";
 // file's real address is never given out and deleting a link or file cuts it off
 // at once. ?item=<id> picks the file (the first one if left out); ?download=1
 // sends it as a download, only if the owner allowed that.
-export async function GET(req: Request, { params }: { params: { token: string } }) {
+async function GET_(req: Request, { params }: { params: { token: string } }) {
   const link = await getLinkByToken(params.token);
   if (!link) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -38,3 +39,5 @@ export async function GET(req: Request, { params }: { params: { token: string } 
     },
   });
 }
+
+export const GET = withErrors(GET_, "api/f/[token]/file:GET");

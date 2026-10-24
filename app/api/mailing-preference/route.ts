@@ -3,11 +3,12 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { joinMailingList, leaveMailingList } from "@/lib/mailing";
+import { withErrors } from "@/lib/apiHandler";
 
 const schema = z.object({ subscribe: z.boolean() });
 
 // A logged-in person turns promotional emails on or off for their own address.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) return NextResponse.json({ error: "Please log in" }, { status: 401 });
 
@@ -21,3 +22,5 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true, subscribed: parsed.data.subscribe });
 }
+
+export const POST = withErrors(POST_, "api/mailing-preference:POST");

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { addAgreedContacts } from "@/lib/mailing";
+import { withErrors } from "@/lib/apiHandler";
 
 // A cell starting with = + - @ can run as a formula when the file is opened in
 // Excel, and names are typed by customers, so those get a ' put in front.
@@ -10,7 +11,7 @@ function cell(value: string) {
   return `"${safe.replace(/"/g, '""')}"`;
 }
 
-export async function GET() {
+async function GET_() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
 
   const contacts = await prisma.mailingContact.findMany({ orderBy: { createdAt: "asc" } });
@@ -37,7 +38,7 @@ export async function GET() {
 
 // Adds free-access accounts the owner has ticked, because they've said yes in
 // person. Only accounts that really have free access can be added this way.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
 
   const body = await req.json().catch(() => null);
@@ -51,3 +52,6 @@ export async function POST(req: Request) {
   const added = await addAgreedContacts(users, "free-access (agreed in person)");
   return NextResponse.json({ ok: true, added });
 }
+
+export const GET = withErrors(GET_, "api/admin/mailing-list:GET");
+export const POST = withErrors(POST_, "api/admin/mailing-list:POST");

@@ -3,6 +3,7 @@ import { cleanAnswers } from "@/lib/forms";
 import { getFormByToken } from "@/lib/formsDb";
 import { formSubmissionEmail, sendEmail, siteUrl } from "@/lib/email";
 import { loadLogo, makeFormPdf, todayInLondon } from "@/lib/formPdf";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ const recent = new Map<string, number[]>();
 
 // Public. Checks the answers, then emails them to the form's own address
 // (set by the admin). Nothing is kept on our side.
-export async function POST(req: Request, { params }: { params: { token: string } }) {
+async function POST_(req: Request, { params }: { params: { token: string } }) {
   const body = await req.json().catch(() => null);
   const form = await getFormByToken(params.token);
   if (!form) return NextResponse.json({ error: "This form isn't available." }, { status: 404 });
@@ -65,3 +66,5 @@ export async function POST(req: Request, { params }: { params: { token: string }
   }
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withErrors(POST_, "api/q/[token]/submit:POST");

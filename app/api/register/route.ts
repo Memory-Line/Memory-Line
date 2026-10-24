@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sendEmail, welcomeEmail } from "@/lib/email";
 import { joinMailingList } from "@/lib/mailing";
 import { COMING_SOON } from "@/lib/launch";
+import { withErrors } from "@/lib/apiHandler";
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -15,7 +16,7 @@ const schema = z.object({
   marketing: z.boolean().default(false),
 });
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   // New accounts are closed for now (lib/launch.ts). Existing accounts are not affected.
   if (COMING_SOON) {
     return NextResponse.json({ error: "New sign-ups aren't open yet. If you already have an account, please log in." }, { status: 403 });
@@ -55,3 +56,5 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ id: user.id, email: user.email }, { status: 201 });
 }
+
+export const POST = withErrors(POST_, "api/register:POST");

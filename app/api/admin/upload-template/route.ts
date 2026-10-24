@@ -7,6 +7,7 @@ import { occasionBySlug } from "@/lib/occasions";
 import { videoUrlFor } from "@/lib/videoLinksByFile";
 import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import { subcategoriesFor, subcategoryBySlug } from "@/lib/subcategories";
+import { withErrors } from "@/lib/apiHandler";
 
 // Strips the leading number, then strips an "Answers" / "Answer Key" /
 // "Large Print" marker if present, so a variant file's name reduces to
@@ -67,7 +68,7 @@ function matchKey(name: string): { number: string | null; key: string } {
 // Always fresh (the GET below lists what's been uploaded so far).
 export const dynamic = "force-dynamic";
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const blocked = offLiveBlock();
   if (blocked) return blocked;
   // Wrap the whole handler: an uncaught exception here (a Blob store
@@ -239,7 +240,7 @@ export async function POST(req: Request) {
 // part way can carry on without sending those files again: each worksheet's
 // file name, number and language/level/occasion, and whether its large print
 // and answers are attached.
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
@@ -269,3 +270,6 @@ export async function GET(req: Request) {
     })),
   });
 }
+
+export const POST = withErrors(POST_, "api/admin/upload-template:POST");
+export const GET = withErrors(GET_, "api/admin/upload-template:GET");

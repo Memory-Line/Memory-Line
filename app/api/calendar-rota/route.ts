@@ -7,13 +7,14 @@ import { getViewer } from "@/lib/viewer";
 import { userHasFeature } from "@/lib/features";
 import { ROTA_DAYS, ROTA_WEEKS, fromInputDate } from "@/lib/rota";
 import { cleanSlots, loadRota } from "@/lib/rotaDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 const calendarSchema = z.enum(["activity", "professional"]);
 
 // The account's rota for one calendar (null if it has never set one up).
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ rota: null });
   const calendar = calendarSchema.safeParse(new URL(req.url).searchParams.get("calendar") ?? "activity");
@@ -32,7 +33,7 @@ const bodySchema = z.object({
 
 // Saves the rota: which months it's on for, preset or custom, the start Monday,
 // and the custom slots.
-export async function PUT(req: Request) {
+async function PUT_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
 
@@ -70,7 +71,7 @@ export async function PUT(req: Request) {
 }
 
 // Removes the rota completely (including any activities picked for "my own").
-export async function DELETE(req: Request) {
+async function DELETE_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const calendar = calendarSchema.safeParse(new URL(req.url).searchParams.get("calendar") ?? "activity");
@@ -78,3 +79,7 @@ export async function DELETE(req: Request) {
   await prisma.calendarRota.deleteMany({ where: { userId: session.user.id, calendar: calendar.data } });
   return NextResponse.json({ rota: null });
 }
+
+export const GET = withErrors(GET_, "api/calendar-rota:GET");
+export const PUT = withErrors(PUT_, "api/calendar-rota:PUT");
+export const DELETE = withErrors(DELETE_, "api/calendar-rota:DELETE");

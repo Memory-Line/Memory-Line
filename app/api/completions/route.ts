@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
+import { withErrors } from "@/lib/apiHandler";
 
 // Marks an activity as completed (or not) for the signed-in account. Only
 // for accounts with the "completion-tracking" feature.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const viewer = await getViewer();
   if (!viewer.userId) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -34,3 +35,5 @@ export async function POST(req: Request) {
   await prisma.completion.deleteMany({ where: { userId: viewer.userId, templateId } });
   return NextResponse.json({ ok: true, completed: false });
 }
+
+export const POST = withErrors(POST_, "api/completions:POST");

@@ -2,13 +2,14 @@ import { NextResponse } from "next/server";
 import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { withErrors } from "@/lib/apiHandler";
 
 // Renumbers a category's activities 1, 2, 3 … in their current order, so
 // gaps (e.g. 12, 14 … 20, 23) close up. Only the number at the start of
 // each file name changes, keeping its zero padding ("09" stays two digits);
 // any folder path left in a name from a folder upload is dropped too.
 // With apply=false it only reports what would change.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const blocked = offLiveBlock();
   if (blocked) return blocked;
   try {
@@ -53,3 +54,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const POST = withErrors(POST_, "api/admin/renumber:POST");

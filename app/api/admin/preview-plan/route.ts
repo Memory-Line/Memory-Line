@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { isPlanKey } from "@/lib/plans";
 import { PREVIEW_PLAN_COOKIE } from "@/lib/viewer";
+import { withErrors } from "@/lib/apiHandler";
 
 // Lets the admin see the site as a Standard or Premium account would,
 // without changing any real account's plan — just a cookie on the admin's
 // own browser (lib/viewer.ts reads it, and only for the admin).
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
@@ -24,3 +25,5 @@ export async function POST(req: Request) {
   res.cookies.set(PREVIEW_PLAN_COOKIE, plan, { httpOnly: true, sameSite: "lax", path: "/" });
   return res;
 }
+
+export const POST = withErrors(POST_, "api/admin/preview-plan:POST");

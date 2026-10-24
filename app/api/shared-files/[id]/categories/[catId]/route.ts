@@ -5,11 +5,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cleanTitle } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Rename a section. JSON: { name }.
-export async function PATCH(req: Request, { params }: { params: { id: string; catId: string } }) {
+async function PATCH_(req: Request, { params }: { params: { id: string; catId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const link = await getOwnedLink(params.id, session.user.id);
@@ -25,7 +26,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string; ca
 }
 
 // Delete a section and the files in it. A link always keeps at least one file.
-export async function DELETE(_req: Request, { params }: { params: { id: string; catId: string } }) {
+async function DELETE_(_req: Request, { params }: { params: { id: string; catId: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const link = await getOwnedLink(params.id, session.user.id);
@@ -42,3 +43,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string; 
   const updated = await getOwnedLink(link.id, session.user.id);
   return NextResponse.json({ file: updated ? publicShape(updated) : null });
 }
+
+export const PATCH = withErrors(PATCH_, "api/shared-files/[id]/categories/[catId]:PATCH");
+export const DELETE = withErrors(DELETE_, "api/shared-files/[id]/categories/[catId]:DELETE");

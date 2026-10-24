@@ -3,12 +3,13 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { withErrors } from "@/lib/apiHandler";
 
 // "Manage subscription" on the dashboard is a plain form post, so this
 // answers with a redirect (to Stripe's billing page, or back to the
 // dashboard with a message if something's wrong) rather than raw data, which
 // the browser would just show as a blank page.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? new URL(req.url).origin;
   const back = (reason: string) =>
     NextResponse.redirect(`${appUrl}/dashboard?billing=${reason}`, 303);
@@ -32,3 +33,5 @@ export async function POST(req: Request) {
     return back("error");
   }
 }
+
+export const POST = withErrors(POST_, "api/stripe/portal:POST");

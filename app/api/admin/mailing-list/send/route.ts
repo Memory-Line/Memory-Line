@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/admin";
 import { offLiveBlock } from "@/lib/env";
 import { promotionalEmail, sendEmail } from "@/lib/email";
 import { buildBroadcast } from "@/lib/mailing";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -21,7 +22,7 @@ const clean = (v: unknown, max: number) => (typeof v === "string" ? v.trim().sli
 //   { action: "next", campaignId } -> sends the next batch of the same email
 // Only people who are subscribed (ticked the box, not unsubscribed) are emailed,
 // and nobody gets the same email twice.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const session = await requireAdmin();
   if (!session) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => null);
@@ -91,3 +92,5 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true, campaignId: campaign.id, sent, failed, remaining: waiting.length - sent });
 }
+
+export const POST = withErrors(POST_, "api/admin/mailing-list/send:POST");
