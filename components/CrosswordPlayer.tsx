@@ -250,10 +250,14 @@ export default function CrosswordPlayer({
               }
             }}
           />
-          <div role="grid" aria-label="Crossword grid" style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cell})`, gap: 2 }}>
+          <div
+            role="grid"
+            aria-label="Crossword grid"
+            style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cell})`, gap: ev ? 2 : 1, background: ev ? undefined : "#1a1a1a", border: ev ? undefined : "3px solid #1a1a1a" }}
+          >
             {solution.flatMap((row, r) =>
               row.split("").map((sol, c) => {
-                if (sol === ".") return <div key={`${r}-${c}`} style={{ width: cell, height: cell, background: ev ? "#1a1a1a" : "transparent" }} />;
+                if (sol === ".") return <div key={`${r}-${c}`} style={{ width: cell, height: cell, background: "#1a1a1a" }} />;
                 const typed = letters[r][c] !== " " ? letters[r][c] : "";
                 const shown = typed || (revealed ? sol : "");
                 const wrong = !!typed && typed !== sol;
@@ -269,8 +273,8 @@ export default function CrosswordPlayer({
                     style={{
                       width: cell,
                       height: cell,
-                      border: ev ? "2px solid #1a1a1a" : `1.5px solid ${BLOCK}`,
-                      background: ev ? (isSel ? "#FFD23F" : inCurrent.has(`${r},${c}`) ? "#FFF4C2" : "#fff") : isSel ? SELECTED : inCurrent.has(`${r},${c}`) ? WORD_TINT : "#fff",
+                      border: ev ? "2px solid #1a1a1a" : "none",
+                      background: ev ? (isSel ? "#FFD23F" : inCurrent.has(`${r},${c}`) ? "#FFF4C2" : "#fff") : isSel ? "#F2B94B" : inCurrent.has(`${r},${c}`) ? "#FDE9A8" : "#fff",
                       outline: ev && isSel ? "4px solid #1a1a1a" : undefined,
                       outlineOffset: -4,
                       fontSize: `calc(${cell} * 0.55)`,
@@ -319,7 +323,7 @@ export default function CrosswordPlayer({
         )}
         {(["across", "down"] as Direction[]).map((dir) => (
           <div key={dir} className="mb-4">
-            <p className={ev ? "font-bold capitalize mb-1" : "font-serif text-lg capitalize mb-1"} style={ev ? { fontSize: 22 } : undefined}>{dir}</p>
+            <p className={ev ? "font-bold capitalize mb-1" : "font-serif text-base uppercase tracking-wide mb-1 pb-0.5"} style={ev ? { fontSize: 22 } : { borderBottom: "2px solid #1a1a1a" }}>{dir}</p>
             <ul className="space-y-1">
               {clues[dir].map((e) => {
                 const isCurrent = current === e && direction === dir;
