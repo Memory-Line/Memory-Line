@@ -235,21 +235,6 @@ export default function SpotDifferencePlayer({
 
   return (
     <div className="w-full max-w-[980px]">
-      {ev ? (
-        <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 14px" }}>
-          <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE DIFFERENCES</p>
-          <p className="font-bold" style={{ fontSize: 22, lineHeight: 1.25, color: "#1a1a1a" }}>
-            Look at both pictures. Tap anywhere you see something different. Tap a circle again to take it away. Up to {TARGET}.
-          </p>
-        </div>
-      ) : (
-        <p className="text-sm text-inkSoft mb-3">
-          Have a look at the two pictures together and tap to circle anything that's different — on either picture,
-          wherever's easiest. There's no wrong answer here; tap a circle again to take it away. You can circle up to
-          {" "}{TARGET}, the same as the sheet's own "find {TARGET}" — undo one first if you want to change an earlier guess.
-        </p>
-      )}
-
       {status === "error" ? (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line mb-4">
           The pictures couldn't be loaded for playing on screen right now, but you can still print the sheet below.
@@ -283,21 +268,45 @@ export default function SpotDifferencePlayer({
         </div>
       )}
 
-      <p className={ev ? "font-bold mb-3" : "text-sm font-semibold mb-3"} style={ev ? { fontSize: 22, color: "#1a1a1a" } : undefined}>
-        {ev ? <span style={{ fontSize: 32 }}>{total}</span> : total} of {TARGET} circled
-      </p>
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          onClick={undoLast}
-          disabled={total === 0}
-          className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
-        >
-          <Undo2 size={14} /> Undo
-        </button>
-        <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
-          <RotateCcw size={14} /> Start again
-        </button>
+      {/* One wide strip under the pictures, so the instructions, the count and Undo are in view while playing. */}
+      <div
+        className="grid gap-3 items-center rounded-2xl p-3 sm:p-4 sm:grid-cols-[1.3fr_1fr_auto]"
+        style={ev ? { background: "#FFF4C2", border: "3px solid #1a1a1a", color: "#1a1a1a" } : { background: "#fff", border: "1px solid #e5dfd3" }}
+      >
+        <p className={ev ? "font-bold" : "text-sm text-inkSoft"} style={ev ? { fontSize: 18, lineHeight: 1.3 } : { lineHeight: 1.4 }}>
+          {ev
+            ? `FIND THE DIFFERENCES. Tap anywhere you see something different, on either picture. Tap a circle again to take it away. Up to ${TARGET}.`
+            : `Look at both pictures and tap anything that looks different, on either one. There's no wrong answer. Tap a circle again to take it away. You can circle up to ${TARGET}.`}
+        </p>
+        <div className="text-center">
+          <p className="font-semibold" style={ev ? { fontSize: 28, fontWeight: 800 } : { fontSize: 22 }} aria-live="polite">
+            {total} of {TARGET} circled
+          </p>
+          <div className="flex justify-center gap-1.5 mt-1" aria-hidden="true">
+            {Array.from({ length: TARGET }, (_, i) => (
+              <span
+                key={i}
+                style={
+                  ev
+                    ? { width: 15, height: 15, borderRadius: "50%", border: "2px solid #1a1a1a", background: i < total ? "#1a1a1a" : "#fff" }
+                    : { width: 11, height: 11, borderRadius: "50%", background: i < total ? "#b5714a" : "#e5dfd3" }
+                }
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-wrap gap-2 sm:justify-end">
+          <button
+            onClick={undoLast}
+            disabled={total === 0}
+            className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold bg-white border-[3px] border-black disabled:opacity-40" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-40"}
+          >
+            <Undo2 size={14} /> Undo
+          </button>
+          <button onClick={startAgain} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold border-[3px] border-black" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
+            <RotateCcw size={14} /> Start again
+          </button>
+        </div>
       </div>
 
       {total >= TARGET && (
@@ -311,7 +320,7 @@ export default function SpotDifferencePlayer({
         </p>
       )}
 
-      <div className="mt-6 pt-4 border-t border-line">
+      <div className="mt-4 pt-3 border-t border-line">
         <p className="text-xs font-semibold text-inkSoft mb-2">Prefer paper?</p>
         <div className="flex flex-wrap gap-2">
           <a
