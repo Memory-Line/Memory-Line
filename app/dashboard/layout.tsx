@@ -4,6 +4,7 @@ import Sidebar from "@/components/Sidebar";
 import { getCategories } from "@/lib/categories";
 import TopBar from "@/components/TopBar";
 import { DementiaProvider, DementiaToggle } from "@/components/EasyView";
+import { isTestBuild } from "@/lib/env";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getSession();
@@ -32,6 +33,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           userName={session.user.name ?? session.user.email ?? "there"}
           isAdmin={viewer.isAdmin}
           previewPlan={viewer.previewPlan}
+          testBuild={isTestBuild()}
         />
         <main className="px-4 sm:px-6 pb-10 max-w-[980px]">
           <div className="pb-4">

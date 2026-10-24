@@ -1,4 +1,5 @@
 import { revalidateTag } from "next/cache";
+import { offLiveBlock } from "@/lib/env";
 import { NextResponse } from "next/server";
 import { deleteStoredFiles } from "@/lib/storedFiles";
 import { prisma } from "@/lib/prisma";
@@ -62,6 +63,8 @@ async function POST_(req: Request) {
 // "confirm" must be the category's name typed out. A category you made is deleted; a
 // built-in one is hidden everywhere (and can be brought back with Restore, empty).
 async function DELETE_(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const name = String(body.name ?? "");

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
 import { put } from "@vercel/blob";
 import { prisma } from "@/lib/prisma";
@@ -68,6 +69,8 @@ function matchKey(name: string): { number: string | null; key: string } {
 export const dynamic = "force-dynamic";
 
 async function POST_(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   // Wrap the whole handler: an uncaught exception here (a Blob store
   // limit, a dropped DB connection, anything unexpected) would otherwise
   // bubble up as a bare platform error page with no JSON body. The admin

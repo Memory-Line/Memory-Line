@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { withErrors } from "@/lib/apiHandler";
@@ -9,6 +10,8 @@ import { withErrors } from "@/lib/apiHandler";
 // any folder path left in a name from a folder upload is dropped too.
 // With apply=false it only reports what would change.
 async function POST_(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });

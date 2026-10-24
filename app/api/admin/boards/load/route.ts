@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import seed from "@/data/boards.seed.json";
@@ -10,6 +11,8 @@ export const maxDuration = 60;
 // Admin only. Loads the approved boards from the data file into the database,
 // replacing whatever boards were there. Safe to run again after the file changes.
 async function POST_() {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const rows = (seed as any[]).map((b) => ({
     id: b.id, code: b.code, area: b.area, areaSlug: b.areaSlug, priority: b.priority, signOff: b.signOff,

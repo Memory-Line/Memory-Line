@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { offLiveBlock } from "@/lib/env";
 import { promotionalEmail, sendEmail } from "@/lib/email";
 import { buildBroadcast } from "@/lib/mailing";
 import { withErrors } from "@/lib/apiHandler";
@@ -44,6 +45,10 @@ async function POST_(req: Request) {
     if (!ok) return NextResponse.json({ error: "The test email did not send. Check the email key is set." }, { status: 502 });
     return NextResponse.json({ ok: true, sentTo: session.user.email });
   }
+
+  // Test builds can send the one test copy to the admin, but never to the real mailing list.
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
 
   let campaign;
   if (body.action === "start") {
