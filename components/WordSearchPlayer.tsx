@@ -10,7 +10,6 @@ const INK = "#3f3237";
 const SELECTED = "#b5714a";
 const WRONG_INK = "#c0392b";
 const HIGHLIGHTS = ["#cfe3f2", "#c9e6dd", "#f1d2be", "#dfd5ec", "#f2e2b8", "#d3e6f5", "#f2d6da", "#d8e7cb"];
-const REVEALED = "#e6e0d4";
 const MAX_LIVES = 3;
 
 type Cell = [number, number];
@@ -178,15 +177,20 @@ export default function WordSearchPlayer({
     setLives(MAX_LIVES);
   }
 
-  // Colour for each cell: the first found word covering it, or the reveal colour.
+  // Colour for each cell: the first word covering it, in that word's own colour (the same one as its pill in the
+  // list, whether it was found or is only being shown as an answer).
   const cellColour = new Map<string, string>();
+  const shownOnly = new Set<string>(); // cells coloured only because the answers are being shown
   words.forEach((w, i) => {
     const at = found[i] ?? (revealed ? w.at[0] : undefined);
     if (!at) return;
     const cells = lineCells([at[0], at[1]], [at[2], at[3]]) ?? [];
     for (const [r, c] of cells) {
       const key = `${r},${c}`;
-      if (!cellColour.has(key)) cellColour.set(key, found[i] ? HIGHLIGHTS[i % HIGHLIGHTS.length] : REVEALED);
+      if (!cellColour.has(key)) {
+        cellColour.set(key, HIGHLIGHTS[i % HIGHLIGHTS.length]);
+        if (!found[i]) shownOnly.add(key);
+      }
     }
   });
 
@@ -272,7 +276,7 @@ export default function WordSearchPlayer({
                     fontSize: `calc(${cell} * 0.55)`,
                     fontWeight: 700,
                     color: ev ? "#1a1a1a" : INK,
-                    background: ev ? (isStart ? "#FFF4C2" : bg ? (bg === REVEALED ? "#ECECEC" : "#FFD23F") : "transparent") : isStart ? "#fcefe7" : bg ?? "transparent",
+                    background: ev ? (isStart ? "#FFF4C2" : bg ? (shownOnly.has(`${r},${c}`) ? "#ECECEC" : "#FFD23F") : "transparent") : isStart ? "#fcefe7" : bg ?? "transparent",
                     outline: isStart ? (ev ? "4px solid #1a1a1a" : `3px solid ${SELECTED}`) : "none",
                     outlineOffset: -3,
                     borderRadius: ev ? 4 : 6,
