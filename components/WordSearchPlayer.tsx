@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check, Eye, Heart, Printer, RotateCcw } from "lucide-react";
 import type { WordSearchWord } from "@/lib/wordSearch";
 import { useEasyView } from "@/components/EasyView";
@@ -25,8 +25,21 @@ function lineCells(a: Cell, b: Cell): Cell[] | null {
   return Array.from({ length: len + 1 }, (_, k) => [a[0] + dr * k, a[1] + dc * k] as Cell);
 }
 
-// A Word Search to solve on screen: tap the first letter of a word, then its
-// last letter. Words from the list light up in colour and are crossed off.
+// While dragging, the end of the line is snapped to the nearest straight direction (across, down or
+// diagonal) from where the drag began, so a slightly wobbly drag still selects a straight word.
+const DIRS: Cell[] = [[0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [-1, 1]];
+function snapEnd(from: Cell, to: Cell, size: number): Cell {
+  const dr = to[0] - from[0];
+  const dc = to[1] - from[1];
+  if (dr === 0 && dc === 0) return from;
+  const dir = DIRS[((Math.round(Math.atan2(dr, dc) / (Math.PI / 4)) % 8) + 8) % 8];
+  let len = Math.round((dr * dir[0] + dc * dir[1]) / (dir[0] * dir[0] + dir[1] * dir[1]));
+  while (len > 0 && (from[0] + dir[0] * len < 0 || from[0] + dir[0] * len >= size || from[1] + dir[1] * len < 0 || from[1] + dir[1] * len >= size)) len--;
+  return len <= 0 ? from : [from[0] + dir[0] * len, from[1] + dir[1] * len];
+}
+
+// A Word Search to solve on screen: drag from the first letter of a word to its last letter (or tap the
+// first letter, then the last). Words from the list light up in colour and are crossed off.
 // Progress is kept on this device.
 export default function WordSearchPlayer({
   templateId,
@@ -113,8 +126,14 @@ export default function WordSearchPlayer({
       setStart(null); // tapping the same letter again cancels
       return;
     }
-    const line = lineCells(start, cell);
+    const from = start;
     setStart(null);
+    check(from, cell);
+  }
+
+  // Does the line from `from` to `cell` spell a word from the list?
+  function check(from: Cell, cell: Cell) {
+    const line = lineCells(from, cell);
     if (!line) {
       if (loseLife()) return;
       setMessage("Words run in a straight line — across, down or diagonally. Try again.");
@@ -126,8 +145,8 @@ export default function WordSearchPlayer({
         found[i] === undefined &&
         w.at.some(
           ([r1, c1, r2, c2]) =>
-            (r1 === start[0] && c1 === start[1] && r2 === cell[0] && c2 === cell[1]) ||
-            (r2 === start[0] && c2 === start[1] && r1 === cell[0] && c1 === cell[1])
+            (r1 === from[0] && c1 === from[1] && r2 === cell[0] && c2 === cell[1]) ||
+            (r2 === from[0] && c2 === from[1] && r1 === cell[0] && c1 === cell[1])
         )
     );
     if (match === -1) {
@@ -138,8 +157,8 @@ export default function WordSearchPlayer({
     }
     const at = words[match].at.find(
       ([r1, c1, r2, c2]) =>
-        (r1 === start[0] && c1 === start[1] && r2 === cell[0] && c2 === cell[1]) ||
-        (r2 === start[0] && c2 === start[1] && r1 === cell[0] && c1 === cell[1])
+        (r1 === from[0] && c1 === from[1] && r2 === cell[0] && c2 === cell[1]) ||
+        (r2 === from[0] && c2 === from[1] && r1 === cell[0] && c1 === cell[1])
     )!;
     const next = { ...found, [match]: at };
     save(next);
@@ -171,6 +190,54 @@ export default function WordSearchPlayer({
     }
   });
 
+  // Dragging along a word (mouse or finger). A quick press and release on one letter is just a tap.
+  const [drag, setDrag] = useState<{ from: Cell; to: Cell } | null>(null);
+  const dragRef = useRef<{ from: Cell; to: Cell } | null>(null);
+  function setDragBoth(d: { from: Cell; to: Cell } | null) {
+    dragRef.current = d;
+    setDrag(d);
+  }
+  function cellAt(x: number, y: number): Cell | null {
+    const el = (document.elementFromPoint(x, y) as HTMLElement | null)?.closest?.("[data-rc]") as HTMLElement | null;
+    if (!el?.dataset.rc) return null;
+    const [r, c] = el.dataset.rc.split(",").map(Number);
+    return [r, c];
+  }
+  function onDown(e: React.PointerEvent) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    const at = cellAt(e.clientX, e.clientY);
+    if (!at) return;
+    try {
+      // Keep receiving the drag even if the finger or mouse slides off the grid before letting go.
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      // not available: the drag simply ends when it leaves the grid
+    }
+    setDragBoth({ from: at, to: at });
+  }
+  function onMove(e: React.PointerEvent) {
+    const d = dragRef.current;
+    if (!d) return;
+    const at = cellAt(e.clientX, e.clientY);
+    if (!at) return;
+    const to = snapEnd(d.from, at, size);
+    if (to[0] !== d.to[0] || to[1] !== d.to[1]) setDragBoth({ from: d.from, to });
+  }
+  function onUp() {
+    const d = dragRef.current;
+    setDragBoth(null);
+    if (!d) return;
+    if (d.from[0] === d.to[0] && d.from[1] === d.to[1]) {
+      tap(d.from);
+    } else {
+      setStart(null);
+      setMessage("");
+      check(d.from, d.to);
+    }
+  }
+  const dragLine = drag ? lineCells(drag.from, drag.to) ?? [] : [];
+  const dragSet = new Set(dragLine.map(([r, c]) => `${r},${c}`));
+
   const ev = useEasyView();
   const foundCount = Object.keys(found).length;
   const cell = `min(${ev ? 32 : 34}px, calc((100vw - 72px) / ${size}))`;
@@ -178,17 +245,27 @@ export default function WordSearchPlayer({
   return (
     <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
       <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block" }}>
-        <div role="grid" aria-label="Word search grid" style={{ display: "grid", gridTemplateColumns: `repeat(${size}, ${cell})` }}>
+        <div
+          role="grid"
+          aria-label="Word search grid"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={() => setDragBoth(null)}
+          style={{ display: "grid", gridTemplateColumns: `repeat(${size}, ${cell})`, touchAction: "none", userSelect: "none", WebkitUserSelect: "none" }}
+        >
           {grid.map((row, r) =>
             row.split("").map((letter, c) => {
-              const isStart = start && start[0] === r && start[1] === c;
+              const isStart = (start && start[0] === r && start[1] === c) || dragSet.has(`${r},${c}`);
               const bg = cellColour.get(`${r},${c}`);
               return (
                 <button
                   key={`${r}-${c}`}
                   role="gridcell"
                   aria-label={`Row ${r + 1}, column ${c + 1}, ${letter}`}
-                  onClick={() => tap([r, c])}
+                  data-rc={`${r},${c}`}
+                  // Mouse and touch are handled by the grid (drag, or a quick tap); this is for the keyboard.
+                  onClick={(e) => { if (e.detail === 0) tap([r, c]); }}
                   style={{
                     width: cell,
                     height: cell,
@@ -217,7 +294,7 @@ export default function WordSearchPlayer({
             <div className="rounded-2xl text-center mb-3" style={{ background: "#FFF4C2", padding: "10px 12px" }}>
               <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>FIND THE WORDS</p>
               <p className="font-bold" style={{ fontSize: 20, lineHeight: 1.25, color: "#1a1a1a" }}>
-                Tap the first letter of a word, then its last letter. Words go across, down or diagonally, and can be backwards.
+                Drag from the first letter of a word to its last letter, or tap the first letter, then the last. Words go across, down or diagonally, and can be backwards.
               </p>
             </div>
             <p className="font-bold mb-2" style={{ fontSize: 20, color: "#1a1a1a" }}>
@@ -230,8 +307,8 @@ export default function WordSearchPlayer({
         ) : (
           <>
             <p className="text-sm text-inkSoft mb-3">
-              Tap the first letter of a word, then its last letter. Words go across, down or
-              diagonally, and can be backwards.
+              Drag from the first letter of a word to its last letter, or tap the first letter, then the
+              last. Words go across, down or diagonally, and can be backwards.
             </p>
             <div className="flex items-center gap-1 mb-3" aria-label={`${lives} of ${MAX_LIVES} lives left`}>
               {Array.from({ length: MAX_LIVES }, (_, i) => (
