@@ -14,6 +14,8 @@ const WRONG_INK = "#c0392b";
 const WORD_TINT = "#fcefe7";
 const SELECTED = "#f1d2be";
 const BLOCK = "#3f3237";
+// The block squares on the printed sheet, in the order they repeat along each row (shifting one place per row).
+const BLOCK_COLOURS = ["#d5e5ec", "#f0dbcb", "#dee8d8", "#e7dceb", "#f0e6c4"];
 
 type Direction = "across" | "down";
 
@@ -222,7 +224,7 @@ export default function CrosswordPlayer({
             "Tap a square to start."
           )}
         </p>
-        <div className="rounded-xl bg-white p-3 border border-line" style={{ display: "inline-block" }}>
+        <div className="rounded-2xl bg-white p-4 border border-line" style={{ display: "inline-block" }}>
           {/* Hidden box that brings up the keyboard on phones and tablets. */}
           <input
             ref={input}
@@ -253,11 +255,17 @@ export default function CrosswordPlayer({
           <div
             role="grid"
             aria-label="Crossword grid"
-            style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cell})`, gap: ev ? 2 : 1, background: ev ? undefined : "#1a1a1a", border: ev ? undefined : "3px solid #1a1a1a" }}
+            style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, ${cell})`, gap: ev ? 2 : 0, border: ev ? undefined : `2px solid ${BLOCK}` }}
           >
             {solution.flatMap((row, r) =>
               row.split("").map((sol, c) => {
-                if (sol === ".") return <div key={`${r}-${c}`} style={{ width: cell, height: cell, background: "#1a1a1a" }} />;
+                if (sol === ".")
+                  return (
+                    <div
+                      key={`${r}-${c}`}
+                      style={{ width: cell, height: cell, background: ev ? "#1a1a1a" : BLOCK_COLOURS[(r + c) % BLOCK_COLOURS.length], boxShadow: ev ? undefined : "inset 0 0 0 1px #d9d1c4" }}
+                    />
+                  );
                 const typed = letters[r][c] !== " " ? letters[r][c] : "";
                 const shown = typed || (revealed ? sol : "");
                 const wrong = !!typed && typed !== sol;
@@ -274,7 +282,8 @@ export default function CrosswordPlayer({
                       width: cell,
                       height: cell,
                       border: ev ? "2px solid #1a1a1a" : "none",
-                      background: ev ? (isSel ? "#FFD23F" : inCurrent.has(`${r},${c}`) ? "#FFF4C2" : "#fff") : isSel ? "#F2B94B" : inCurrent.has(`${r},${c}`) ? "#FDE9A8" : "#fff",
+                      boxShadow: ev ? undefined : `inset 0 0 0 1.5px ${BLOCK}`,
+                      background: ev ? (isSel ? "#FFD23F" : inCurrent.has(`${r},${c}`) ? "#FFF4C2" : "#fff") : isSel ? "#f4c978" : inCurrent.has(`${r},${c}`) ? "#fdeccb" : "#fff",
                       outline: ev && isSel ? "4px solid #1a1a1a" : undefined,
                       outlineOffset: -4,
                       fontSize: `calc(${cell} * 0.55)`,
@@ -285,7 +294,14 @@ export default function CrosswordPlayer({
                     }}
                   >
                     {num && (
-                      <span className="absolute left-0.5 top-0 leading-none" style={{ fontSize: `calc(${cell} * 0.26)`, color: INK, fontWeight: 600 }}>
+                      <span
+                        className="absolute flex items-center justify-center leading-none"
+                        style={
+                          ev
+                            ? { left: 2, top: 0, fontSize: `calc(${cell} * 0.26)`, color: INK, fontWeight: 600 }
+                            : { left: 2, top: 2, width: `calc(${cell} * 0.42)`, height: `calc(${cell} * 0.42)`, borderRadius: "50%", border: `1px solid ${BLOCK}`, background: "#fff", fontSize: `calc(${cell} * 0.25)`, color: INK, fontWeight: 600 }
+                        }
+                      >
                         {num}
                       </span>
                     )}
@@ -321,36 +337,6 @@ export default function CrosswordPlayer({
             </div>
           </>
         )}
-        {(["across", "down"] as Direction[]).map((dir) => (
-          <div key={dir} className="mb-4">
-            <p className={ev ? "font-bold capitalize mb-1" : "font-serif text-base uppercase tracking-wide mb-1 pb-0.5"} style={ev ? { fontSize: 22 } : { borderBottom: "2px solid #1a1a1a" }}>{dir}</p>
-            <ul className="space-y-1">
-              {clues[dir].map((e) => {
-                const isCurrent = current === e && direction === dir;
-                const done = solved(e, dir);
-                return (
-                  <li key={e.num}>
-                    <button
-                      onClick={() => selectClue(e, dir)}
-                      className={ev ? "text-left rounded-md px-2 py-1.5 w-full" : "text-left text-sm rounded-md px-2 py-1 w-full"}
-                      style={{
-                        background: isCurrent ? (ev ? "#FFD23F" : WORD_TINT) : "transparent",
-                        color: ev ? "#1a1a1a" : done ? "#8a7a6b" : INK,
-                        textDecoration: done ? "line-through" : "none",
-                        fontSize: ev ? 17 : undefined,
-                        border: ev && isCurrent ? "3px solid #1a1a1a" : ev ? "2px solid transparent" : undefined,
-                      }}
-                    >
-                      <span className="font-bold">{e.num}.</span> {done && "✓ "}
-                      {e.clue} ({e.lengths})
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
-
         <div className="flex flex-wrap gap-2">
           <button onClick={revealWord} disabled={!current} className={ev ? "flex items-center gap-2 rounded-xl px-5 py-3 text-lg font-bold disabled:opacity-50" : "flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-semibold bg-cardTint disabled:opacity-50"} style={ev ? { background: "#FFD23F", color: "#1a1a1a" } : undefined}>
             <Lightbulb size={14} /> Reveal this word
@@ -387,6 +373,37 @@ export default function CrosswordPlayer({
             )}
           </div>
         </div>
+      </div>
+      <div className="w-full max-w-[880px] rounded-2xl bg-white border border-line p-5 sm:p-6 grid gap-6 sm:grid-cols-2">
+        {(["across", "down"] as Direction[]).map((dir) => (
+        <div key={dir}>
+          <p className={ev ? "font-bold capitalize mb-1" : "font-bold uppercase tracking-wide mb-2"} style={ev ? { fontSize: 22 } : { color: "#d0662b", fontSize: 18 }}>{dir}</p>
+          <ul className="space-y-1">
+            {clues[dir].map((e) => {
+              const isCurrent = current === e && direction === dir;
+              const done = solved(e, dir);
+              return (
+                <li key={e.num}>
+                  <button
+                    onClick={() => selectClue(e, dir)}
+                    className={ev ? "text-left rounded-md px-2 py-1.5 w-full" : "text-left text-sm rounded-md px-2 py-1 w-full"}
+                    style={{
+                      background: isCurrent ? (ev ? "#FFD23F" : WORD_TINT) : "transparent",
+                      color: ev ? "#1a1a1a" : done ? "#8a7a6b" : INK,
+                      textDecoration: done ? "line-through" : "none",
+                      fontSize: ev ? 17 : undefined,
+                      border: ev && isCurrent ? "3px solid #1a1a1a" : ev ? "2px solid transparent" : undefined,
+                    }}
+                  >
+                    <span className="font-bold">{e.num}.</span> {done && "✓ "}
+                    {e.clue} ({e.lengths})
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      ))}
       </div>
     </div>
   );
