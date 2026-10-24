@@ -208,7 +208,7 @@ export default function CrosswordPlayer({
       <div>
         <p
           className={ev ? "mb-3 rounded-2xl px-4 py-3 min-h-[40px] text-center" : "mb-3 rounded-lg px-3 py-2 text-sm min-h-[40px]"}
-          style={ev ? { background: "#FFF4C2", color: "#1a1a1a", fontSize: 22, fontWeight: 700, lineHeight: 1.25 } : { background: WORD_TINT, color: INK }}
+          style={ev ? { width: 0, minWidth: "100%", background: "#FFF4C2", color: "#1a1a1a", fontSize: 22, fontWeight: 700, lineHeight: 1.25 } : { width: 0, minWidth: "100%", background: WORD_TINT, color: INK }}
         >
           {current ? (
             <>
