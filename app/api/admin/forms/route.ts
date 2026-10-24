@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
@@ -68,6 +69,8 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { displayTitle } from "@/lib/titles";
@@ -70,6 +71,8 @@ export async function PATCH(req: Request) {
 
 // Admin only. Delete activities for good, with their stored files: { ids: [...] }.
 export async function DELETE(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const ids: string[] = Array.isArray(body.ids) ? body.ids.filter((i: unknown) => typeof i === "string").slice(0, 500) : [];

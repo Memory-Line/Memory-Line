@@ -5,6 +5,8 @@
 // logs and carries on: an email problem must never stop someone signing up,
 // paying, or resetting a password in the browser.
 
+import { isLiveSite } from "@/lib/env";
+
 const FROM = process.env.EMAIL_FROM ?? "Activity Central <support@activitycentral.co.uk>";
 const REPLY_TO = process.env.EMAIL_REPLY_TO ?? "support@activitycentral.co.uk";
 
@@ -29,6 +31,11 @@ type Message = {
 };
 
 export async function sendEmail(message: Message): Promise<boolean> {
+  // A test build shares the live customer list, so it only ever emails the admin's own address.
+  if (!isLiveSite() && message.to.toLowerCase() !== (process.env.ADMIN_EMAIL ?? "").toLowerCase()) {
+    console.warn(`Email not sent (test build): "${message.subject}"`);
+    return true;
+  }
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.warn(`Email not sent (RESEND_API_KEY isn't set): "${message.subject}"`);

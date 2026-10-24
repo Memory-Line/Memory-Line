@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { isFeatureKey } from "@/lib/features";
@@ -30,6 +31,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
@@ -81,6 +84,8 @@ export async function POST(req: Request) {
 // is what the site itself checks; a real subscription still bills through
 // Stripe as normal, this just overrides which tier the account gets).
 export async function PUT(req: Request) {
+  const blocked = offLiveBlock();
+  if (blocked) return blocked;
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
