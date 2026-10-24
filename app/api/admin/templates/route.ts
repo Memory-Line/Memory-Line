@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { displayTitle } from "@/lib/titles";
 import { deleteStoredFiles } from "@/lib/storedFiles";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -11,7 +12,7 @@ const PAGE = 100;
 
 // Admin only. A page of a category's regular activities, newest first, optionally
 // filtered by a search word: ?category=…&q=…&page=1
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const url = new URL(req.url);
   const category = url.searchParams.get("category") ?? "";
@@ -38,7 +39,7 @@ export async function GET(req: Request) {
 // Admin only. Give numbered issues new titles:
 // { category, items: [{ subcategory, number, title }] }. The file name keeps its
 // leading number so issues stay in order.
-export async function PATCH(req: Request) {
+async function PATCH_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const category = typeof body.category === "string" ? body.category : "";
@@ -69,7 +70,7 @@ export async function PATCH(req: Request) {
 }
 
 // Admin only. Delete activities for good, with their stored files: { ids: [...] }.
-export async function DELETE(req: Request) {
+async function DELETE_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const ids: string[] = Array.isArray(body.ids) ? body.ids.filter((i: unknown) => typeof i === "string").slice(0, 500) : [];
@@ -82,3 +83,7 @@ export async function DELETE(req: Request) {
   await deleteStoredFiles(rows);
   return NextResponse.json({ ok: true, deleted: rows.length });
 }
+
+export const GET = withErrors(GET_, "api/admin/templates:GET");
+export const PATCH = withErrors(PATCH_, "api/admin/templates:PATCH");
+export const DELETE = withErrors(DELETE_, "api/admin/templates:DELETE");

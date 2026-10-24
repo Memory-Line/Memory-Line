@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { sendEmail, supportMessageEmail } from "@/lib/email";
+import { withErrors } from "@/lib/apiHandler";
 
 const schema = z.object({
   name: z.string().trim().min(1, "Please enter your name").max(100),
@@ -17,7 +18,7 @@ const schema = z.object({
 // lives as long as the server instance, which is enough to stop casual floods.
 const recent = new Map<string, number[]>();
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid request" }, { status: 400 });
@@ -54,3 +55,5 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withErrors(POST_, "api/support:POST");

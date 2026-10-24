@@ -8,6 +8,7 @@ import { ALWAYS, UI } from "@/lib/boards";
 import { BINGO_CALLS, bingoLetter } from "@/lib/bingo";
 import numberWords from "@/lib/data/bingoNumberWords.json";
 import { getViewer } from "@/lib/viewer";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -94,7 +95,7 @@ function boardPhrases() {
   return set;
 }
 
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   const u = new URL(req.url);
   const lang = u.searchParams.get("lang") ?? "";
   const voice = u.searchParams.get("voice") ?? "";
@@ -155,3 +156,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Speech failed" }, { status: 502 });
   }
 }
+
+export const GET = withErrors(GET_, "api/boards/speak:GET");

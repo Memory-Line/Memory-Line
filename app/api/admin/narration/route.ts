@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { NARRATION_VOICES } from "@/lib/narrationScripts";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -9,7 +10,7 @@ export const maxDuration = 60;
 // Used to make the voiceover for the "Holding Minds Steady" video; to be removed afterwards.
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const { text, voice } = await req.json().catch(() => ({}));
   const voiceName = NARRATION_VOICES.some((v) => v.key === voice) ? voice : "en-GB-BellaNeural";
@@ -38,3 +39,5 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Speech failed" }, { status: 502 });
   }
 }
+
+export const POST = withErrors(POST_, "api/admin/narration:POST");

@@ -6,12 +6,13 @@ import { MAX_ITEMS_PER_CATEGORY } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Add another file to a link (up to 10 in each section), already uploaded by the
 // browser. JSON: { blobUrl, categoryId } (categoryId empty = not in a section).
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+async function POST_(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -46,3 +47,5 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     return NextResponse.json({ error: "The upload did not work. Please try again." }, { status: 500 });
   }
 }
+
+export const POST = withErrors(POST_, "api/shared-files/[id]/items:POST");

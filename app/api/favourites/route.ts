@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Stars (or un-stars) an activity for the signed-in account. JSON: { templateId, favourite }.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const viewer = await getViewer();
   if (!viewer.userId) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   const { templateId, boardId, favourite } = await req.json().catch(() => ({}));
@@ -38,3 +39,5 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true, favourite });
 }
+
+export const POST = withErrors(POST_, "api/favourites:POST");

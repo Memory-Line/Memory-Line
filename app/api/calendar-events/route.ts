@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { userHasFeature } from "@/lib/features";
+import { withErrors } from "@/lib/apiHandler";
 
 // Calendar events are scoped to the signed-in account (one login per care
 // home), so every member of staff using that same login sees the same
@@ -16,7 +17,7 @@ function calendarFrom(value: unknown): "activity" | "professional" | null {
   return value === "professional" ? "professional" : null;
 }
 
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     // Not signed in: the calendar still renders with just the built-in
@@ -39,7 +40,7 @@ export async function GET(req: Request) {
   return NextResponse.json({ events });
 }
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -77,3 +78,5 @@ export async function POST(req: Request) {
   return NextResponse.json({ event });
 }
 
+export const GET = withErrors(GET_, "api/calendar-events:GET");
+export const POST = withErrors(POST_, "api/calendar-events:POST");

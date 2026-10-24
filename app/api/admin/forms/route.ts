@@ -4,6 +4,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { WESTCLIFF_TEMPLATES } from "@/lib/westcliffForms";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 // templates for an account, or delete one. The address the answers go to is set
 // here and nowhere else, so a customer can never point a form at someone else.
 
-export async function GET() {
+async function GET_() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const forms = await prisma.sharedForm.findMany({
     orderBy: { createdAt: "desc" },
@@ -27,7 +28,7 @@ const schema = z.object({
   templates: z.array(z.enum(["resident", "relatives", "employee"])).min(1, "Tick at least one questionnaire"),
 });
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -67,10 +68,14 @@ export async function POST(req: Request) {
   return NextResponse.json({ ok: true, made });
 }
 
-export async function DELETE(req: Request) {
+async function DELETE_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
   await prisma.sharedForm.deleteMany({ where: { id } });
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withErrors(GET_, "api/admin/forms:GET");
+export const POST = withErrors(POST_, "api/admin/forms:POST");
+export const DELETE = withErrors(DELETE_, "api/admin/forms:DELETE");

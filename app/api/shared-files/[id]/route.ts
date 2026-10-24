@@ -5,13 +5,14 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { cleanTitle } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Change a link's title or whether visitors can download. Multipart or form
 // fields: title, allowDownload (either or both). Files are changed through
 // /api/shared-files/[id]/items.
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+async function PATCH_(req: Request, { params }: { params: { id: string } }) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
@@ -39,7 +40,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 }
 
 // Deletes the link for good, with all its files.
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+async function DELETE_(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const existing = await getOwnedLink(params.id, session.user.id);
@@ -48,3 +49,6 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   await Promise.all(existing.items.map((i) => del(i.fileUrl).catch(() => {})));
   return NextResponse.json({ ok: true });
 }
+
+export const PATCH = withErrors(PATCH_, "api/shared-files/[id]:PATCH");
+export const DELETE = withErrors(DELETE_, "api/shared-files/[id]:DELETE");

@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
 import { userHasFeature } from "@/lib/features";
+import { withErrors } from "@/lib/apiHandler";
 
 const MAX_LINKS = 10;
 
@@ -16,7 +17,7 @@ const schema = z.object({
 });
 
 // The signed-in account's share links.
-export async function GET() {
+async function GET_() {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const links = await prisma.sharedCalendar.findMany({
@@ -27,7 +28,7 @@ export async function GET() {
   return NextResponse.json({ links });
 }
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
 
@@ -56,3 +57,6 @@ export async function POST(req: Request) {
   });
   return NextResponse.json({ link }, { status: 201 });
 }
+
+export const GET = withErrors(GET_, "api/shared-calendar:GET");
+export const POST = withErrors(POST_, "api/shared-calendar:POST");

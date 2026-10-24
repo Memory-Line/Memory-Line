@@ -5,11 +5,12 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
 import { SEASONS, seasonByKey } from "@/lib/seasons";
 import { PREVIEW_COOKIE, getActiveSeason } from "@/lib/seasonDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Admin only. The seasonal looks, which one is on, and any banner messages you've written.
-export async function GET() {
+async function GET_() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const rows = await prisma.siteSeason.findMany();
   const active = await getActiveSeason();
@@ -33,7 +34,7 @@ export async function GET() {
 
 // Admin only. Turn a look on or off, and/or change its banner message:
 // { key, on?, bannerText? }. Only one look can be on at a time.
-export async function PUT(req: Request) {
+async function PUT_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const b = await req.json().catch(() => ({}));
   if (!seasonByKey(b.key)) return NextResponse.json({ error: "Unknown look" }, { status: 400 });
@@ -47,7 +48,7 @@ export async function PUT(req: Request) {
 }
 
 // Admin only. Preview a look on your own browser only ({ key }), or stop previewing ({ key: null }).
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const b = await req.json().catch(() => ({}));
   const res = NextResponse.json({ ok: true });
@@ -58,3 +59,7 @@ export async function POST(req: Request) {
   }
   return res;
 }
+
+export const GET = withErrors(GET_, "api/admin/season:GET");
+export const PUT = withErrors(PUT_, "api/admin/season:PUT");
+export const POST = withErrors(POST_, "api/admin/season:POST");

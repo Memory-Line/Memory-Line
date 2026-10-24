@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withErrors } from "@/lib/apiHandler";
 
 // Used two ways: the unsubscribe page posts the token as JSON, and Gmail /
 // Outlook's built-in "Unsubscribe" button posts to the link in the email
 // (token in the ?t= part of the address) with no body we need to read.
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const fromLink = new URL(req.url).searchParams.get("t");
   const body = fromLink ? null : await req.json().catch(() => null);
   const token = fromLink ?? (typeof body?.token === "string" ? body.token : "");
@@ -21,3 +22,5 @@ export async function POST(req: Request) {
   }
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withErrors(POST_, "api/unsubscribe:POST");

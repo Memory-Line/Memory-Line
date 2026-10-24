@@ -4,11 +4,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MAX_CATEGORIES, cleanTitle } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
 // Add a section (Menu, Calendar...) to a link. JSON: { name, calendar? }. It starts empty; calendar makes it a live calendar section.
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+async function POST_(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Please log in" }, { status: 401 });
   const link = await getOwnedLink(params.id, session.user.id);
@@ -26,3 +27,5 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   const updated = await getOwnedLink(link.id, session.user.id);
   return NextResponse.json({ file: updated ? publicShape(updated) : null }, { status: 201 });
 }
+
+export const POST = withErrors(POST_, "api/shared-files/[id]/categories:POST");

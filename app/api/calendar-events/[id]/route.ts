@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withErrors } from "@/lib/apiHandler";
 
 async function loadOwnedEvent(id: string, userId: string) {
   const event = await prisma.calendarEvent.findUnique({ where: { id } });
@@ -9,7 +10,7 @@ async function loadOwnedEvent(id: string, userId: string) {
   return event;
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+async function PATCH_(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -44,7 +45,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return NextResponse.json({ event });
 }
 
-export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
+async function DELETE_(_req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Not signed in" }, { status: 401 });
@@ -59,3 +60,5 @@ export async function DELETE(_req: Request, { params }: { params: { id: string }
   return NextResponse.json({ ok: true });
 }
 
+export const PATCH = withErrors(PATCH_, "api/calendar-events/[id]:PATCH");
+export const DELETE = withErrors(DELETE_, "api/calendar-events/[id]:DELETE");

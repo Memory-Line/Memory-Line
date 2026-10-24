@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
 import { getViewer } from "@/lib/viewer";
 import { PREMIUM_ONLY_CATEGORIES } from "@/lib/plans";
+import { withErrors } from "@/lib/apiHandler";
 
 const FILE_FIELDS = {
   standard: "fileUrl",
@@ -57,7 +58,7 @@ async function addWatermark(bytes: ArrayBuffer, whoFor: string): Promise<Uint8Ar
 // the Standard plan's gating is enforced server-side (large print, and the
 // three Premium-only categories), so a direct/guessed link can't be used to
 // get around the UI.
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+async function GET_(req: Request, { params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     // Visitors who are not signed in can still be sent the home page's free sample for its category
@@ -131,3 +132,5 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     return NextResponse.redirect(fileUrl);
   }
 }
+
+export const GET = withErrors(GET_, "api/download/[id]:GET");

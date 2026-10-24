@@ -6,12 +6,13 @@ import { requireAdmin } from "@/lib/admin";
 import { CATEGORIES } from "@/lib/data";
 import { slugify } from "@/lib/categories";
 import { ICON_CHOICES, COLOUR_CHOICES } from "@/lib/categoryIcons";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 // Admin only. The categories (built-in and made by you) with how many activities each has.
-export async function GET() {
+async function GET_() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const [removed, custom, counts] = await Promise.all([
     prisma.removedCategory.findMany(),
@@ -31,7 +32,7 @@ export async function GET() {
 }
 
 // Admin only. Make a new category: { name, icon, colour } (colour is one of the choices' names).
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
 
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 // Admin only. Remove a category and all its activities for good: { name, confirm }.
 // "confirm" must be the category's name typed out. A category you made is deleted; a
 // built-in one is hidden everywhere (and can be brought back with Restore, empty).
-export async function DELETE(req: Request) {
+async function DELETE_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
   const name = String(body.name ?? "");
@@ -81,3 +82,7 @@ export async function DELETE(req: Request) {
   revalidateTag("categories");
   return NextResponse.json({ ok: true, deleted: rows.length });
 }
+
+export const GET = withErrors(GET_, "api/admin/categories:GET");
+export const POST = withErrors(POST_, "api/admin/categories:POST");
+export const DELETE = withErrors(DELETE_, "api/admin/categories:DELETE");

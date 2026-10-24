@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { planConfirmationEmail, sendEmail } from "@/lib/email";
+import { withErrors } from "@/lib/apiHandler";
 
 // Stripe needs the raw request body to verify the signature, so this route
 // must not be JSON-parsed by anything upstream. App Router route handlers
@@ -48,7 +49,7 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
   });
 }
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const body = await req.text();
   const signature = req.headers.get("stripe-signature");
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -118,3 +119,5 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
+
+export const POST = withErrors(POST_, "api/stripe/webhook:POST");

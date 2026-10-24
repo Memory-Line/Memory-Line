@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { withErrors } from "@/lib/apiHandler";
 
 // "Stop emailing me" from the link in our emails to care homes. The address goes on the same
 // do-not-contact list the mailing list already respects (MailingContact with unsubscribedAt set),
@@ -9,7 +10,7 @@ import { prisma } from "@/lib/prisma";
 // Anyone can add an address here, which can only ever stop emails, never start them.
 const schema = z.object({ email: z.string().trim().toLowerCase().email().max(200) });
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: "Please enter a valid email address." }, { status: 400 });
@@ -22,3 +23,5 @@ export async function POST(req: Request) {
   });
   return NextResponse.json({ ok: true });
 }
+
+export const POST = withErrors(POST_, "api/stop:POST");

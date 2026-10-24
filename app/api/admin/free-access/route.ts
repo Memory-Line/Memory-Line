@@ -3,6 +3,7 @@ import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { isFeatureKey } from "@/lib/features";
 import { isPlanKey } from "@/lib/plans";
+import { withErrors } from "@/lib/apiHandler";
 
 // Admin tools for other accounts: GET lists them, POST gives an account
 // full access without a Stripe subscription (status "free") or takes it
@@ -14,7 +15,7 @@ export const dynamic = "force-dynamic";
 
 // Every account except the admin's own, newest first, for the admin
 // page's picker.
-export async function GET() {
+async function GET_() {
   if (!(await requireAdmin())) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
@@ -29,7 +30,7 @@ export async function GET() {
   });
 }
 
-export async function POST(req: Request) {
+async function POST_(req: Request) {
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
@@ -80,7 +81,7 @@ export async function POST(req: Request) {
 // move an account between Standard and Premium (separate from Stripe — this
 // is what the site itself checks; a real subscription still bills through
 // Stripe as normal, this just overrides which tier the account gets).
-export async function PUT(req: Request) {
+async function PUT_(req: Request) {
   try {
     if (!(await requireAdmin())) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
@@ -128,3 +129,7 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export const GET = withErrors(GET_, "api/admin/free-access:GET");
+export const POST = withErrors(POST_, "api/admin/free-access:POST");
+export const PUT = withErrors(PUT_, "api/admin/free-access:PUT");

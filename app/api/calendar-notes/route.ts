@@ -4,6 +4,7 @@ import { z } from "zod";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { noteIsEmpty } from "@/lib/noteLines";
+import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ const putSchema = key.extend({
 });
 
 // The signed-in account's note for one calendar month.
-export async function GET(req: Request) {
+async function GET_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ note: null, include: true });
   const sp = new URL(req.url).searchParams;
@@ -33,7 +34,7 @@ export async function GET(req: Request) {
 }
 
 // Saves (or clears) the note for one month.
-export async function PUT(req: Request) {
+async function PUT_(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) return NextResponse.json({ error: "Not signed in" }, { status: 401 });
   const parsed = putSchema.safeParse(await req.json().catch(() => null));
@@ -52,3 +53,6 @@ export async function PUT(req: Request) {
   }
   return NextResponse.json({ ok: true });
 }
+
+export const GET = withErrors(GET_, "api/calendar-notes:GET");
+export const PUT = withErrors(PUT_, "api/calendar-notes:PUT");
