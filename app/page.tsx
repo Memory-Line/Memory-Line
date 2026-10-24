@@ -96,7 +96,7 @@ export default async function LandingPage() {
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-5 sm:px-8 pt-8 sm:pt-16 pb-14 sm:pb-20 text-center">
         {COMING_SOON && (
-          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-sm px-4 py-1.5 mb-5">Opening soon</p>
+          <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-sm px-4 py-1.5 mb-5">Coming soon</p>
         )}
         <p className="text-clay font-semibold text-sm tracking-wide uppercase mb-4">
           For care home activity teams
@@ -135,7 +135,7 @@ export default async function LandingPage() {
           </div>
         )}
         <p className="text-xs text-inkSoft mt-4">
-          {COMING_SOON ? "We're opening to new members soon. Try samples from every category free, no card or signup needed." : "Try samples from every category free, no card or signup needed."}
+          {COMING_SOON ? "New members are coming soon. Try samples from every category free, no card or signup needed." : "Try samples from every category free, no card or signup needed."}
         </p>
       </section>
 
@@ -325,7 +325,7 @@ export default async function LandingPage() {
 
       {true && (
         <>
-        {/* Pricing (shown while sign-ups are closed too; the Sign up buttons become "Opening soon") */}
+        {/* Pricing (shown while sign-ups are closed too; the Sign up buttons become "Coming soon") */}
         <section id="pricing" className="max-w-4xl mx-auto px-5 sm:px-8 pb-16 sm:pb-24">
           <h2 className="font-serif text-2xl text-center mb-2">Simple, two-tier pricing</h2>
           <p className="text-inkSoft text-center mb-10">Choose Standard or Premium. Cancel anytime.</p>
@@ -352,7 +352,7 @@ export default async function LandingPage() {
               </div>
 
               {COMING_SOON ? (
-                <p className="mt-auto text-center rounded-xl bg-cardTint text-sageDeep px-8 py-3 font-semibold">Opening soon</p>
+                <p className="mt-auto text-center rounded-xl bg-cardTint text-sageDeep px-8 py-3 font-semibold">Coming soon</p>
               ) : (
               <Link
                 href="/signup"
@@ -399,7 +399,7 @@ export default async function LandingPage() {
               </div>
 
               {COMING_SOON ? (
-                <p className="mt-auto text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold">Opening soon</p>
+                <p className="mt-auto text-center rounded-xl bg-clay text-white px-8 py-3 font-semibold">Coming soon</p>
               ) : (
               <Link
                 href="/signup"

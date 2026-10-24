@@ -90,7 +90,7 @@ export default function LoginPage() {
 
           <p className="text-xs text-inkSoft text-center mt-5">
             {COMING_SOON ? (
-              <>New sign-ups open soon{" · "}</>
+              <>New sign-ups coming soon{" · "}</>
             ) : (
               <>
                 Don&apos;t have an account?{" "}
