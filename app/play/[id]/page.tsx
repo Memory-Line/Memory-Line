@@ -120,7 +120,7 @@ export default async function PublicSamplePlayPage({ params }: { params: { id: s
   if (!player) notFound();
 
   return (
-    <div className="max-w-4xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
+    <div className="max-w-5xl mx-auto px-5 sm:px-8 py-8 sm:py-12">
       <Link href="/" className="text-xs text-inkSoft">
         ← Activity Central
       </Link>

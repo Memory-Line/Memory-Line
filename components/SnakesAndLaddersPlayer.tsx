@@ -16,9 +16,10 @@ import {
 import type { SnakesAndLaddersMove } from "@/lib/snakesAndLadders";
 import { useEasyView } from "@/components/EasyView";
 
-// Colours for up to 4 counters (rust, blue, green, purple — echoing the
+// Colours for up to 10 counters (rust, blue, green, purple — echoing the
 // ladders and snakes drawn on the sheets themselves).
-const PLAYER_COLORS = ["#b5714a", "#3f6fae", "#4a9d6e", "#8a5fa8"];
+const PLAYER_COLORS = ["#b5714a", "#3f6fae", "#4a9d6e", "#8a5fa8", "#d1495b", "#e0a526", "#2a9d9d", "#6b4f3a", "#e07bb0", "#5c6b73"];
+const MAX_PLAYERS = 10;
 const INK = "#3f3237";
 const DICE_ICONS = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
 
@@ -44,8 +45,8 @@ type SavedState = {
 function defaultState(): SavedState {
   return {
     playerCount: 2,
-    names: ["Player 1", "Player 2", "Player 3", "Player 4"],
-    positions: [0, 0, 0, 0],
+    names: Array.from({ length: MAX_PLAYERS }, (_, i) => `Player ${i + 1}`),
+    positions: Array.from({ length: MAX_PLAYERS }, () => 0),
     turn: 0,
     winner: null,
     rolls: 0,
@@ -53,7 +54,7 @@ function defaultState(): SavedState {
 }
 
 // Snakes and Ladders on screen: the board page drawn from the sheet's own
-// PDF, 1-4 players with named, coloured counters, and a big dice button.
+// PDF, 1-10 players with named, coloured counters, and a big dice button.
 // Landing on a ladder or snake's starting square climbs or slides the
 // counter with a friendly message. Progress is kept on this device.
 export default function SnakesAndLaddersPlayer({
@@ -84,7 +85,14 @@ export default function SnakesAndLaddersPlayer({
     try {
       const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null");
       if (saved && Array.isArray(saved.positions)) {
-        setState({ ...defaultState(), ...saved });
+        // Games saved when there were only 4 counters get filled out to 10.
+        const base = defaultState();
+        setState({
+          ...base,
+          ...saved,
+          names: base.names.map((n, i) => saved.names?.[i] ?? n),
+          positions: base.positions.map((p, i) => saved.positions?.[i] ?? p),
+        });
         if (saved.winner !== null && saved.winner !== undefined) {
           setMessage(`${saved.names[saved.winner]} won — well done!`);
         } else if (saved.rolls > 0) {
@@ -211,11 +219,11 @@ export default function SnakesAndLaddersPlayer({
   const DiceIcon = dice ? DICE_ICONS[dice - 1] : Dices;
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-center gap-6 items-start">
       <div
         className="relative rounded-xl bg-white overflow-hidden"
         style={{
-          width: ev ? "min(94vw, 500px)" : "min(94vw, 640px)",
+          width: ev ? "min(94vw, 500px)" : "min(94vw, 560px)",
           aspectRatio: "1 / 1",
           border: ev ? "4px solid #1a1a1a" : "1px solid #e5dfd3",
         }}
@@ -234,8 +242,8 @@ export default function SnakesAndLaddersPlayer({
                 position: "absolute",
                 left: `${at[0] * 100}%`,
                 top: `${at[1] * 100}%`,
-                transform: `translate(-50%, -50%) translate(${(i % 2) * 10 - 5}px, ${
-                  (Math.floor(i / 2) * 10) - 5
+                transform: `translate(-50%, -50%) translate(${(i % 3) * 9 - 9}px, ${
+                  (Math.floor(i / 3) * 9) - 9
                 }px)`,
                 width: ev ? 30 : 22,
                 height: ev ? 30 : 22,
@@ -259,7 +267,7 @@ export default function SnakesAndLaddersPlayer({
         })}
       </div>
 
-      <div className={`max-w-[330px] lg:sticky lg:top-4${ev ? " order-first" : ""}`}>
+      <div className={`max-w-[320px] flex-1 min-w-[260px] lg:sticky lg:top-4${ev ? " order-first" : ""}`}>
         {ev && (
           <div className="rounded-2xl text-center mb-4" style={{ background: "#FFF4C2", padding: "12px 12px" }}>
             <p className="text-sm font-bold mb-1" style={{ color: "#444" }}>{winner !== null ? "WELL DONE" : "YOUR TURN"}</p>
@@ -270,8 +278,8 @@ export default function SnakesAndLaddersPlayer({
         )}
         <div className="mb-4">
           <p className={ev ? "font-bold mb-2" : "text-xs font-semibold text-inkSoft mb-2"} style={ev ? { fontSize: 18 } : undefined}>Players</p>
-          <div className="flex gap-2 mb-3">
-            {[1, 2, 3, 4].map((n) => (
+          <div className="flex flex-wrap gap-2 mb-3">
+            {Array.from({ length: MAX_PLAYERS }, (_, k) => k + 1).map((n) => (
               <button
                 key={n}
                 onClick={() => setPlayerCount(n)}
