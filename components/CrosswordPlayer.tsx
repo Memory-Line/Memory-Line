@@ -201,10 +201,10 @@ export default function CrosswordPlayer({
   const current = selected ? clueAt(selected[0], selected[1], direction) : undefined;
   const inCurrent = new Set(current ? cellsOf(current, direction).map(([r, c]) => `${r},${c}`) : []);
   const ev = useEasyView();
-  const cell = `min(40px, calc((100vw - 72px) / ${cols}))`;
+  const cell = `min(${ev ? 40 : 34}px, calc((100vw - 72px) / ${cols}))`;
 
   return (
-    <div className="flex flex-wrap justify-center gap-6 sm:gap-8 items-start">
+    <div className="flex flex-wrap justify-start gap-6 sm:gap-8 items-start">
       <div>
         <p
           className={ev ? "mb-3 rounded-2xl px-4 py-3 min-h-[40px] text-center" : "mb-3 rounded-lg px-3 py-2 text-sm min-h-[40px]"}
@@ -314,7 +314,7 @@ export default function CrosswordPlayer({
         </div>
       </div>
 
-      <div className="max-w-[360px] flex-1 min-w-[260px]">
+      <div className="max-w-[320px] flex-1 min-w-[230px]">
         {ev ? (
           <>
             <p className="mb-3 font-bold" style={{ fontSize: 18, lineHeight: 1.3, color: "#1a1a1a" }}>
