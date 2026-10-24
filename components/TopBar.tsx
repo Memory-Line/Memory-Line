@@ -9,10 +9,12 @@ export default function TopBar({
   userName,
   isAdmin,
   previewPlan,
+  testBuild,
 }: {
   userName: string;
   isAdmin?: boolean;
   previewPlan?: "standard" | "premium" | null;
+  testBuild?: boolean;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -30,6 +32,11 @@ export default function TopBar({
 
   return (
     <>
+      {testBuild && (
+        <div className="px-4 py-1.5 bg-[#b3261e] text-white text-[11px] font-semibold">
+          TEST BUILD: this shares the live site's data. Customer emails and deletes are switched off here.
+        </div>
+      )}
       {isAdmin && (
         <div className="flex items-center gap-2 px-4 py-1.5 bg-clay text-white text-[11px]">
           <span className="font-semibold">Admin preview:</span>
