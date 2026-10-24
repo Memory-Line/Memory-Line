@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { displayTitle } from "@/lib/titles";
@@ -28,16 +28,20 @@ async function addWatermark(bytes: ArrayBuffer, whoFor: string): Promise<Uint8Ar
     year: "numeric",
   })} · activitycentral.co.uk`;
 
+  // Printed up the left-hand edge, in the margin: the foot of the sheets already carries the "Activity Central |
+  // Bringing Moments to Life" line (and on some sheets the title or set number), and a stamp there ran over it.
   for (const page of pdfDoc.getPages()) {
-    const { width } = page.getSize();
-    const size = width > 900 ? 13 : 9; // a bit larger on A3 large-print pages
+    const { width, height } = page.getSize();
+    const big = Math.max(width, height) > 1000; // A3 large-print pages: a bit larger
+    const size = big ? 9 : 6.5;
     const textWidth = font.widthOfTextAtSize(stamp, size);
     page.drawText(stamp, {
-      x: Math.max(8, (width - textWidth) / 2),
-      y: 20,
+      x: big ? 19 : 13.5, // the text reads upwards, so this is the line it sits on; the letters rise to its left
+      y: Math.max(8, (height - textWidth) / 2),
       size,
       font,
-      color: rgb(0.58, 0.55, 0.51),
+      rotate: degrees(90),
+      color: rgb(0.5, 0.47, 0.43),
       opacity: 0.9,
     });
   }
