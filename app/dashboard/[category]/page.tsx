@@ -32,6 +32,13 @@ export function generateStaticParams() {
 
 export const dynamic = "force-dynamic";
 
+// The line under the heading on a category's page. Categories not listed here keep the general line below.
+const SUBTITLES: Record<string, string> = {
+  Bingo: "Bingo cards and a built-in caller for fun, inclusive group games.",
+  "Sing-Alongs": "Song words for much-loved classics, ready to print and sing together.",
+  "Physical & Exercise": "Gentle seated and standing exercises to keep residents moving safely.",
+};
+
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const category = await getCategoryBySlug(params.category);
   if (!category) notFound();
@@ -160,7 +167,7 @@ export default async function CategoryPage({ params }: { params: { category: str
     <div>
       <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
       <p className="text-clay text-[13px] mt-0.5 mb-5">
-        {realUploads.length} downloadable activities — choose from memory boxes, conversation prompts, photo collections, and more
+        {SUBTITLES[category.key] ?? `${realUploads.length} downloadable activities — choose from memory boxes, conversation prompts, photo collections, and more`}
         {done && (
           <span className="ml-2 font-semibold" style={{ color: "#2F7A63" }}>
             · {done.length} of {realUploads.length} completed

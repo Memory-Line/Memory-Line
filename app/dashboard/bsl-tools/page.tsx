@@ -45,7 +45,7 @@ export default async function BslToolsPage() {
   return (
     <div>
       <h1 className="font-serif text-[26px]">BSL Tools</h1>
-      <p className="text-clay text-[13px] mt-0.5 mb-5">Choose a group. Every sign has a video, and a card you can print.</p>
+      <p className="text-clay text-[13px] mt-0.5 mb-5">Everyday British Sign Language signs, with sign videos, so staff can learn and use them day to day.</p>
       {locked && (
         <div className="mb-5">
           <UpgradePrompt message="BSL Tools are part of the Premium plan." />
