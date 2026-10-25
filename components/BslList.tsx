@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Printer, Star } from "lucide-react";
+import { Star } from "lucide-react";
+import PrintPick from "@/components/PrintPick";
 
 export type BslItem = { slug: string; title: string; group: string; groupLabel: string; templateId: string | null };
 
@@ -71,6 +72,7 @@ export default function BslList({
                   {locked ? "Part of the Premium plan" : "Watch the sign"}
                 </div>
               </Link>
+              {!locked && <PrintPick slug={s.slug} title={s.title} />}
               {s.templateId && !locked && (
                 <>
                   <button
@@ -83,16 +85,6 @@ export default function BslList({
                   >
                     <Star size={24} fill={on ? "#E0A82E" : "none"} color={on ? "#B8862A" : "#8A8371"} strokeWidth={2} />
                   </button>
-                  <a
-                    href={`/api/download/${s.templateId}?file=standard`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={`Print the ${s.title} card`}
-                    title="Print the card"
-                    className="absolute right-3 bottom-3 rounded-full p-1.5 hover:bg-cardTint text-inkSoft"
-                  >
-                    <Printer size={20} />
-                  </a>
                 </>
               )}
             </div>
