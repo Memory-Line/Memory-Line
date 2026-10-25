@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Star } from "lucide-react";
 import PrintPick from "@/components/PrintPick";
 
@@ -26,6 +27,7 @@ export default function BslList({
 }) {
   const [q, setQ] = useState("");
   const [favs, setFavs] = useState<Set<string>>(new Set(favouriteIds));
+  const router = useRouter();
 
   async function toggle(id: string) {
     const next = !favs.has(id);
@@ -39,6 +41,8 @@ export default function BslList({
       body: JSON.stringify({ templateId: id, favourite: next }),
     }).catch(() => null);
     if (!res || !res.ok) setFavs(favs);
+    // The browser keeps pages it has already shown for a moment; refresh so the Favourites tab and the stars show the change.
+    else router.refresh();
   }
 
   const shown = useMemo(() => {
