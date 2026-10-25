@@ -31,6 +31,7 @@ export default async function TemplateList({
   playable = false,
   isPremium = true,
   tiles = false,
+  favouritesOnly = false,
 }: {
   templates: Template[];
   completedIds?: string[];
@@ -40,6 +41,8 @@ export default async function TemplateList({
   isPremium?: boolean;
   // Show the activities as multi-coloured tiles with tick boxes for printing several at once.
   tiles?: boolean;
+  // Show just the starred activities, without the All / Favourites buttons.
+  favouritesOnly?: boolean;
 }) {
   const done = completedIds ? new Set(completedIds) : null;
   // Which of these the signed-in person has starred.
@@ -79,6 +82,7 @@ export default async function TemplateList({
       playable={playable}
       isPremium={isPremium}
       tiles={tiles}
+      favouritesOnly={favouritesOnly}
     />
   );
 }

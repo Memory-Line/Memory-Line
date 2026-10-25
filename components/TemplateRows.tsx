@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Download, Lock, Play, Printer, Search, Star, X } from "lucide-react";
 import CompleteButton from "@/components/CompleteButton";
 import { MAX_PRINT_PACK, TOPIC_COLOURS } from "@/lib/tiles";
@@ -340,6 +341,7 @@ export default function TemplateRows({
   playable,
   isPremium,
   tiles = false,
+  favouritesOnly = false,
 }: {
   rows: TemplateRow[];
   themes: string[];
@@ -349,9 +351,12 @@ export default function TemplateRows({
   playable: boolean;
   isPremium: boolean;
   tiles?: boolean;
+  // Only the activities this person has starred, without the All / Favourites buttons (the category page has its own tab).
+  favouritesOnly?: boolean;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<"all" | "favs">("all");
+  const [view, setView] = useState<"all" | "favs">(favouritesOnly ? "favs" : "all");
   const [starred, setStarred] = useState<Set<string>>(() => new Set(rows.filter((r) => r.starred).map((r) => r.id)));
   const [limit, setLimit] = useState(FIRST);
 
@@ -385,6 +390,7 @@ export default function TemplateRows({
       body: JSON.stringify({ templateId: id, favourite: next }),
     }).catch(() => null);
     if (!res || !res.ok) apply(!next); // could not save: put it back
+    else router.refresh(); // the browser keeps pages it has shown for a moment; refresh so other pages show the change
   }
 
   const tab = (on: boolean) =>
@@ -392,7 +398,12 @@ export default function TemplateRows({
 
   return (
     <div>
-      {loggedIn && (
+      {favouritesOnly && starred.size === 0 && (
+        <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
+          Nothing here yet. Tap the star next to an activity to add it to your favourites, and it will be easy to find here.
+        </p>
+      )}
+      {loggedIn && !favouritesOnly && (
         <div className="mb-4">
           <div className="flex flex-wrap gap-2" role="group" aria-label="Show">
             <button type="button" onClick={() => { setView("all"); setLimit(FIRST); }} aria-pressed={view === "all"} className={tab(view === "all")}>
