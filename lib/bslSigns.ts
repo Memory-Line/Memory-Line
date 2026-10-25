@@ -1,6 +1,6 @@
 import refs from "@/lib/data/bslSignRefs.json";
 
-// BSL Tools: 90 everyday signs for care, sorted into groups. Every sign plays its video through SignBSL.com's
+// BSL Tools: everyday signs for care, sorted into groups. Every sign plays its video through SignBSL.com's
 // own embed (https://www.signbsl.com), so the videos stay with the people who made them and are credited on the page.
 // "file" is the printable card's file name in the BSL Tools category (used to find its print and star).
 export type BslGroup = {
@@ -8,7 +8,7 @@ export type BslGroup = {
   label: string;
   description: string;
   color: string;
-  icon: "food" | "wash" | "health" | "comfort" | "feelings" | "chat" | "activities";
+  icon: "food" | "wash" | "health" | "comfort" | "feelings" | "chat" | "activities" | "out";
 };
 
 export const BSL_GROUPS: BslGroup[] = [
@@ -19,6 +19,7 @@ export const BSL_GROUPS: BslGroup[] = [
   { slug: "feelings", label: "Feelings", description: "Happy, sad, worried and everything in between", color: "#6A5A9A", icon: "feelings" },
   { slug: "everyday-chat", label: "Everyday chat", description: "Greetings, offers of help and checking someone is ok", color: "#4F7A45", icon: "chat" },
   { slug: "activities-and-family", label: "Activities and family", description: "Music, the garden, television, family and visitors", color: "#A0507A", icon: "activities" },
+  { slug: "out-and-about", label: "Out and about", description: "Church, the bus, the shop, animals and the weather", color: "#8A6D1F", icon: "out" },
 ];
 
 export type BslSign = { slug: string; title: string; group: string; videos: string[]; file: string };
@@ -30,6 +31,7 @@ const C = "comfort-and-moving-about";
 const E = "feelings";
 const T = "everyday-chat";
 const A = "activities-and-family";
+const O = "out-and-about";
 
 // [file number, sign page name on SignBSL.com, title shown, group]
 const ROWS: [number, string, string, string][] = [
@@ -123,6 +125,98 @@ const ROWS: [number, string, string, string][] = [
   [88, "sing", "Sing", A],
   [89, "visitor", "Visitor", A],
   [90, "telephone", "Telephone", A],
+  [91, "please", "Please", T],
+  [92, "thank-you", "Thank you", T],
+  [93, "yes", "Yes", T],
+  [94, "no", "No", T],
+  [95, "sorry", "Sorry", T],
+  [96, "hello", "Hello", T],
+  [97, "goodbye", "Goodbye", T],
+  [98, "good-morning", "Good morning", T],
+  [99, "good-night", "Good night", T],
+  [100, "stop", "Stop", T],
+  [101, "wait", "Wait", T],
+  [102, "come", "Come", T],
+  [103, "go", "Go", T],
+  [104, "again", "Again", T],
+  [105, "understand", "Understand", T],
+  [106, "name", "Name", T],
+  [107, "love", "Love", T],
+  [108, "deaf", "Deaf", T],
+  [109, "interpreter", "Interpreter", T],
+  [110, "biscuit", "Biscuit", F],
+  [111, "soup", "Soup", F],
+  [112, "cake", "Cake", F],
+  [113, "fruit", "Fruit", F],
+  [114, "sandwich", "Sandwich", F],
+  [115, "toast", "Toast", F],
+  [116, "porridge", "Porridge", F],
+  [117, "egg", "Egg", F],
+  [118, "fish", "Fish", F],
+  [119, "chicken", "Chicken", F],
+  [120, "potato", "Potato", F],
+  [121, "pudding", "Pudding", F],
+  [122, "ice-cream", "Ice cream", F],
+  [123, "chocolate", "Chocolate", F],
+  [124, "sugar", "Sugar", F],
+  [125, "cup", "Cup", F],
+  [126, "plate", "Plate", F],
+  [127, "spoon", "Spoon", F],
+  [128, "fork", "Fork", F],
+  [129, "knife", "Knife", F],
+  [130, "shoes", "Shoes", W],
+  [131, "socks", "Socks", W],
+  [132, "coat", "Coat", W],
+  [133, "dress", "Dress", W],
+  [134, "trousers", "Trousers", W],
+  [135, "shirt", "Shirt", W],
+  [136, "cardigan", "Cardigan", W],
+  [137, "comb", "Comb", W],
+  [138, "brush", "Brush", W],
+  [139, "teeth", "Teeth", W],
+  [140, "tablet", "Tablet", H],
+  [141, "dentist", "Dentist", H],
+  [142, "hospital", "Hospital", H],
+  [143, "ambulance", "Ambulance", H],
+  [144, "pharmacy", "Pharmacy", H],
+  [145, "headache", "Headache", H],
+  [146, "cough", "Cough", H],
+  [147, "dizzy", "Dizzy", H],
+  [148, "fall", "Fall", H],
+  [149, "chair", "Chair", C],
+  [150, "table", "Table", C],
+  [151, "window", "Window", C],
+  [152, "door", "Door", C],
+  [153, "lift", "Lift", C],
+  [154, "stairs", "Stairs", C],
+  [155, "son", "Son", A],
+  [156, "daughter", "Daughter", A],
+  [157, "mother", "Mother", A],
+  [158, "father", "Father", A],
+  [159, "husband", "Husband", A],
+  [160, "wife", "Wife", A],
+  [161, "friend", "Friend", A],
+  [162, "birthday", "Birthday", A],
+  [163, "christmas", "Christmas", A],
+  [164, "easter", "Easter", A],
+  [165, "holiday", "Holiday", A],
+  [166, "dance", "Dance", A],
+  [167, "painting", "Painting", A],
+  [168, "film", "Film", A],
+  [169, "radio", "Radio", A],
+  [170, "church", "Church", O],
+  [171, "bus", "Bus", O],
+  [172, "taxi", "Taxi", O],
+  [173, "car", "Car", O],
+  [174, "shop", "Shop", O],
+  [175, "dog", "Dog", O],
+  [176, "cat", "Cat", O],
+  [177, "bird", "Bird", O],
+  [178, "flower", "Flower", O],
+  [179, "rain", "Rain", O],
+  [180, "sun", "Sun", O],
+  [181, "snow", "Snow", O],
+  [182, "wind", "Wind", O],
 ];
 
 export const BSL_SIGNS: BslSign[] = ROWS.map(([n, slug, title, group]) => ({

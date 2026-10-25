@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Armchair, HeartPulse, MessageCircle, Music, ShowerHead, Smile, Utensils } from "lucide-react";
+import { Armchair, HeartPulse, MessageCircle, Music, ShowerHead, Smile, TreePine, Utensils } from "lucide-react";
 import { getViewer } from "@/lib/viewer";
 import { BSL_GROUPS, BSL_SIGNS, bslSignsIn } from "@/lib/bslSigns";
 import { bslFavouriteIds, bslTemplateIds, toItems } from "@/lib/bslData";
@@ -8,7 +8,7 @@ import UpgradePrompt from "@/components/UpgradePrompt";
 
 export const dynamic = "force-dynamic";
 
-const ICONS = { food: Utensils, wash: ShowerHead, health: HeartPulse, comfort: Armchair, feelings: Smile, chat: MessageCircle, activities: Music };
+const ICONS = { food: Utensils, wash: ShowerHead, health: HeartPulse, comfort: Armchair, feelings: Smile, chat: MessageCircle, activities: Music, out: TreePine };
 
 // BSL Tools: pick a group first, then a sign. (This static route takes over from /dashboard/[category].)
 export default async function BslToolsPage() {
