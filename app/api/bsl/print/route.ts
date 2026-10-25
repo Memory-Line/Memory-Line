@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getViewer } from "@/lib/viewer";
 import { BSL_SIGNS, bslGroup } from "@/lib/bslSigns";
 import { buildBslPdf, type PrintSign } from "@/lib/bslPrint";
+import { BSL_LOGO_PNG_BASE64 } from "@/lib/data/bslLogo";
 import { withErrors } from "@/lib/apiHandler";
 
 const MAX_CARDS = 80;
@@ -31,11 +32,9 @@ async function GET_(req: Request) {
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id }, select: { name: true, email: true } });
   const whoFor = user?.name || user?.email || "Activity Central";
-  const logo = await fetch(new URL("/activity-central-icon.png", req.url))
-    .then((r) => (r.ok ? r.arrayBuffer() : null))
-    .catch(() => null);
+  const logo = new Uint8Array(Buffer.from(BSL_LOGO_PNG_BASE64, "base64"));
 
-  const bytes = await buildBslPdf(signs, logo ? new Uint8Array(logo) : null, whoFor);
+  const bytes = await buildBslPdf(signs, logo, whoFor);
   return new NextResponse(Buffer.from(bytes), {
     headers: { "Content-Type": "application/pdf", "Content-Disposition": 'inline; filename="bsl-cards.pdf"' },
   });
