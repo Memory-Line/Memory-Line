@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, ChevronRight, Printer } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import PrintPick from "@/components/PrintPick";
 import { getViewer } from "@/lib/viewer";
 import { bslGroup, bslSign, bslSignsIn } from "@/lib/bslSigns";
-import { bslTemplateIds } from "@/lib/bslData";
 import SignEmbed from "@/components/SignEmbed";
 import UpgradePrompt from "@/components/UpgradePrompt";
 
@@ -20,7 +20,6 @@ export default async function BslSignPage({ params }: { params: { group: string;
   const at = list.findIndex((s) => s.slug === sign.slug);
   const prev = at > 0 ? list[at - 1] : null;
   const next = at < list.length - 1 ? list[at + 1] : null;
-  const templateId = (await bslTemplateIds()).get(sign.file.toLowerCase()) ?? null;
 
   return (
     <div className="max-w-[720px]">
@@ -36,17 +35,7 @@ export default async function BslSignPage({ params }: { params: { group: string;
         <SignEmbed slug={sign.slug} title={sign.title} videos={sign.videos} />
       )}
       <div className="flex flex-wrap gap-3 mt-4">
-        {templateId && !locked && (
-          <a
-            href={`/api/download/${templateId}?file=standard`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold"
-            style={{ background: "#E4EEE2", color: "#6D8C6A" }}
-          >
-            <Printer size={16} /> Print the card
-          </a>
-        )}
+        {!locked && <PrintPick slug={sign.slug} title={sign.title} variant="button" />}
       </div>
       <div className="flex items-center justify-between gap-3 mt-8">
         {prev ? (
