@@ -37,6 +37,9 @@ const SUBTITLES: Record<string, string> = {
   Bingo: "Bingo cards and a built-in caller for fun, inclusive group games.",
   "Sing-Alongs": "Song words for much-loved classics, ready to print and sing together.",
   "Physical & Exercise": "Gentle seated and standing exercises to keep residents moving safely.",
+  "Remembrance Cards": "Reflective cards to help residents share memories and mark moments that matter.",
+  "Snakes and Ladders": "A classic board game, ready to print and play together.",
+  "Spot the Difference": "Picture puzzles that encourage residents to look closely and chat as they play.",
 };
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
