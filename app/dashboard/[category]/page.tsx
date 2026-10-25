@@ -8,6 +8,7 @@ import { completedIds, getViewer } from "@/lib/viewer";
 import { PLAYABLE_CATEGORIES } from "@/lib/play";
 import BingoCaller from "@/components/BingoCaller";
 import { TOPIC_COLOURS, TILE_CATEGORIES } from "@/lib/tiles";
+import CategoryHome from "@/components/CategoryHome";
 
 export function generateStaticParams() {
   return [
@@ -68,10 +69,15 @@ export default async function CategoryPage({ params }: { params: { category: str
             )
           )
         : null;
-    return (
-      <div>
-        <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
-        <p className="text-clay text-[13px] mt-0.5 mb-5">{topics ? "Choose a topic." : "Choose a level."}</p>
+    // Everything starred in this category, from any topic or level, for the Favourites tab beside the tiles.
+    const favTemplates = viewer.userId
+      ? await prisma.template.findMany({
+          where: { category: category.key, occasion: null, favourites: { some: { userId: viewer.userId } } },
+          orderBy: { createdAt: "desc" },
+        })
+      : [];
+    const favDone = tracking && favTemplates.length > 0 ? await completedIds(viewer.userId, favTemplates.map((t) => t.id)) : undefined;
+    const tileGrid = (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {subcategories.map((s, i) => {
             // Topics with nothing in them yet are left out.
@@ -114,6 +120,30 @@ export default async function CategoryPage({ params }: { params: { category: str
             </Link>
           )}
         </div>
+    );
+    return (
+      <div>
+        <h1 className="font-serif text-[26px]">{category.key} Activities</h1>
+        <p className="text-clay text-[13px] mt-0.5 mb-5">{topics ? "Choose a topic." : "Choose a level."}</p>
+        {viewer.userId ? (
+          <CategoryHome
+            tilesLabel={topics ? "Topics" : "Levels"}
+            count={favTemplates.length}
+            tiles={tileGrid}
+            favourites={
+              <TemplateList
+                templates={favTemplates}
+                completedIds={favDone}
+                playable={PLAYABLE_CATEGORIES.has(category.key)}
+                isPremium={viewer.isPremium}
+                tiles={TILE_CATEGORIES.has(category.key)}
+                favouritesOnly
+              />
+            }
+          />
+        ) : (
+          tileGrid
+        )}
       </div>
     );
   }
