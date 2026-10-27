@@ -1,7 +1,7 @@
 // Rules for files a home shares by link (menus, newsletters, timetables).
 
 export const MAX_SHARED_FILES = 30; // links per account
-export const MAX_ITEMS_PER_CATEGORY = 10; // files in each section of a link
+export const MAX_ITEMS_PER_CATEGORY = 40; // files in each section of a link
 export const MAX_CATEGORIES = 10; // sections per link
 // Files go straight from the browser to storage (not through our server), so they
 // can be much bigger than a normal request allows.

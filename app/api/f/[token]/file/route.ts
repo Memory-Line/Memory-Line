@@ -27,8 +27,13 @@ async function GET_(req: Request, { params }: { params: { token: string } }) {
   if (!upstream.ok || !upstream.body) return NextResponse.json({ error: "File unavailable" }, { status: 502 });
 
   const ext = item.contentType === "application/pdf" ? "pdf" : item.contentType === "image/png" ? "png" : "jpg";
-  const base = link.title.replace(/[^a-zA-Z0-9 _-]/g, "").trim().slice(0, 60) || "file";
-  const name = link.items.length > 1 ? `${base} ${index + 1}` : base;
+  // The saved file is named after what the page shows above it: the section's name, or the link's title when the file
+  // isn't in a section. Several files in the same section are told apart by their place in that section (as on the page).
+  const section = item.categoryId ? link.categories.find((c) => c.id === item.categoryId) : undefined;
+  const title = section?.name || link.title;
+  const base = title.replace(/[^a-zA-Z0-9 _'&()-]/g, "").trim().slice(0, 80) || "file";
+  const siblings = link.items.filter((i) => i.categoryId === item.categoryId);
+  const name = siblings.length > 1 ? `${base} ${siblings.findIndex((i) => i.id === item.id) + 1}` : base;
   return new NextResponse(upstream.body, {
     headers: {
       "Content-Type": item.contentType,
