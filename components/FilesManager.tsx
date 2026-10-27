@@ -105,17 +105,19 @@ export default function FilesManager() {
 
     const total = drafts.reduce((n, d) => n + d.files.length, 0);
     let done = 0;
-    const categories: { name: string; blobUrls: string[] }[] = [];
+    const categories: { name: string; blobUrls: string[]; fileNames: string[] }[] = [];
     for (const d of drafts) {
       const blobUrls: string[] = [];
+      const fileNames: string[] = [];
       for (const f of d.files) {
         setBusy(`Uploading file ${done + 1} of ${total}...`);
         const url = await uploadFile(f, title);
         if (!url) return setBusy(null);
         blobUrls.push(url);
+        fileNames.push(f.name);
         done++;
       }
-      categories.push({ name: several ? d.name : "", blobUrls });
+      categories.push({ name: several ? d.name : "", blobUrls, fileNames });
     }
     setBusy("Making your link...");
     const data = await send("/api/shared-files", "POST", { title, allowDownload, categories });
@@ -209,7 +211,7 @@ export default function FilesManager() {
     const link = links?.find((l) => l.id === target.linkId);
     const blobUrl = await uploadFile(file, link?.title ?? "file");
     const data = blobUrl
-      ? await send(`/api/shared-files/${target.linkId}/items`, "POST", { blobUrl, categoryId: target.categoryId ?? "" })
+      ? await send(`/api/shared-files/${target.linkId}/items`, "POST", { blobUrl, fileName: file.name, categoryId: target.categoryId ?? "" })
       : undefined;
     setWorking(null);
     if (data?.file) setOne(data.file);
@@ -224,7 +226,7 @@ export default function FilesManager() {
     setWorking(target.itemId);
     const link = links?.find((l) => l.id === target.linkId);
     const blobUrl = await uploadFile(file, link?.title ?? "file");
-    const data = blobUrl ? await send(`/api/shared-files/${target.linkId}/items/${target.itemId}`, "PUT", { blobUrl }) : undefined;
+    const data = blobUrl ? await send(`/api/shared-files/${target.linkId}/items/${target.itemId}`, "PUT", { blobUrl, fileName: file.name }) : undefined;
     setWorking(null);
     if (data?.file) setOne(data.file);
   }

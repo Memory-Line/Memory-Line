@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_ITEMS_PER_CATEGORY } from "@/lib/sharedFiles";
+import { MAX_ITEMS_PER_CATEGORY, cleanFileName } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
@@ -36,7 +36,7 @@ async function POST_(req: Request, { params }: { params: { id: string } }) {
 
     const position = link.items.reduce((max, i) => Math.max(max, i.position), -1) + 1;
     await prisma.sharedFileItem.create({
-      data: { sharedFileId: link.id, categoryId, fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, position },
+      data: { sharedFileId: link.id, categoryId, fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, fileName: cleanFileName(body?.fileName), position },
     });
     await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
 

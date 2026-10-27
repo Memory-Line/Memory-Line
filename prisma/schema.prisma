@@ -140,6 +140,8 @@ model SharedFileItem {
   fileUrl      String
   contentType  String     // application/pdf | image/jpeg | image/png
   sizeBytes    Int
+  // The file's own name as it was uploaded ("Summer Menu.pdf"), used when someone downloads it. Older files don't have one.
+  fileName     String?
   position     Int
   // The section of the link this file is in; none = not in a section.
   categoryId   String?
