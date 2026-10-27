@@ -10,7 +10,7 @@ import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
 
-// Add another file to a link (up to 10 in each section), already uploaded by the
+// Add another file to a link (up to 40 in each section), already uploaded by the
 // browser. JSON: { blobUrl, categoryId } (categoryId empty = not in a section).
 async function POST_(req: Request, { params }: { params: { id: string } }) {
   try {
