@@ -45,3 +45,10 @@ export function blobPathFor(userId: string, title: string, ext: string) {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "file";
   return `${blobPrefixFor(userId)}${slug}.${ext}`;
 }
+
+// A file name from the browser, made safe to store and to send back as a download name.
+export function cleanFileName(v: unknown): string | null {
+  if (typeof v !== "string") return null;
+  const name = v.split(/[\\/]/).pop()!.replace(/[\u0000-\u001f"<>|:*?]/g, "").trim().slice(0, 120);
+  return name || null;
+}

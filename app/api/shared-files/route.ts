@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { randomBytes } from "crypto";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_CATEGORIES, MAX_ITEMS_PER_CATEGORY, MAX_SHARED_FILES, cleanTitle } from "@/lib/sharedFiles";
+import { MAX_CATEGORIES, MAX_ITEMS_PER_CATEGORY, MAX_SHARED_FILES, cleanFileName, cleanTitle } from "@/lib/sharedFiles";
 import { listOwnedLinks, getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { userHasFeature } from "@/lib/features";
@@ -46,8 +46,8 @@ async function POST_(req: Request) {
       return NextResponse.json({ error: `You can have up to ${MAX_SHARED_FILES} links. Delete one first.` }, { status: 400 });
     }
 
-    const sections: { name: string; blobUrls: unknown[] }[] = Array.isArray(body.categories)
-      ? body.categories.map((c: any) => ({ name: cleanTitle(c?.name), blobUrls: Array.isArray(c?.blobUrls) ? c.blobUrls : [] }))
+    const sections: { name: string; blobUrls: unknown[]; fileNames: unknown[] }[] = Array.isArray(body.categories)
+      ? body.categories.map((c: any) => ({ name: cleanTitle(c?.name), blobUrls: Array.isArray(c?.blobUrls) ? c.blobUrls : [], fileNames: Array.isArray(c?.fileNames) ? c.fileNames : [] }))
       : [];
     if (sections.length === 0 || sections.length > MAX_CATEGORIES) {
       return NextResponse.json({ error: `Add between 1 and ${MAX_CATEGORIES} sections.` }, { status: 400 });
@@ -62,13 +62,13 @@ async function POST_(req: Request) {
       return NextResponse.json({ error: `A section can hold up to ${MAX_ITEMS_PER_CATEGORY} files.` }, { status: 400 });
     }
 
-    const checkedSections: { name: string; files: { url: string; size: number; contentType: string }[] }[] = [];
+    const checkedSections: { name: string; files: { url: string; size: number; contentType: string; fileName: string | null }[] }[] = [];
     for (const s of sections) {
       const files = [];
-      for (const u of s.blobUrls) {
+      for (const [ui, u] of s.blobUrls.entries()) {
         const checked = await verifyUploadedBlob(u, userId);
         if ("error" in checked) return NextResponse.json({ error: checked.error }, { status: 400 });
-        files.push({ url: checked.url, size: checked.size, contentType: checked.kind.contentType });
+        files.push({ url: checked.url, size: checked.size, contentType: checked.kind.contentType, fileName: cleanFileName(s.fileNames[ui]) });
       }
       checkedSections.push({ name: s.name, files });
     }
@@ -83,7 +83,7 @@ async function POST_(req: Request) {
         const cat = s.name ? await tx.sharedCategory.create({ data: { sharedFileId: link.id, name: s.name, position: ci } }) : null;
         for (const f of s.files) {
           await tx.sharedFileItem.create({
-            data: { sharedFileId: link.id, categoryId: cat?.id ?? null, fileUrl: f.url, contentType: f.contentType, sizeBytes: f.size, position: position++ },
+            data: { sharedFileId: link.id, categoryId: cat?.id ?? null, fileUrl: f.url, contentType: f.contentType, sizeBytes: f.size, fileName: f.fileName, position: position++ },
           });
         }
       }

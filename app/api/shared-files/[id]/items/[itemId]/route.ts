@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { del } from "@vercel/blob";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { MAX_ITEMS_PER_CATEGORY } from "@/lib/sharedFiles";
+import { MAX_ITEMS_PER_CATEGORY, cleanFileName } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { canShareFiles, SHARED_FILES_PREMIUM_MESSAGE } from "@/lib/sharedFilesAccess";
 import { verifyUploadedBlob } from "@/lib/sharedFilesBlob";
@@ -28,7 +28,7 @@ async function PUT_(req: Request, { params }: { params: { id: string; itemId: st
 
     await prisma.sharedFileItem.update({
       where: { id: item.id },
-      data: { fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size },
+      data: { fileUrl: checked.url, contentType: checked.kind.contentType, sizeBytes: checked.size, fileName: cleanFileName(body?.fileName) },
     });
     await prisma.sharedFile.update({ where: { id: link.id }, data: { updatedAt: new Date() } });
     await del(item.fileUrl).catch(() => {});

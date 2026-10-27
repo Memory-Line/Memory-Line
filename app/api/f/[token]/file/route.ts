@@ -33,11 +33,15 @@ async function GET_(req: Request, { params }: { params: { token: string } }) {
   const title = section?.name || link.title;
   const base = title.replace(/[^a-zA-Z0-9 _'&()-]/g, "").trim().slice(0, 80) || "file";
   const siblings = link.items.filter((i) => i.categoryId === item.categoryId);
-  const name = siblings.length > 1 ? `${base} ${siblings.findIndex((i) => i.id === item.id) + 1}` : base;
+  const fallback = `${siblings.length > 1 ? `${base} ${siblings.findIndex((i) => i.id === item.id) + 1}` : base}.${ext}`;
+  // Files uploaded with their own name are saved under it; older ones keep the section or link title.
+  const own = item.fileName ? (item.fileName.toLowerCase().endsWith(`.${ext}`) || (ext === "jpg" && /\.jpe?g$/i.test(item.fileName)) ? item.fileName : `${item.fileName}.${ext}`) : null;
+  const saveAs = own ?? fallback;
+  const ascii = saveAs.replace(/[^\x20-\x7e]/g, "_").replace(/"/g, "");
   return new NextResponse(upstream.body, {
     headers: {
       "Content-Type": item.contentType,
-      "Content-Disposition": `${wantsDownload ? "attachment" : "inline"}; filename="${name}.${ext}"`,
+      "Content-Disposition": `${wantsDownload ? "attachment" : "inline"}; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(saveAs)}`,
       "Cache-Control": "private, no-cache",
       "X-Robots-Tag": "noindex",
       "X-Content-Type-Options": "nosniff",
