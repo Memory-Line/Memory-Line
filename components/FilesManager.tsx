@@ -35,6 +35,9 @@ export default function FilesManager() {
   const addInput = useRef<HTMLInputElement>(null);
   const replaceInput = useRef<HTMLInputElement>(null);
   const addFor = useRef<{ linkId: string; categoryId: string | null } | null>(null);
+  // A new section being filled in on an existing link (name and files, like the make-a-link form).
+  const [newSec, setNewSec] = useState<{ linkId: string; name: string; files: File[] } | null>(null);
+  const [newSecMsg, setNewSecMsg] = useState<string | null>(null);
   const replaceFor = useRef<{ linkId: string; itemId: string } | null>(null);
 
   useEffect(() => {
@@ -166,12 +169,35 @@ export default function FilesManager() {
     if (res.ok) setLinks((prev) => (prev ?? []).filter((x) => x.id !== l.id));
   }
 
-  async function addSection(l: Link) {
-    const name = window.prompt("Name the new section (for example Menu, Calendar or Complaints form)");
-    if (!name || !name.trim()) return;
+  // Makes the section, then uploads the chosen files into it.
+  async function saveNewSection(l: Link) {
+    if (!newSec || newSec.linkId !== l.id) return;
+    const name = newSec.name.trim();
     setError(null);
-    const data = await send(`/api/shared-files/${l.id}/categories`, "POST", { name });
-    if (data?.file) setOne(data.file);
+    if (!name) return setError("Give the section a name.");
+    if (newSec.files.length > MAX_ITEMS_PER_CATEGORY) return setError(`A section can hold up to ${MAX_ITEMS_PER_CATEGORY} files.`);
+    setNewSecMsg("Making the section...");
+    const before = new Set(l.categories.map((c) => c.id));
+    const made = await send(`/api/shared-files/${l.id}/categories`, "POST", { name });
+    const created: Link | undefined = made?.file;
+    const cat = created?.categories.find((c) => !before.has(c.id));
+    if (!created || !cat) return setNewSecMsg(null);
+    setOne(created);
+    let failed = false;
+    for (let i = 0; i < newSec.files.length; i++) {
+      const file = newSec.files[i];
+      setNewSecMsg(`Uploading file ${i + 1} of ${newSec.files.length}...`);
+      const blobUrl = await uploadFile(file, l.title);
+      const data = blobUrl ? await send(`/api/shared-files/${l.id}/items`, "POST", { blobUrl, fileName: file.name, categoryId: cat.id }) : undefined;
+      if (!data?.file) {
+        failed = true;
+        break;
+      }
+      setOne(data.file);
+    }
+    setNewSecMsg(null);
+    // If a file didn't go up the section is still there; the message above says why, and the files can be added to it.
+    if (!failed) setNewSec(null);
   }
 
   async function addCalendarSection(l: Link) {
@@ -459,11 +485,51 @@ export default function FilesManager() {
                     {addFileButton(l, null)}
                   </div>
                 )}
-                {l.categories.length < MAX_CATEGORIES && (
+                {newSec?.linkId === l.id && (
+                  <div className="rounded-lg border border-line bg-white p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <input
+                        className={field}
+                        value={newSec.name}
+                        onChange={(e) => setNewSec({ ...newSec, name: e.target.value })}
+                        maxLength={100}
+                        placeholder="New section name, e.g. Menu"
+                        aria-label="New section name"
+                        autoFocus
+                      />
+                      <button type="button" onClick={() => { setNewSec(null); setError(null); }} disabled={!!newSecMsg} className="text-xs text-red-600 underline font-semibold whitespace-nowrap disabled:opacity-60">
+                        Cancel
+                      </button>
+                    </div>
+                    <input
+                      type="file"
+                      multiple
+                      accept={accept}
+                      onChange={(e) => setNewSec({ ...newSec, files: Array.from(e.target.files ?? []) })}
+                      className="text-sm"
+                      aria-label="Files for the new section"
+                    />
+                    {newSec.files.length > 0 && (
+                      <p className="text-xs text-inkSoft">
+                        {newSec.files.length} file{newSec.files.length === 1 ? "" : "s"}: {newSec.files.map((f) => f.name).join(", ")}
+                      </p>
+                    )}
+                    {error && <p className="text-xs text-red-600">{error}</p>}
+                    <button
+                      type="button"
+                      onClick={() => saveNewSection(l)}
+                      disabled={!!newSecMsg}
+                      className="rounded-lg bg-sage text-white px-4 py-2 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-60"
+                    >
+                      {newSecMsg ?? "Add this section"}
+                    </button>
+                  </div>
+                )}
+                {l.categories.length < MAX_CATEGORIES && newSec?.linkId !== l.id && (
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
-                      onClick={() => addSection(l)}
+                      onClick={() => { setError(null); setNewSec({ linkId: l.id, name: "", files: [] }); }}
                       className="rounded-lg border border-dashed border-line bg-white px-3 py-1.5 text-xs font-semibold text-sageDeep hover:bg-cardTint"
                     >
                       + Add a section
