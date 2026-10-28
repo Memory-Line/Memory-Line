@@ -5,6 +5,7 @@ import { z } from "zod";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
 import { WESTCLIFF_TEMPLATES } from "@/lib/westcliffForms";
+import { parseEmails } from "@/lib/forms";
 import { withErrors } from "@/lib/apiHandler";
 
 export const dynamic = "force-dynamic";
@@ -24,9 +25,10 @@ async function GET_() {
 
 const schema = z.object({
   accountEmail: z.string().trim().email(),
-  notifyEmail: z.string().trim().email(),
-  copyEmail: z.string().trim().email().optional().or(z.literal("")),
-  templates: z.array(z.enum(["resident", "relatives", "employee"])).min(1, "Tick at least one questionnaire"),
+  // One or more addresses, separated by commas.
+  notifyEmail: z.string().trim().min(1, "Enter the address the answers should go to"),
+  copyEmail: z.string().trim().optional(),
+  templates: z.array(z.enum(["resident", "relatives", "employee", "open"])).min(1, "Tick at least one questionnaire"),
 });
 
 async function POST_(req: Request) {
@@ -35,6 +37,13 @@ async function POST_(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Check the email addresses and try again." }, { status: 400 });
   }
+
+  const main = parseEmails(parsed.data.notifyEmail);
+  const copies = parseEmails(parsed.data.copyEmail);
+  const wrong = [...main.bad, ...copies.bad];
+  if (wrong.length > 0) return NextResponse.json({ error: `These don't look like email addresses: ${wrong.join(", ")}` }, { status: 400 });
+  if (main.emails.length === 0) return NextResponse.json({ error: "Enter the address the answers should go to" }, { status: 400 });
+  if (main.emails.length + copies.emails.length > 10) return NextResponse.json({ error: "Up to 10 addresses in all, please." }, { status: 400 });
 
   const user = await prisma.user.findFirst({ where: { email: { equals: parsed.data.accountEmail, mode: "insensitive" } } });
   if (!user) return NextResponse.json({ error: `No account found for ${parsed.data.accountEmail}.` }, { status: 404 });
@@ -57,8 +66,8 @@ async function POST_(req: Request) {
           intro: t.def.intro,
           thanks: t.def.thanks,
           items: t.def.items as unknown as object,
-          notifyEmail: parsed.data.notifyEmail,
-          copyEmail: parsed.data.copyEmail ? parsed.data.copyEmail : null,
+          notifyEmail: main.emails.join(", "),
+          copyEmail: copies.emails.length ? copies.emails.join(", ") : null,
           logoPath: t.def.logoPath ?? null,
           brandLines: t.def.brandLines ?? null,
         },

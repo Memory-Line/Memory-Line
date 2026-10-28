@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cleanAnswers } from "@/lib/forms";
+import { cleanAnswers, parseEmails } from "@/lib/forms";
 import { getFormByToken } from "@/lib/formsDb";
 import { formSubmissionEmail, sendEmail, siteUrl } from "@/lib/email";
 import { loadLogo, makeFormPdf, todayInLondon } from "@/lib/formPdf";
@@ -53,9 +53,9 @@ async function POST_(req: Request, { params }: { params: { token: string } }) {
   }
   const stamp = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); // 2026-10-07
   const slug = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 50);
-  // The home's own address, and the optional second address that gets a copy. Each is its own email, so
+  // The home's own address or addresses, and any others that get a copy. Each is its own email, so
   // one address having trouble doesn't stop the other; it counts as sent if either one went.
-  const addresses = [form.notifyEmail, ...(form.copyEmail && form.copyEmail.toLowerCase() !== form.notifyEmail.toLowerCase() ? [form.copyEmail] : [])];
+  const addresses = parseEmails([form.notifyEmail, form.copyEmail ?? ""].join(",")).emails;
   const pdf = { filename: `${slug}-${stamp}.pdf`, base64: Buffer.from(pdfBytes).toString("base64") };
   const results = await Promise.all(
     addresses.map((to) => sendEmail(formSubmissionEmail({ to, formTitle: form.title, homeName: form.homeName, receivedOn: date, pdf })))
