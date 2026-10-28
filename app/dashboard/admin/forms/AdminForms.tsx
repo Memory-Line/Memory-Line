@@ -76,11 +76,11 @@ export default function AdminForms() {
         </div>
         <div>
           <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="qa-notify">Send the answers to this email</label>
-          <input id="qa-notify" className={field} value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)} placeholder="westclifflodge@gmail.com" />
+          <input id="qa-notify" className={field} value={notifyEmail} onChange={(e) => setNotifyEmail(e.target.value)} placeholder="westclifflodge@gmail.com (add more, separated by commas)" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="qa-copy">Also send a copy to (optional)</label>
-          <input id="qa-copy" className={field} value={copyEmail} onChange={(e) => setCopyEmail(e.target.value)} placeholder="a second address, e.g. the manager" />
+          <input id="qa-copy" className={field} value={copyEmail} onChange={(e) => setCopyEmail(e.target.value)} placeholder="others who get a copy, e.g. the manager (separated by commas)" />
           <p className="text-xs text-inkSoft mt-1">Every response is emailed to both addresses. Nothing is kept on our website.</p>
         </div>
         <div className="space-y-1.5">

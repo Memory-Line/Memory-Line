@@ -71,3 +71,15 @@ export function cleanAnswers(items: FormItem[], raw: unknown): { answers: Answer
   if (total > MAX_TOTAL) return { error: "That's too long to send. Please shorten some answers." };
   return { answers };
 }
+
+// The addresses in a box that may hold several, separated by commas, semicolons, spaces or new lines.
+// Anything that isn't an address comes back in "bad".
+export function parseEmails(value: string | null | undefined): { emails: string[]; bad: string[] } {
+  const emails: string[] = [];
+  const bad: string[] = [];
+  for (const part of (value ?? "").split(/[,;\s]+/).map((p) => p.trim()).filter(Boolean)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(part)) bad.push(part);
+    else if (!emails.some((e) => e.toLowerCase() === part.toLowerCase())) emails.push(part);
+  }
+  return { emails, bad };
+}
