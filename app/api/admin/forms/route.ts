@@ -26,7 +26,7 @@ const schema = z.object({
   accountEmail: z.string().trim().email(),
   notifyEmail: z.string().trim().email(),
   copyEmail: z.string().trim().email().optional().or(z.literal("")),
-  templates: z.array(z.enum(["resident", "relatives", "employee"])).min(1, "Tick at least one questionnaire"),
+  templates: z.array(z.enum(["resident", "relatives", "employee", "open"])).min(1, "Tick at least one questionnaire"),
 });
 
 async function POST_(req: Request) {

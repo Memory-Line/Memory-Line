@@ -9,6 +9,7 @@ const TEMPLATES = [
   { key: "resident", label: "Resident feedback questionnaire" },
   { key: "relatives", label: "Relatives and friends feedback questionnaire" },
   { key: "employee", label: "Employee / staff feedback questionnaire" },
+  { key: "open", label: "Open feedback page for the website" },
 ];
 
 export default function AdminForms() {

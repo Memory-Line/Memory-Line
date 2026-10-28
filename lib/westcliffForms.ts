@@ -176,10 +176,34 @@ export const EMPLOYEE_FORM: FormDef = {
   ],
 };
 
+// The open feedback page for Westcliff Lodge's website: one box for comments and an optional name (from their document).
+export const OPEN_FORM: FormDef = {
+  ...WESTCLIFF_BRAND,
+  title: "We Welcome Your Feedback",
+  intro: "At Westcliff Lodge, we value your feedback and are always looking for ways to improve the care and services we provide.",
+  thanks: "Thank you for sharing your feedback. Your views and opinions matter to us.",
+  items: [
+    {
+      type: "text",
+      id: "feedback",
+      text: "Do you have any feedback, comments or suggestions you would like to share about Westcliff Lodge?",
+      hint: "We welcome all feedback, whether positive or constructive. Please feel free to share your experiences, thoughts or suggestions below.",
+      long: true,
+    },
+    {
+      type: "text",
+      id: "name",
+      text: "Would you like to provide your name? (Optional)",
+      hint: "You are welcome to remain anonymous. However, if you would like us to know who has submitted the feedback, please enter your name below.",
+    },
+  ],
+};
+
 export const WESTCLIFF_TEMPLATES = [
   { key: "resident", label: "Resident feedback questionnaire", def: RESIDENT_FORM },
   { key: "relatives", label: "Relatives and friends feedback questionnaire", def: RELATIVES_FORM },
   { key: "employee", label: "Employee / staff feedback questionnaire", def: EMPLOYEE_FORM },
+  { key: "open", label: "Open feedback page for the website", def: OPEN_FORM },
 ] as const;
 
 export type TemplateKey = (typeof WESTCLIFF_TEMPLATES)[number]["key"];
