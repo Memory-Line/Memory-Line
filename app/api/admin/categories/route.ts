@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { deleteStoredFiles } from "@/lib/storedFiles";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import { CATEGORIES } from "@/lib/data";
 import { slugify } from "@/lib/categories";
 import { ICON_CHOICES, COLOUR_CHOICES } from "@/lib/categoryIcons";
@@ -40,6 +41,7 @@ async function POST_(req: Request) {
   if (body.action === "restore") {
     await prisma.removedCategory.deleteMany({ where: { name: String(body.name ?? "") } });
     revalidateTag("categories");
+    await auditAdmin(req, "admin.category.restore", { target: String(body.name ?? "") });
     return NextResponse.json({ ok: true });
   }
 
@@ -56,6 +58,7 @@ async function POST_(req: Request) {
   const position = await prisma.customCategory.count();
   await prisma.customCategory.create({ data: { name, slug, icon, color: colour.color, tint: colour.tint, position } });
   revalidateTag("categories");
+  await auditAdmin(req, "admin.category.create", { target: name });
   return NextResponse.json({ ok: true }, { status: 201 });
 }
 
@@ -83,6 +86,7 @@ async function DELETE_(req: Request) {
   if (custom) await prisma.customCategory.delete({ where: { name } });
   else await prisma.removedCategory.upsert({ where: { name }, create: { name }, update: {} });
   revalidateTag("categories");
+  await auditAdmin(req, "admin.category.delete", { target: name, detail: `${rows.length} activities deleted${custom ? "" : " (built-in category hidden)"}` });
   return NextResponse.json({ ok: true, deleted: rows.length });
 }
 

@@ -375,3 +375,21 @@ model Board {
 
   @@index([areaSlug])
 }
+
+// The audit trail (lib/audit.ts): one row for each sensitive thing that happens, shown on the admin page "Audit trail".
+// Rows are only ever added. actorId is not a link to User on purpose, so the record stays if an account is deleted.
+model AuditLog {
+  id         String   @id @default(cuid())
+  at         DateTime @default(now())
+  actorId    String?
+  actorEmail String?
+  action     String
+  target     String?
+  detail     String?
+  ip         String?
+  env        String?
+
+  @@index([at])
+  @@index([action])
+  @@index([actorEmail])
+}

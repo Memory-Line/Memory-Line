@@ -8,6 +8,7 @@ import { videoUrlFor } from "@/lib/videoLinksByFile";
 import { LANGUAGE_CATEGORY, languageBySlug } from "@/lib/languages";
 import { subcategoriesFor, subcategoryBySlug } from "@/lib/subcategories";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAdmin } from "@/lib/audit";
 
 // Strips the leading number, then strips an "Answers" / "Answer Key" /
 // "Large Print" marker if present, so a variant file's name reduces to
@@ -198,6 +199,7 @@ async function POST_(req: Request) {
         where: { ...scope, ...sameFile(fileName), id: { not: existing.id } },
       });
 
+      await auditAdmin(req, "admin.activity.upload", { target: fileName, detail: `${category}: attached as ${isAnswer ? "answers" : "large print"}` });
       return NextResponse.json({ ok: true, template: updated, matched: true });
     }
 
@@ -212,6 +214,7 @@ async function POST_(req: Request) {
         where: { id: previous.id },
         data: { fileUrl: blob.url, fileName, videoUrl: videoUrlFor(category, fileName) ?? previous.videoUrl },
       });
+      await auditAdmin(req, "admin.activity.upload", { target: fileName, detail: `${category}: replaced the existing file` });
       return NextResponse.json({ ok: true, template: replaced, matched: false, replaced: true });
     }
 
@@ -228,6 +231,7 @@ async function POST_(req: Request) {
       },
     });
 
+    await auditAdmin(req, "admin.activity.upload", { target: fileName, detail: `${category}: new activity` });
     return NextResponse.json({ ok: true, template, matched: false });
   } catch (err: any) {
     console.error("upload-template failed:", err);

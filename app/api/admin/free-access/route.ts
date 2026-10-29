@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { isFeatureKey } from "@/lib/features";
 import { isPlanKey } from "@/lib/plans";
@@ -64,12 +65,14 @@ async function POST_(req: Request) {
 
     if (grant) {
       await prisma.user.update({ where: { id: user.id }, data: { subscriptionStatus: "free" } });
+      await auditAdmin(req, "admin.free-access.grant", { target: user.email });
       return NextResponse.json({ ok: true, message: `✓ ${user.email} now has free access.` });
     }
     if (user.subscriptionStatus !== "free") {
       return NextResponse.json({ ok: true, message: `${user.email} didn't have free access.` });
     }
     await prisma.user.update({ where: { id: user.id }, data: { subscriptionStatus: "inactive" } });
+    await auditAdmin(req, "admin.free-access.remove", { target: user.email });
     return NextResponse.json({ ok: true, message: `✓ Free access removed from ${user.email}.` });
   } catch (err: any) {
     console.error("free-access failed:", err);
@@ -123,6 +126,10 @@ async function PUT_(req: Request) {
         ...(features !== undefined && { features: Array.from(new Set((features as unknown[]).filter(isFeatureKey))) }),
         ...(plan !== undefined && { plan }),
       },
+    });
+    await auditAdmin(req, "admin.account.update", {
+      target: user.email,
+      detail: `name "${name.trim()}", type ${accountType}, plan ${plan ?? "unchanged"}${plan !== undefined && plan !== user.plan ? ` (was ${user.plan})` : ""}${features !== undefined ? `, features: ${(features as unknown[]).filter(isFeatureKey).join(", ") || "none"}` : ""}`,
     });
     return NextResponse.json({
       ok: true,

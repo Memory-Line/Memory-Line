@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
   Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
-  Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
+  Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload, History,
 } from "lucide-react";
 import { CATEGORIES, categoryLabel } from "@/lib/data";
 import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
@@ -167,6 +167,7 @@ export default function Sidebar({
             label="Questionnaires (admin)"
             active={pathname === "/dashboard/admin/forms"}
           />
+          <NavItem href="/dashboard/admin/audit" icon={History} label="Audit trail" active={pathname === "/dashboard/admin/audit"} />
           <NavItem
             href="/dashboard/admin/narration"
             icon={Mail}

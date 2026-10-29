@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAs } from "@/lib/audit";
 
 const schema = z.object({
   token: z.string().min(20).max(200),
@@ -26,10 +27,12 @@ async function POST_(req: Request) {
     );
   }
 
-  await prisma.user.update({
+  const changed = await prisma.user.update({
     where: { id: record.userId },
     data: { passwordHash: await bcrypt.hash(parsed.data.password, 10) },
+    select: { id: true, email: true },
   });
+  await auditAs(changed, "account.password.reset", { req, target: changed.email });
   // The link works once.
   await prisma.passwordResetToken.deleteMany({ where: { userId: record.userId } });
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { offLiveBlock } from "@/lib/env";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { withErrors } from "@/lib/apiHandler";
 
@@ -47,6 +48,7 @@ async function POST_(req: Request) {
       );
     }
 
+    if (apply && changes.length > 0) await auditAdmin(req, "admin.renumber", { target: category, detail: `${changes.length} files renumbered` });
     return NextResponse.json({ ok: true, applied: apply, total: numbered.length, changes });
   } catch (err: any) {
     console.error("renumber failed:", err);

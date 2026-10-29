@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { planConfirmationEmail, sendEmail } from "@/lib/email";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAs } from "@/lib/audit";
 
 // Stripe needs the raw request body to verify the signature, so this route
 // must not be JSON-parsed by anything upstream. App Router route handlers
@@ -46,7 +47,8 @@ async function upsertSubscriptionFromStripe(subscription: Stripe.Subscription) {
       subscriptionRenewsAt: renewsAt,
       ...(plan && { plan }),
     },
-  });
+    select: { id: true, email: true },
+  }).then((u) => auditAs(u, "billing.subscription.updated", { target: subscription.id, detail: `status ${status}${plan ? `, plan ${plan}` : ""}` }));
 }
 
 async function POST_(req: Request) {
@@ -106,10 +108,12 @@ async function POST_(req: Request) {
       const subscription = event.data.object as Stripe.Subscription;
       const userId = subscription.metadata?.userId;
       if (userId) {
-        await prisma.user.update({
+        const u = await prisma.user.update({
           where: { id: userId },
           data: { subscriptionStatus: "canceled" },
+          select: { id: true, email: true },
         });
+        await auditAs(u, "billing.subscription.cancelled", { target: subscription.id });
       }
       break;
     }

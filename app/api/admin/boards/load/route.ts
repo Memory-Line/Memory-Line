@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { offLiveBlock } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import seed from "@/data/boards.seed.json";
 import { withErrors } from "@/lib/apiHandler";
 
@@ -10,7 +11,7 @@ export const maxDuration = 60;
 
 // Admin only. Loads the approved boards from the data file into the database,
 // replacing whatever boards were there. Safe to run again after the file changes.
-async function POST_() {
+async function POST_(req: Request) {
   const blocked = offLiveBlock();
   if (blocked) return blocked;
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
@@ -19,6 +20,7 @@ async function POST_() {
     note: b.note ?? "", position: b.position, question: b.question, answers: b.answers,
   }));
   await prisma.$transaction([prisma.board.deleteMany({}), prisma.board.createMany({ data: rows })]);
+  await auditAdmin(req, "admin.boards.reload", { detail: `${rows.length} boards loaded, replacing the existing ones` });
   return NextResponse.json({ ok: true, boards: rows.length });
 }
 
