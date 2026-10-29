@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Download, Lock, Play, Printer, Search, Star, X } from "lucide-react";
 import CompleteButton from "@/components/CompleteButton";
+import VideoButton from "@/components/VideoButton";
 import { MAX_PRINT_PACK, TOPIC_COLOURS } from "@/lib/tiles";
 import { printPack, type PrintFile } from "@/lib/printPack";
 import { warmPdfJs } from "@/lib/pdfPage";
@@ -213,9 +214,7 @@ function TileGrid({
                       </a>
                     )}
                     {t.video && (
-                      <a href={t.video} target="_blank" rel="noopener noreferrer" className={btnBase} style={{ background: "rgba(255,255,255,0.7)", color: "#B5453D" }}>
-                        {/youtube\.com|youtu\.be/.test(t.video) ? "Watch on YouTube" : "Watch sign video"}
-                      </a>
+                      <VideoButton url={t.video} title={t.title} className={btnBase} style={{ background: "rgba(255,255,255,0.7)", color: "#B5453D" }} />
                     )}
                   </>
                 )}
@@ -315,9 +314,7 @@ function RowList({
                       </a>
                     )}
                     {t.video && (
-                      <a href={t.video} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }}>
-                        {/youtube\.com|youtu\.be/.test(t.video) ? "Watch on YouTube" : "Watch sign video"}
-                      </a>
+                      <VideoButton url={t.video} title={t.title} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }} />
                     )}
                   </>
                 )}
