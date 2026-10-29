@@ -214,7 +214,7 @@ function TileGrid({
                       </a>
                     )}
                     {t.video && (
-                      <VideoButton url={t.video} title={t.title} className={btnBase} style={{ background: "rgba(255,255,255,0.7)", color: "#B5453D" }} />
+                      <VideoButton id={t.id} url={t.video} className={btnBase} style={{ background: "rgba(255,255,255,0.7)", color: "#B5453D" }} />
                     )}
                   </>
                 )}
@@ -314,7 +314,7 @@ function RowList({
                       </a>
                     )}
                     {t.video && (
-                      <VideoButton url={t.video} title={t.title} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }} />
+                      <VideoButton id={t.id} url={t.video} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#F3DAD8", color: "#B5453D" }} />
                     )}
                   </>
                 )}
