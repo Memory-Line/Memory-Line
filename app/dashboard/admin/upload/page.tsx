@@ -10,9 +10,9 @@ import { titleFromFilename } from "@/lib/titles";
 import { subcategoriesFor, subcategoryFromPath, usesTopics } from "@/lib/subcategories";
 
 // Files picked as part of a folder count as large print when any folder
-// in their path says so (e.g. "A3 Large Print/"), and as answer sheets when
+// in their path says so (e.g. "A3 Large Print/", or a folder simply called "A3"), and as answer sheets when
 // inside a folder named "Answers" (or "Answer Key" / "Answer Sheets").
-const LARGE_PRINT_FOLDER = /large[-_\s]?print/i;
+const LARGE_PRINT_FOLDER = /large[-_\s]?print|(^|\/)a3(\/|$)/i;
 const ANSWERS_FOLDER = /^answers?(\s*(key|sheets?))?$/i;
 
 type FileStatus = {
