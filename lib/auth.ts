@@ -2,6 +2,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { auditAs } from "@/lib/audit";
 
 // The last subscription details read for each account, kept briefly on each copy of the site.
 const STATUS_CACHE_MS = 30_000;
@@ -20,16 +21,25 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email.toLowerCase() },
         });
-        if (!user) return null;
+        if (!user) {
+          await auditAs(null, "auth.login.failed", { req, target: credentials.email.toLowerCase().slice(0, 200), detail: "no account with that email" });
+          return null;
+        }
 
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          await auditAs({ id: user.id, email: user.email }, "auth.login.failed", { req, target: user.email, detail: "wrong password" });
+          return null;
+        }
+        if (process.env.ADMIN_EMAIL && user.email.toLowerCase() === process.env.ADMIN_EMAIL.toLowerCase()) {
+          await auditAs({ id: user.id, email: user.email }, "auth.admin.login", { req });
+        }
 
         return {
           id: user.id,

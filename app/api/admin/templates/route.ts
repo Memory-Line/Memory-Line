@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin";
 import { displayTitle } from "@/lib/titles";
 import { deleteStoredFiles } from "@/lib/storedFiles";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAdmin } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -67,6 +68,7 @@ async function PATCH_(req: Request) {
     });
     renamed++;
   }
+  await auditAdmin(req, "admin.activities.rename", { target: category, detail: `${renamed} renamed${missing.length ? `, ${missing.length} not found` : ""}` });
   return NextResponse.json({ ok: true, renamed, missing });
 }
 
@@ -80,10 +82,14 @@ async function DELETE_(req: Request) {
   if (ids.length === 0) return NextResponse.json({ error: "Tick at least one activity." }, { status: 400 });
   const rows = await prisma.template.findMany({
     where: { id: { in: ids } },
-    select: { id: true, fileUrl: true, answerFileUrl: true, largePrintFileUrl: true },
+    select: { id: true, title: true, category: true, fileUrl: true, answerFileUrl: true, largePrintFileUrl: true },
   });
   await prisma.template.deleteMany({ where: { id: { in: rows.map((r) => r.id) } } });
   await deleteStoredFiles(rows);
+  await auditAdmin(req, "admin.activities.delete", {
+    target: `${rows.length} ${rows.length === 1 ? "activity" : "activities"}`,
+    detail: `${Array.from(new Set(rows.map((r) => r.category))).join(", ")}: ${rows.slice(0, 8).map((r) => r.title).join("; ")}${rows.length > 8 ? "; ..." : ""}`,
+  });
   return NextResponse.json({ ok: true, deleted: rows.length });
 }
 

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { cleanTitle } from "@/lib/sharedFiles";
 import { getOwnedLink, publicShape } from "@/lib/sharedFilesDb";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAs } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -46,6 +47,7 @@ async function DELETE_(_req: Request, { params }: { params: { id: string } }) {
   const existing = await getOwnedLink(params.id, session.user.id);
   if (!existing) return NextResponse.json({ ok: true });
   await prisma.sharedFile.delete({ where: { id: existing.id } });
+  await auditAs({ id: session.user.id, email: session.user.email }, "account.shared-link.delete", { req: _req, target: existing.title, detail: `${existing.items.length} files` });
   await Promise.all(existing.items.map((i) => del(i.fileUrl).catch(() => {})));
   return NextResponse.json({ ok: true });
 }

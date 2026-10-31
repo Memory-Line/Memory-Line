@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import { SEASONS, seasonByKey } from "@/lib/seasons";
 import { PREVIEW_COOKIE, getActiveSeason } from "@/lib/seasonDb";
 import { withErrors } from "@/lib/apiHandler";
@@ -44,6 +45,7 @@ async function PUT_(req: Request) {
   await prisma.siteSeason.upsert({ where: { key: b.key }, create: { key: b.key, ...data }, update: data });
   if (data.forceNow) await prisma.siteSeason.updateMany({ where: { key: { not: b.key } }, data: { forceNow: false } });
   revalidateTag("seasons");
+  await auditAdmin(req, "admin.season.update", { target: String(b.key), detail: [typeof b.on === "boolean" ? `switched ${b.on ? "on" : "off"}` : "", typeof b.bannerText === "string" ? "banner text changed" : ""].filter(Boolean).join(", ") });
   return NextResponse.json({ ok: true });
 }
 

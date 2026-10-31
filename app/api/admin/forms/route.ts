@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { WESTCLIFF_TEMPLATES } from "@/lib/westcliffForms";
 import { parseEmails } from "@/lib/forms";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAdmin } from "@/lib/audit";
 
 export const dynamic = "force-dynamic";
 
@@ -75,6 +76,7 @@ async function POST_(req: Request) {
       })
     );
   }
+  await auditAdmin(req, "admin.questionnaire.create", { target: user.email, detail: `${made.map((m) => m.title).join(", ")} (answers to ${main.emails.join(", ")}${copies.emails.length ? `; copies to ${copies.emails.join(", ")}` : ""})` });
   return NextResponse.json({ ok: true, made });
 }
 
@@ -84,7 +86,9 @@ async function DELETE_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   const id = new URL(req.url).searchParams.get("id");
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const gone = await prisma.sharedForm.findUnique({ where: { id }, select: { title: true, user: { select: { email: true } } } });
   await prisma.sharedForm.deleteMany({ where: { id } });
+  await auditAdmin(req, "admin.questionnaire.delete", { target: gone?.user.email ?? id, detail: gone?.title });
   return NextResponse.json({ ok: true });
 }
 

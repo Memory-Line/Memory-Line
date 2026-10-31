@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/admin";
+import { auditAdmin } from "@/lib/audit";
 import { offLiveBlock } from "@/lib/env";
 import { promotionalEmail, sendEmail } from "@/lib/email";
 import { buildBroadcast } from "@/lib/mailing";
@@ -90,6 +91,7 @@ async function POST_(req: Request) {
       failed++;
     }
   }
+  await auditAdmin(req, "admin.mailing.send", { target: campaign.subject, detail: `${sent} sent, ${failed} failed, ${waiting.length - sent} still to send` });
   return NextResponse.json({ ok: true, campaignId: campaign.id, sent, failed, remaining: waiting.length - sent });
 }
 

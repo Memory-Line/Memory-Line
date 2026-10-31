@@ -6,6 +6,7 @@ import { sendEmail, welcomeEmail } from "@/lib/email";
 import { joinMailingList } from "@/lib/mailing";
 import { COMING_SOON } from "@/lib/launch";
 import { withErrors } from "@/lib/apiHandler";
+import { auditAs } from "@/lib/audit";
 
 const schema = z.object({
   name: z.string().min(1).max(100),
@@ -45,6 +46,8 @@ async function POST_(req: Request) {
   const user = await prisma.user.create({
     data: { name, accountType, email: normalizedEmail, passwordHash },
   });
+
+  await auditAs({ id: user.id, email: user.email }, "account.register", { req, target: user.email, detail: accountType });
 
   if (marketing) {
     // A list problem must never fail the signup either.
