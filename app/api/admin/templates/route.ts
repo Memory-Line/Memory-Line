@@ -5,6 +5,7 @@ import { requireAdmin } from "@/lib/admin";
 import { displayTitle } from "@/lib/titles";
 import { deleteStoredFiles } from "@/lib/storedFiles";
 import { withErrors } from "@/lib/apiHandler";
+import { subcategoryBySlug } from "@/lib/subcategories";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -70,6 +71,25 @@ async function PATCH_(req: Request) {
   return NextResponse.json({ ok: true, renamed, missing });
 }
 
+// Admin only. Put activities already uploaded into their topics (or levels):
+// { category, items: [{ fileName, subcategory }] }. Matches on the file name.
+async function PUT_(req: Request) {
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
+  const body = await req.json().catch(() => ({}));
+  const category = typeof body.category === "string" ? body.category : "";
+  const items: { fileName: string; subcategory: string }[] = Array.isArray(body.items) ? body.items.slice(0, 1000) : [];
+  if (!category || items.length === 0) return NextResponse.json({ error: "Nothing to sort." }, { status: 400 });
+  const bad = items.find((it) => !subcategoryBySlug(category, String(it.subcategory)));
+  if (bad) return NextResponse.json({ error: `"${bad.subcategory}" is not a topic of ${category}.` }, { status: 400 });
+  const results = await prisma.$transaction(
+    items.map((it) =>
+      prisma.template.updateMany({ where: { category, occasion: null, fileName: String(it.fileName) }, data: { subcategory: String(it.subcategory) } })
+    )
+  );
+  const sorted = results.reduce((n, r) => n + r.count, 0);
+  return NextResponse.json({ ok: true, sorted, missing: items.length - results.filter((r) => r.count > 0).length });
+}
+
 // Admin only. Delete activities for good, with their stored files: { ids: [...] }.
 async function DELETE_(req: Request) {
   const blocked = offLiveBlock();
@@ -89,4 +109,5 @@ async function DELETE_(req: Request) {
 
 export const GET = withErrors(GET_, "api/admin/templates:GET");
 export const PATCH = withErrors(PATCH_, "api/admin/templates:PATCH");
+export const PUT = withErrors(PUT_, "api/admin/templates:PUT");
 export const DELETE = withErrors(DELETE_, "api/admin/templates:DELETE");

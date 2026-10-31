@@ -28,6 +28,8 @@ export const TOPIC_CATEGORIES = [
   "Colouring Pages",
   "Conversation Starters",
   "Matching Pairs",
+  "Remembrance Cards",
+  "Spot the Difference",
 ];
 
 function topicsWith(descriptions: Record<string, string>): Subcategory[] {
@@ -84,10 +86,12 @@ export function subcategoryBySlug(categoryKey: string, slug: string): Subcategor
 export function subcategoryFromPath(categoryKey: string, path: string): string | null {
   const options = SUBCATEGORIES[categoryKey];
   if (!options) return null;
+  // "01-Animals-Birds" and "Animals & Birds" both mean animals-and-birds: compare the words, ignoring "and".
+  const words = (v: string) => v.toLowerCase().replace(/^\d+[-_\s]*/, "").replace(/&/g, " ").split(/[^a-z]+/).filter((w) => w && w !== "and").join(" ");
   for (const part of path.split("/")) {
     const name = part.toLowerCase().replace(/^\d+[-_\s]*/, "").trim();
     const match = options.find(
-      (s) => s.slug === name || s.label.toLowerCase() === name || s.label.toLowerCase().replace(/&/g, "and") === name
+      (s) => s.slug === name || s.label.toLowerCase() === name || s.label.toLowerCase().replace(/&/g, "and") === name || words(s.label) === words(part)
     );
     if (match) return match.slug;
   }
