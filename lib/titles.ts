@@ -9,13 +9,23 @@
 const NUMBER_RANGE = /^\d+[-_]\d+[-_]/;
 const PAPER_SIZE = /[-_\s]a\d$/i;
 
+// File names lose their apostrophes and dashes ("father-s-day", "workout - 32 minutes"), which leaves
+// "Father S Day" and "Workout   32 Minutes". This puts back the apostrophe in 's, 'll and 't, and a dash
+// where a gap was left.
+function tidy(title: string): string {
+  return title
+    .replace(/(\w) (S|Ll|T)(?![A-Za-z])/g, (_, w: string, end: string) => `${w}'${end.toLowerCase()}`)
+    .replace(/\s{2,}/g, " - ")
+    .trim();
+}
+
 // The title to show for an activity already uploaded.
 export function displayTitle(t: { title: string; fileName: string }): string {
   const name = (t.fileName.split(/[\/]/).pop() || t.fileName).replace(/\.[^/.]+$/, "");
   let title = t.title;
   if (NUMBER_RANGE.test(name)) title = title.replace(/^\d+\s+/, "");
   if (PAPER_SIZE.test(name)) title = title.replace(/\s+A\d$/i, "");
-  return title;
+  return tidy(title);
 }
 
 // The title for a newly uploaded file: drops the leading number (or
@@ -25,8 +35,10 @@ export function titleFromFilename(name: string): string {
   const withoutLeadingNumber = withoutExt.replace(/^\d+(?:[-_]\d+)?[-_.\s]*/, "");
   const withoutPaperSize = withoutLeadingNumber.replace(PAPER_SIZE, "");
   const spaced = withoutPaperSize.replace(/[-_]+/g, " ").trim();
-  return spaced
-    .split(" ")
-    .map((word) => (word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word))
-    .join(" ");
+  return tidy(
+    spaced
+      .split(" ")
+      .map((word) => (word.length > 0 ? word[0].toUpperCase() + word.slice(1) : word))
+      .join(" ")
+  );
 }
