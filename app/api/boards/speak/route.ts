@@ -46,6 +46,11 @@ const VOICES: Record<string, Record<string, string>> = {
 };
 const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", ar: "ar-SA", hi: "hi-IN", bn: "bn-IN", gu: "gu-IN", zh: "zh-CN", yue: "zh-HK", so: "so-SO", ta: "ta-IN", ml: "ml-IN", tl: "fil-PH", uk: "uk-UA", lt: "lt-LT", tr: "tr-TR", fa: "fa-IR", ru: "ru-RU", cy: "cy-GB", pa: "pa-IN" };
 
+// Clips whose first recording came out wrong (cut off, too quiet or a different number), said again with
+// hand-written SSML. Keyed "lang|voice|text". A fixed clip is saved under its own name (the tag is added to it),
+// so a copy kept by browsers or the CDN can never be played instead of the new one.
+const FIXES: Record<string, { tag: string; ssml: string }> = {};
+
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // A saved recording's address is fixed (store id from the storage key + file name), so we can
@@ -123,7 +128,26 @@ async function GET_(req: Request) {
 
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
-  const pathname = `speech/${lang}/${voice}/${createHash("sha1").update(text).digest("hex").slice(0, 24)}.mp3`;
+  const hash = createHash("sha1").update(text).digest("hex").slice(0, 24);
+  const fix = FIXES[`${lang}|${voice}|${text}`];
+  const pathname = `speech/${lang}/${voice}/${hash}${fix ? `-${fix.tag}` : ""}.mp3`;
+
+  // Admin only: try other wording for a clip. ?try=<label>&ssml=<what to say, as SSML> makes the clip and saves it
+  // under speech-test/ (never where the site plays from) and returns its address, so it can be listened to first.
+  const trial = isAdmin ? u.searchParams.get("try") : null;
+  if (trial) {
+    const inner = u.searchParams.get("ssml") ?? "";
+    if (!key || !region || !/^[a-z0-9-]{1,30}$/.test(trial) || inner.length < 1 || inner.length > 800) return NextResponse.json({ error: "Bad request" }, { status: 400 });
+    const body = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}">${inner}</voice></speak>`;
+    const r = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
+      method: "POST",
+      headers: { "Ocp-Apim-Subscription-Key": key, "Content-Type": "application/ssml+xml", "X-Microsoft-OutputFormat": "audio-24khz-48kbitrate-mono-mp3", "User-Agent": "ActivityCentral" },
+      body,
+    });
+    if (!r.ok) return NextResponse.json({ error: `Speech failed (${r.status})` }, { status: 502 });
+    const saved = await put(`speech-test/${lang}/${voice}/${hash}-${trial}.mp3`, Buffer.from(await r.arrayBuffer()), { access: "public", addRandomSuffix: false, contentType: "audio/mpeg" });
+    return NextResponse.json({ ok: true, url: saved.url });
+  }
 
   try {
     // Already made? Send them to the saved recording.
@@ -137,7 +161,7 @@ async function GET_(req: Request) {
     if (found.blobs[0]) return reply(found.blobs[0].url);
 
     if (!key || !region) return NextResponse.json({ error: "Speech is not set up" }, { status: 503 });
-    const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}"><prosody rate="-6%">${esc(text)}</prosody></voice></speak>`;
+    const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}">${fix ? fix.ssml : `<prosody rate="-6%">${esc(text)}</prosody>`}</voice></speak>`;
     const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",
       headers: {
