@@ -51,9 +51,9 @@ export function PremiumFeatures({ total = CATEGORIES.length }: { total?: number 
           has a large print version.
         </Tick>
         <Tick>
-          The <b>Holidays &amp; Celebrations calendar</b> — nearly 60 dates a year already filled in (Christmas, Halloween,
-          Remembrance Sunday, Chinese New Year and more). Add your own events and edit or remove them any time. Themed
-          activities for each date are being made and will be added soon.
+          The <b>Holidays &amp; Celebrations calendar</b> — a full year of holidays and celebrations already filled in (Christmas,
+          Halloween, Remembrance Sunday, Chinese New Year and more), with themed activities added through the year. Add
+          your own events and edit or remove them any time.
         </Tick>
         <Tick>
           <b>Print the calendar your way</b> — a whole month, or any week (up to 7 days) with bigger boxes and writing

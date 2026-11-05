@@ -177,7 +177,7 @@ export default async function LandingPage() {
               colour: "#4A7FB5",
               title: "Holidays & Celebrations calendar",
               plan: "Premium",
-              text: "Nearly 60 dates a year already filled in. Add your own events, then print a whole month or any week on A4 or A3, with a notes box and space to write.",
+              text: "A full year of holidays and celebrations already filled in, with themed activities added through the year. Add your own events, then print a whole month or any week on A4 or A3, with a notes box and space to write.",
             },
             {
               Icon: QrCode,
