@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { OCCASIONS, occasionHref, occasionSlug } from "@/lib/occasions";
+import { OCCASIONS, OCCASION_LINKS_VISIBLE, occasionHref, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import MonthPrint from "@/components/MonthPrint";
 import { parseNoteLines, serialiseNoteLines, noteIsEmpty, type NoteLine } from "@/lib/noteLines";
@@ -379,7 +379,7 @@ export default function CalendarView({
       label: e.label,
       // Only dates that have activities link through to a page; the rest
       // (bank holidays and so on) are just dates on the calendar.
-      link: OCCASIONS.some((o) => o.slug === occasionSlug(e.occasion ?? e.label)) ? occasionHref(e.occasion ?? e.label) : null,
+      link: OCCASION_LINKS_VISIBLE && OCCASIONS.some((o) => o.slug === occasionSlug(e.occasion ?? e.label)) ? occasionHref(e.occasion ?? e.label) : null,
       custom: false,
     });
   }
@@ -724,7 +724,7 @@ export default function CalendarView({
         )}
         {/* The weekly rota tick box sits just above the calendar (not printed). */}
         <RotaControl variant={variant} signedIn={signedIn} rota={rota} onChange={setRota} year={year} monthIndex={monthIndex} />
-        {!professional && (
+        {!professional && OCCASION_LINKS_VISIBLE && (
           <p className="cal-no-print" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "center", gap: 8, textAlign: "center", fontSize: 12.5, color: "#6B5F57", margin: "0 0 10px" }}>
             <span style={{ display: "inline-block", fontWeight: 700, fontSize: 10, padding: "2.5px 8px", borderRadius: 6, background: "#F1D2BE", color: "#6B3F24", boxShadow: "inset 0 0 0 2px #6B3F24" }}>Outlined</span>
             <span>dates have activities ready. Click one to see them.</span>

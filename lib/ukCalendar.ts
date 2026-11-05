@@ -206,7 +206,23 @@ export function occasionsForYear(year: number): CalendarOccasion[] {
   add(addDays(springBankHoliday, -6), "Chelsea Flower Show begins");
   add(addDays(springBankHoliday, -2), "Chelsea Flower Show ends");
   add(springBankHoliday, "Spring bank holiday", { bankHoliday: true });
+  // Dementia Action Week (Alzheimer's Society): the Monday-Sunday of the third full week of May.
+  const dementiaWeek = nthWeekday(year, 4, 1, 3);
+  add(dementiaWeek, "Dementia Action Week begins");
+  add(addDays(dementiaWeek, 6), "Dementia Action Week ends");
   add(utc(year, 5, 6), "D-Day anniversary");
+  // Carers Week and Learning Disability Week: announced for 2026 and 2027; other years follow the usual
+  // pattern (the Monday of the week containing 11 June, and the Monday of the week containing 17 June).
+  const mondayOfWeekWith = (m: number, d: number) => {
+    const day = utc(year, m, d);
+    return addDays(day, -((weekday(day) + 6) % 7));
+  };
+  const carersWeek = mondayOfWeekWith(5, 11);
+  add(carersWeek, "Carers Week begins");
+  add(addDays(carersWeek, 6), "Carers Week ends");
+  const learningDisabilityWeek = mondayOfWeekWith(5, 17);
+  add(learningDisabilityWeek, "Learning Disability Week begins");
+  add(addDays(learningDisabilityWeek, 6), "Learning Disability Week ends");
   add(nthWeekday(year, 5, 0, 3), "Father's Day");
   add(seasonStart(year, 1), "First day of summer");
   // Wimbledon starts five weeks before the first Monday of August and runs
@@ -216,15 +232,14 @@ export function occasionsForYear(year: number): CalendarOccasion[] {
   add(addDays(wimbledon, 13), "Wimbledon ends");
 
   // July-August
-  add(utc(year, 6, 4), "American Independence Day");
   add(utc(year, 6, 7), "World Chocolate Day");
-  add(utc(year, 6, 12), "Battle of the Boyne (NI)");
+  // Northern Ireland's 12 July bank holiday, shown plainly (it moves to Monday when it falls at a weekend).
+  bankHoliday(utc(year, 6, 12), "Bank holiday (Northern Ireland)", "Bank holiday (Northern Ireland, substitute)");
   const summerBankHoliday = nthWeekday(year, 7, 1, -1);
   add(utc(year, 7, 1), "Yorkshire Day");
   add(nthWeekday(year, 7, 1, 1), "Summer bank holiday (Scotland)", { bankHoliday: true });
   add(utc(year, 7, 8), "International Cat Day");
   add(utc(year, 7, 15), "VJ Day");
-  add(addDays(summerBankHoliday, -1), "Notting Hill Carnival begins");
   add(summerBankHoliday, "Summer bank holiday", { bankHoliday: true });
 
   // September-November

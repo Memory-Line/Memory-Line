@@ -30,12 +30,12 @@ export const PACK_DATES: Record<string, string | null> = {
   "22": "Father's Day",
   "23": "First day of summer",
   "24": null, // Wimbledon: left out
-  "25": "American Independence Day",
+  "25": null, // American Independence Day: removed from the calendar
   "26": "World Chocolate Day",
   "27": "Yorkshire Day",
   "28": "International Cat Day",
   "29": "VJ Day",
-  "30": "Notting Hill Carnival begins",
+  "30": null, // Notting Hill Carnival: removed from the calendar
   "31": "Battle of Britain Day",
   "32": "World Alzheimer's Day",
   "33": "First day of autumn",
