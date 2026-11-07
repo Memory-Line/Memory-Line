@@ -15,5 +15,5 @@ export default async function CalendarPage() {
       </div>
     );
   }
-  return <CalendarView variant="activity" homeName={await getHomeName(viewer.userId)} dementiaFriendly={viewer.dementiaFriendly} />;
+  return <CalendarView variant="activity" homeName={await getHomeName(viewer.userId)} dementiaFriendly={viewer.dementiaFriendly} showOccasionLinks={viewer.isAdmin} />;
 }

@@ -192,6 +192,12 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/boards"}
           />
           <NavItem
+            href="/dashboard/occasions"
+            icon={Settings2}
+            label="Occasions (admin)"
+            active={pathname.startsWith("/dashboard/occasions")}
+          />
+          <NavItem
             href="/dashboard/admin/play-data"
             icon={Settings2}
             label="Occasion puzzles (admin)"
