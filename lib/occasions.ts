@@ -19,7 +19,7 @@ export const OCCASION_LABELS = Array.from(
   )
 ).filter((label) => WITH_ACTIVITIES.has(label));
 
-// Dates that share another date's activities. All of December except Hanukkah and New Year is Christmas, so these
+// Dates that share another date's activities. All of December except Hanukkah and New Year is Christmas (and New Year's Eve shares New Year's Day), so these
 // link to the Christmas Day activities instead of having activities of their own.
 const ALIASES: Record<string, string> = {
   "Advent begins": "Christmas Day",
@@ -27,6 +27,7 @@ const ALIASES: Record<string, string> = {
   "First day of winter": "Christmas Day",
   "Christmas Eve": "Christmas Day",
   "Boxing Day": "Christmas Day",
+  "New Year's Eve": "New Year's Day",
 };
 export const occasionLabelFor = (label: string) => ALIASES[label] ?? label;
 
