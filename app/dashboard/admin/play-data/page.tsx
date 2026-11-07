@@ -1,5 +1,6 @@
 "use client";
 
+import DropZone from "@/components/DropZone";
 import { useRef, useState } from "react";
 
 // Loads the puzzle data for the calendar activities so they can be played online.
@@ -88,15 +89,12 @@ export default function PlayDataPage() {
       </p>
 
       <label className="block text-xs font-semibold text-inkSoft mb-1">The data files</label>
-      <input
-        type="file"
+      <DropZone
         accept=".json"
-        multiple
         disabled={running}
-        onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-        className="w-full text-sm mb-3"
+        hint="Drop the Calander-playdata folder, or its .json files."
+        onPick={(picked) => setFiles(picked.map((p) => p.file).filter((f) => f.name.toLowerCase().endsWith(".json")))}
       />
-      {files.length > 0 && <p className="text-xs text-inkSoft mb-3">{files.length} files chosen.</p>}
 
       <div className="flex gap-2 mb-4">
         <button

@@ -1,5 +1,6 @@
 "use client";
 
+import DropZone, { type Picked } from "@/components/DropZone";
 import { useRef, useState } from "react";
 import { OCCASIONS } from "@/lib/occasions";
 import { parsePackPath, type PackFile } from "@/lib/calendarPack";
@@ -29,7 +30,7 @@ export default function UploadCalendarPage() {
   const [finished, setFinished] = useState(false);
   const stopRef = useRef(false);
 
-  function onPick(list: FileList | null) {
+  function onPick(list: Picked[] | null) {
     setFinished(false);
     setFailures([]);
     setProgress({ done: 0, skipped: 0, failed: 0, total: 0 });
@@ -37,9 +38,9 @@ export default function UploadCalendarPage() {
     const found: Job[] = [];
     const missing: Record<string, number> = {};
     let other = 0;
-    for (const file of Array.from(list)) {
+    for (const { file, path: picked } of list) {
       if (!/\.pdf$/i.test(file.name)) continue;
-      const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+      const path = picked || file.name;
       const info = parsePackPath(path);
       if (!info) {
         other++;
@@ -163,15 +164,7 @@ export default function UploadCalendarPage() {
       </p>
 
       <label className="block text-xs font-semibold text-inkSoft mb-1">The folder</label>
-      <input
-        type="file"
-        multiple
-        // Not in React's typings, but supported by every current browser.
-        {...{ webkitdirectory: "" }}
-        disabled={running}
-        onChange={(e) => onPick(e.target.files)}
-        className="w-full text-sm mb-4"
-      />
+      <DropZone accept=".pdf" disabled={running} onPick={onPick} hint="Drop the one folder that holds all the unzipped calendar packs." />
 
       {jobs.length > 0 && (
         <div className="rounded-xl p-4 bg-card border border-line mb-4">
