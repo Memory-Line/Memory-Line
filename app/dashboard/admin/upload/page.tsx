@@ -1,5 +1,6 @@
 "use client";
 
+import DropZone, { type Picked } from "@/components/DropZone";
 import { useEffect, useState } from "react";
 import { CATEGORIES, categoryLabel, type Category } from "@/lib/data";
 import { OCCASIONS, THEMEABLE_CATEGORIES } from "@/lib/occasions";
@@ -52,7 +53,7 @@ export default function AdminUploadPage() {
   const [level, setLevel] = useState("");
   const [isAnswer, setIsAnswer] = useState(false);
   const [isLargePrint, setIsLargePrint] = useState(false);
-  const [files, setFiles] = useState<FileList | null>(null);
+  const [files, setFiles] = useState<Picked[] | null>(null);
   const [statuses, setStatuses] = useState<FileStatus[]>([]);
   const [uploading, setUploading] = useState(false);
   // Leave out files already on the site, so a stopped upload can carry on.
@@ -99,10 +100,10 @@ export default function AdminUploadPage() {
     // or level, and whether it's large print or an answer sheet, so a whole
     // pack can go up in one go. Worksheets go first so the large print and
     // answer files have something to attach to.
-    const jobs = Array.from(files)
-      .filter((f) => /\.pdf$/i.test(f.name))
-      .map((file) => {
-        const path = (file as File & { webkitRelativePath?: string }).webkitRelativePath || file.name;
+    const jobs = files
+      .filter((p) => /\.pdf$/i.test(p.file.name))
+      .map(({ file, path: picked }) => {
+        const path = picked || file.name;
         const answers = isAnswer || path.split("/").slice(0, -1).some((p) => ANSWERS_FOLDER.test(p.trim()));
         return {
           file,
@@ -329,24 +330,8 @@ export default function AdminUploadPage() {
         These are large print files (will be matched to an already-uploaded worksheet by filename)
       </label>
 
-      <label className="block text-xs font-semibold text-inkSoft mb-1">Files</label>
-      <input
-        type="file"
-        accept=".pdf"
-        multiple
-        onChange={(e) => setFiles(e.target.files)}
-        className="w-full text-sm mb-3"
-      />
-
-      <label className="block text-xs font-semibold text-inkSoft mb-1">…or a whole folder</label>
-      <input
-        type="file"
-        multiple
-        // Not in React's typings, but supported by every current browser.
-        {...{ webkitdirectory: "" }}
-        onChange={(e) => setFiles(e.target.files)}
-        className="w-full text-sm mb-1"
-      />
+      <label className="block text-xs font-semibold text-inkSoft mb-1">Files or a whole folder</label>
+      <DropZone accept=".pdf" disabled={uploading} onPick={setFiles} />
       <p className="text-xs text-inkSoft mb-4">
         Everything inside is uploaded. Files in a folder with "Large Print" in its name, or in
         an "Answers" folder, are attached after the standard files have gone up.
