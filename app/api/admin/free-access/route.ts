@@ -39,7 +39,7 @@ async function POST_(req: Request) {
       return NextResponse.json({ error: "Not authorized" }, { status: 403 });
     }
 
-    const { email, grant } = await req.json();
+    const { email, grant, resetStripe } = await req.json();
     if (typeof email !== "string" || !email.trim()) {
       return NextResponse.json({ error: "Enter an email address" }, { status: 400 });
     }
@@ -52,6 +52,16 @@ async function POST_(req: Request) {
         { error: `No account found for ${email.trim()}. They need to sign up first.` },
         { status: 404 }
       );
+    }
+
+    // Clears the Stripe details from an account that "paid" while Stripe was in test mode (nothing real is
+    // behind it), so it starts again as an ordinary account. Never use it on a real paying customer.
+    if (resetStripe === true) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { subscriptionStatus: "inactive", stripeCustomerId: null, stripeSubscriptionId: null, subscriptionRenewsAt: null, planEmailSentFor: null },
+      });
+      return NextResponse.json({ ok: true, message: `✓ ${user.email}: Stripe details cleared (was ${user.subscriptionStatus}).` });
     }
 
     const paid = ["active", "trialing", "past_due"].includes(user.subscriptionStatus);
