@@ -212,7 +212,7 @@ export async function buildBslPdf(signs: PrintSign[], logoPng: Uint8Array | null
     sansBold: await pdf.embedFont(StandardFonts.HelveticaBold),
   };
   const logo = logoPng ? await pdf.embedPng(logoPng) : null;
-  const stamp = `${whoFor ? `Downloaded for ${whoFor} · ` : ""}${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · activitycentral.co.uk`;
+  const stamp = `${whoFor ? `Downloaded for ${whoFor} · ` : ""}${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })} · activitycentral.co.uk · Sign videos from signbsl.com`;
   for (let i = 0; i < signs.length; i += 4) {
     const chunk = signs.slice(i, i + 4);
     const page = pdf.addPage([PAGE_W, PAGE_H]);
