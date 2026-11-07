@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
 import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
 import { getActiveSeason } from "@/lib/seasonDb";
-import { OCCASION_LINKS_VISIBLE, occasionHref } from "@/lib/occasions";
+import { OCCASION_LINKS_VISIBLE, isOccasionLive, occasionHref } from "@/lib/occasions";
 import {
   Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash, Dices, Heart,
   Palette, MessageCircle, Copy, Eye, Music, Languages, Hand, Newspaper,
@@ -103,7 +103,7 @@ export default async function DashboardHome({
           <p className="text-clay text-sm mt-0.5">Your library of engagement activities is ready to use</p>
         </>
       )}
-      {active && look && OCCASION_LINKS_VISIBLE && (
+      {active && look && (OCCASION_LINKS_VISIBLE || (look.occasion && isOccasionLive(look.occasion))) && (
         <Link
           href={look.occasion ? occasionHref(look.occasion) : "/dashboard/occasions"}
           className="festive-banner mt-3 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white"

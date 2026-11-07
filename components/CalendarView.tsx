@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
-import { OCCASIONS, OCCASION_LINKS_VISIBLE, occasionHref, occasionLabelFor, occasionSlug } from "@/lib/occasions";
+import { OCCASIONS, OCCASION_LINKS_VISIBLE, isOccasionLive, occasionHref, occasionLabelFor, occasionSlug } from "@/lib/occasions";
 import { occasionsForYear } from "@/lib/ukCalendar";
 import MonthPrint from "@/components/MonthPrint";
 import { parseNoteLines, serialiseNoteLines, noteIsEmpty, type NoteLine } from "@/lib/noteLines";
@@ -382,7 +382,7 @@ export default function CalendarView({
       label: e.label,
       // Only dates that have activities link through to a page; the rest
       // (bank holidays and so on) are just dates on the calendar.
-      link: (OCCASION_LINKS_VISIBLE || showOccasionLinks) && OCCASIONS.some((o) => o.slug === occasionSlug(occasionLabelFor(e.occasion ?? e.label))) ? occasionHref(occasionLabelFor(e.occasion ?? e.label)) : null,
+      link: (showOccasionLinks || isOccasionLive(occasionLabelFor(e.occasion ?? e.label))) && OCCASIONS.some((o) => o.slug === occasionSlug(occasionLabelFor(e.occasion ?? e.label))) ? occasionHref(occasionLabelFor(e.occasion ?? e.label)) : null,
       custom: false,
     });
   }
