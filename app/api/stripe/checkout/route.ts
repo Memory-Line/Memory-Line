@@ -45,31 +45,46 @@ async function POST_(req: Request) {
   }
 
   try {
-    let customerId = user.stripeCustomerId;
-    if (!customerId) {
+    const newCustomer = async () => {
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.name ?? undefined,
         metadata: { userId: user.id },
       });
-      customerId = customer.id;
       await prisma.user.update({
         where: { id: user.id },
-        data: { stripeCustomerId: customerId },
+        data: { stripeCustomerId: customer.id },
       });
-    }
+      return customer.id;
+    };
+    let customerId = user.stripeCustomerId ?? (await newCustomer());
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-    const checkoutSession = await stripe.checkout.sessions.create({
-      mode: "subscription",
-      customer: customerId,
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/dashboard?checkout=success`,
-      cancel_url: `${appUrl}/pricing?checkout=cancelled`,
-      metadata: { userId: user.id, plan },
-      subscription_data: { metadata: { userId: user.id, plan } },
-    });
+    const startCheckout = (customer: string) =>
+      stripe.checkout.sessions.create({
+        mode: "subscription",
+        customer,
+        line_items: [{ price: priceId, quantity: 1 }],
+        success_url: `${appUrl}/dashboard?checkout=success`,
+        cancel_url: `${appUrl}/pricing?checkout=cancelled`,
+        metadata: { userId: user.id, plan },
+        subscription_data: { metadata: { userId: user.id, plan } },
+      });
+
+    let checkoutSession;
+    try {
+      checkoutSession = await startCheckout(customerId);
+    } catch (err: any) {
+      // A customer saved while Stripe was in test mode doesn't exist once the site is on live keys
+      // ("No such customer"). Make a fresh one for this person and try again.
+      if (err?.code === "resource_missing" && err?.param === "customer") {
+        customerId = await newCustomer();
+        checkoutSession = await startCheckout(customerId);
+      } else {
+        throw err;
+      }
+    }
 
     return NextResponse.json({ url: checkoutSession.url });
   } catch (err: any) {
