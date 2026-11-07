@@ -52,5 +52,5 @@ export const PACK_DATES: Record<string, string | null> = {
   "44": null, // First day of winter: uses the Christmas Day activities
   "45": "Hanukkah begins at sunset",
   "46": null, // Boxing Day: uses the Christmas Day activities
-  "47": "New Year's Eve",
+  "47": null, // New Year's Eve: uses the New Year's Day activities
 };
