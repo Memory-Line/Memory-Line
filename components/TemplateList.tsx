@@ -33,6 +33,8 @@ export default async function TemplateList({
   isPremium = true,
   tiles = false,
   favouritesOnly = false,
+  palette,
+  deco,
 }: {
   templates: Template[];
   completedIds?: string[];
@@ -45,6 +47,9 @@ export default async function TemplateList({
   isPremium?: boolean;
   // Show the activities as multi-coloured tiles with tick boxes for printing several at once.
   tiles?: boolean;
+  // An occasion's own tile colours and the folder of its tile decorations.
+  palette?: { color: string; tint: string }[];
+  deco?: string;
   // Show just the starred activities, without the All / Favourites buttons.
   favouritesOnly?: boolean;
 }) {
@@ -87,6 +92,8 @@ export default async function TemplateList({
       playable={playable}
       isPremium={isPremium}
       tiles={tiles}
+      palette={palette}
+      deco={deco}
       favouritesOnly={favouritesOnly}
     />
   );

@@ -7,6 +7,7 @@ import { Download, Lock, Play, Printer, Search, Star, X } from "lucide-react";
 import CompleteButton from "@/components/CompleteButton";
 import VideoButton from "@/components/VideoButton";
 import { MAX_PRINT_PACK, TOPIC_COLOURS } from "@/lib/tiles";
+import type { TileColour } from "@/lib/occasionPalettes";
 import { printPack, type PrintFile } from "@/lib/printPack";
 import { warmPdfJs } from "@/lib/pdfPage";
 
@@ -130,6 +131,8 @@ function TileGrid({
   showComplete,
   playable,
   isPremium,
+  palette,
+  deco,
 }: {
   shown: TemplateRow[];
   loggedIn: boolean;
@@ -138,6 +141,9 @@ function TileGrid({
   showComplete: boolean;
   playable: boolean;
   isPremium: boolean;
+  palette?: TileColour[];
+  // The folder of an occasion's tile decorations (its motifs and figures), when the tiles are themed.
+  deco?: string;
 }) {
   const p = usePrintPack(shown);
   const { picked, busy, open, run } = p;
@@ -148,14 +154,28 @@ function TileGrid({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {shown.map((t, i) => {
-          const mix = TOPIC_COLOURS[i % TOPIC_COLOURS.length];
+          const colours = palette ?? TOPIC_COLOURS;
+          const mix = colours[i % colours.length];
           const on = picked.has(t.id);
           return (
             <div
               key={t.id}
-              className="ac-tile ac-tilecard rounded-2xl p-4 border flex flex-col gap-3 [content-visibility:auto] [contain-intrinsic-size:auto_170px]"
-              style={{ background: mix.tint, borderColor: on ? mix.color : "rgba(0,0,0,0.08)", borderWidth: on ? 2 : 1 }}
+              className={`ac-tile ac-tilecard rounded-2xl p-4 border flex flex-col gap-3 [content-visibility:auto] [contain-intrinsic-size:auto_170px]${deco ? " relative overflow-hidden" : ""}`}
+              style={
+                deco
+                  ? {
+                      backgroundColor: mix.tint,
+                      backgroundImage: `url(${deco}/fig-${i % 2}.png), url(${deco}/pat-${i % colours.length}.png)`,
+                      backgroundRepeat: "no-repeat, no-repeat",
+                      backgroundPosition: "right 6px bottom 4px, right 0 top 0",
+                      backgroundSize: "auto 74px, 100px 130px",
+                      borderColor: mix.color,
+                      borderWidth: on ? 3 : 2,
+                    }
+                  : { background: mix.tint, borderColor: on ? mix.color : "rgba(0,0,0,0.08)", borderWidth: on ? 2 : 1 }
+              }
             >
+              {deco && <div className="ac-deco absolute left-0 right-0 top-0 h-[7px]" style={{ background: mix.color }} aria-hidden="true" />}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-start gap-2.5 min-w-0">
                   {!t.locked && (
@@ -185,7 +205,7 @@ function TileGrid({
                   </button>
                 )}
               </div>
-              <div className="flex flex-wrap gap-2 mt-auto">
+              <div className="flex flex-wrap gap-2 mt-auto" style={deco ? { maxWidth: "78%" } : undefined}>
                 {t.locked ? (
                   <Upgrade />
                 ) : (
@@ -340,6 +360,8 @@ export default function TemplateRows({
   isPremium,
   tiles = false,
   favouritesOnly = false,
+  palette,
+  deco,
 }: {
   rows: TemplateRow[];
   themes: string[];
@@ -351,6 +373,9 @@ export default function TemplateRows({
   tiles?: boolean;
   // Only the activities this person has starred, without the All / Favourites buttons (the category page has its own tab).
   favouritesOnly?: boolean;
+  // An occasion's own tile colours and decorations (see lib/occasionPalettes.ts and public/occasion-tiles).
+  palette?: TileColour[];
+  deco?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -446,7 +471,7 @@ export default function TemplateRows({
       )}
 
       {tiles ? (
-        <TileGrid shown={shown} loggedIn={loggedIn} starred={starred} toggleStar={toggleStar} showComplete={showComplete} playable={playable} isPremium={isPremium} />
+        <TileGrid shown={shown} loggedIn={loggedIn} starred={starred} toggleStar={toggleStar} showComplete={showComplete} playable={playable} isPremium={isPremium} palette={palette} deco={deco} />
       ) : (
         <RowList shown={shown} loggedIn={loggedIn} starred={starred} toggleStar={toggleStar} showComplete={showComplete} playable={playable} isPremium={isPremium} />
       )}
