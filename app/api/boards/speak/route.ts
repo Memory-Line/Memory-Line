@@ -46,10 +46,19 @@ const VOICES: Record<string, Record<string, string>> = {
 };
 const LOCALE: Record<string, string> = { en: "en-GB", pl: "pl-PL", ur: "ur-PK", ro: "ro-RO", pt: "pt-PT", es: "es-ES", fr: "fr-FR", ar: "ar-SA", hi: "hi-IN", bn: "bn-IN", gu: "gu-IN", zh: "zh-CN", yue: "zh-HK", so: "so-SO", ta: "ta-IN", ml: "ml-IN", tl: "fil-PH", uk: "uk-UA", lt: "lt-LT", tr: "tr-TR", fa: "fa-IR", ru: "ru-RU", cy: "cy-GB", pa: "pa-IN" };
 
-// Clips whose first recording came out wrong (cut off, too quiet or a different number), said again with
-// hand-written SSML. Keyed "lang|voice|text". A fixed clip is saved under its own name (the tag is added to it),
-// so a copy kept by browsers or the CDN can never be played instead of the new one.
-const FIXES: Record<string, { tag: string; ssml: string }> = {};
+// Clips the audio check found faulty (cut off, too quiet or the wrong number), made again and kept as ordinary
+// files in public/boards/audio. Keyed "lang|voice|text". They are played from there instead of the saved
+// recording, which is left as it was.
+const FIXES: Record<string, string> = {
+  "pt|female|treze": "/boards/audio/fix-pt-female-13.mp3",
+  "pt|male|dezoito": "/boards/audio/fix-pt-male-18.mp3",
+  "ur|male|تئیس": "/boards/audio/fix-ur-male-23.mp3",
+  "hi|female|उनसठ": "/boards/audio/fix-hi-female-59.mp3",
+  "pa|male|ਪੈਂਹਠ": "/boards/audio/fix-pa-male-65.mp3",
+  "pa|female|ਪੈਂਹਠ": "/boards/audio/fix-pa-female-65.mp3",
+  "tr|male|bir": "/boards/audio/fix-tr-male-1.mp3",
+  "tr|male|üç": "/boards/audio/fix-tr-male-3.mp3",
+};
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
@@ -129,8 +138,7 @@ async function GET_(req: Request) {
   const key = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION;
   const hash = createHash("sha1").update(text).digest("hex").slice(0, 24);
-  const fix = FIXES[`${lang}|${voice}|${text}`];
-  const pathname = `speech/${lang}/${voice}/${hash}${fix ? `-${fix.tag}` : ""}.mp3`;
+  const pathname = `speech/${lang}/${voice}/${hash}.mp3`;
 
   // Admin only: try other wording for a clip. ?try=<label>&ssml=<what to say, as SSML> makes the clip and saves it
   // under speech-test/ (never where the site plays from) and returns its address, so it can be listened to first.
@@ -149,6 +157,9 @@ async function GET_(req: Request) {
     return NextResponse.json({ ok: true, url: saved.url });
   }
 
+  const fixed = FIXES[`${lang}|${voice}|${text}`];
+  if (fixed) return reply(new URL(fixed, req.url).toString());
+
   try {
     // Already made? Send them to the saved recording.
     const direct = savedUrl(pathname);
@@ -161,7 +172,7 @@ async function GET_(req: Request) {
     if (found.blobs[0]) return reply(found.blobs[0].url);
 
     if (!key || !region) return NextResponse.json({ error: "Speech is not set up" }, { status: 503 });
-    const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}">${fix ? fix.ssml : `<prosody rate="-6%">${esc(text)}</prosody>`}</voice></speak>`;
+    const ssml = `<speak version="1.0" xml:lang="${LOCALE[lang]}"><voice name="${name}"><prosody rate="-6%">${esc(text)}</prosody></voice></speak>`;
     const res = await fetch(`https://${region}.tts.speech.microsoft.com/cognitiveservices/v1`, {
       method: "POST",
       headers: {
