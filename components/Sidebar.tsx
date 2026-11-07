@@ -192,6 +192,12 @@ export default function Sidebar({
             active={pathname === "/dashboard/admin/boards"}
           />
           <NavItem
+            href="/dashboard/admin/play-data"
+            icon={Settings2}
+            label="Occasion puzzles (admin)"
+            active={pathname === "/dashboard/admin/play-data"}
+          />
+          <NavItem
             href="/dashboard/admin/bingo-voices"
             icon={Hash}
             label="Bingo voices"

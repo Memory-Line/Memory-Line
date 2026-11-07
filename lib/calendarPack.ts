@@ -47,3 +47,11 @@ export function parsePackPath(path: string): PackFile | null {
   const occasion = slug && OCCASIONS.some((o) => o.slug === slug) ? slug : null;
   return { path, prefix, occasion, category, kind };
 }
+
+// The site's occasion slug for a pack's date number ("38" -> bonfire night), or null if that date has no
+// activities page. The puzzle data files for playing online are named after these numbers.
+export function occasionForPrefix(prefix: string): string | null {
+  const label = prefix in PACK_DATES ? PACK_DATES[prefix] : null;
+  const slug = label ? occasionSlug(label) : null;
+  return slug && OCCASIONS.some((o) => o.slug === slug) ? slug : null;
+}

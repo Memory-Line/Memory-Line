@@ -295,6 +295,8 @@ model Download {
   downloadedAt DateTime @default(now())
 }
 model Template {
+  // The puzzle behind an occasion activity, for playing it online (see PlayData).
+  playData      PlayData?
   id            String   @id @default(cuid())
   title         String
   category      String
@@ -374,4 +376,14 @@ model Board {
   answers  Json
 
   @@index([areaSlug])
+}
+
+// What the online players need for one calendar-occasion activity: the grid and words of a word search, a
+// crossword's grid and clues, or a guess-the-word clue and answer. Made from the occasion packs' own PDFs
+// and loaded from the admin page "Load the puzzles", so what is played matches what is printed.
+model PlayData {
+  templateId String   @id
+  template   Template @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  data       Json
+  updatedAt  DateTime @updatedAt
 }
