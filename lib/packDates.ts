@@ -46,11 +46,11 @@ export const PACK_DATES: Record<string, string | null> = {
   "38": "Bonfire Night (Guy Fawkes Night)",
   "39": "Armistice Day",
   "40": "Remembrance Sunday",
-  "41": "Advent begins",
+  "41": null, // Advent: uses the Christmas Day activities
   "42": "St Andrew's Day",
-  "43": "St Nicholas Day",
-  "44": "First day of winter",
+  "43": null, // St Nicholas Day: uses the Christmas Day activities
+  "44": null, // First day of winter: uses the Christmas Day activities
   "45": "Hanukkah begins at sunset",
-  "46": "Boxing Day",
+  "46": null, // Boxing Day: uses the Christmas Day activities
   "47": "New Year's Eve",
 };

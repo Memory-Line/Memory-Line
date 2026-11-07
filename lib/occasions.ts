@@ -19,6 +19,17 @@ export const OCCASION_LABELS = Array.from(
   )
 ).filter((label) => WITH_ACTIVITIES.has(label));
 
+// Dates that share another date's activities. All of December except Hanukkah and New Year is Christmas, so these
+// link to the Christmas Day activities instead of having activities of their own.
+const ALIASES: Record<string, string> = {
+  "Advent begins": "Christmas Day",
+  "St Nicholas Day": "Christmas Day",
+  "First day of winter": "Christmas Day",
+  "Christmas Eve": "Christmas Day",
+  "Boxing Day": "Christmas Day",
+};
+export const occasionLabelFor = (label: string) => ALIASES[label] ?? label;
+
 export function occasionSlug(label: string): string {
   return label
     .toLowerCase()
@@ -36,6 +47,10 @@ export const OCCASIONS = OCCASION_LABELS.map((label) => ({ label, slug: occasion
 // occasions list shows them only if something was uploaded to them, so no
 // uploads are lost.
 export const LEGACY_OCCASIONS = [
+  "Advent begins",
+  "St Nicholas Day",
+  "First day of winter",
+  "Boxing Day",
   "American Independence Day",
   "Battle of the Boyne (NI)",
   "Notting Hill Carnival begins",
