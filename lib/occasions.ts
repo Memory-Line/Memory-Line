@@ -70,6 +70,10 @@ export function occasionBySlug(slug: string) {
 // until the themed content is finished. Set to true to show them again; the occasion pages themselves still work.
 export const OCCASION_LINKS_VISIBLE = false;
 
+// Occasions switched on for everyone, whatever OCCASION_LINKS_VISIBLE says. Add a slug here to open one up.
+export const LIVE_OCCASIONS = ["christmas-day", "new-years-day"];
+export const isOccasionLive = (label: string) => OCCASION_LINKS_VISIBLE || LIVE_OCCASIONS.includes(occasionSlug(label));
+
 export function occasionHref(label: string): string {
   return `/dashboard/occasions/${occasionSlug(label)}`;
 }
