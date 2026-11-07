@@ -54,8 +54,7 @@ export default async function BslSignPage({ params }: { params: { group: string;
         )}
       </div>
       <p className="text-xs text-inkSoft mt-8 leading-relaxed">
-        Sign videos are shown with thanks from SignBSL.com. Signs can differ between regions and between people, so check which sign the person
-        prefers, and use the signer buttons to see another version.
+        Signs can differ between regions and between people, so check which sign the person prefers, and use the signer buttons to see another version.
       </p>
     </div>
   );
