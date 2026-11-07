@@ -6,6 +6,7 @@ import { categoryBySlug } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug, THEMEABLE_CATEGORIES } from "@/lib/occasions";
 import { PLAY_FROM_PDF } from "@/lib/occasionPlay";
+import { OCCASION_PALETTES } from "@/lib/occasionPalettes";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 
@@ -62,7 +63,7 @@ export default async function OccasionCategoryPage({
       </div>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} playableIds={playableIds} />
+        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} playableIds={playableIds} tiles palette={OCCASION_PALETTES[occasion.slug]} deco={OCCASION_PALETTES[occasion.slug] ? `/occasion-tiles/${occasion.slug}` : undefined} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {category.key.toLowerCase()} for {occasion.label} yet.
