@@ -16,6 +16,17 @@ import { subcategoriesFor, subcategoryFromPath, usesTopics } from "@/lib/subcate
 const LARGE_PRINT_FOLDER = /large[-_\s]?print|(^|\/)a3(\/|$)/i;
 const ANSWERS_FOLDER = /^answers?(\s*(key|sheets?))?$/i;
 
+// The category a file belongs to when a folder in its path is named after one ("Pack/Colouring Pages/A4/001-….pdf"),
+// so a whole occasion folder with several categories inside can go up in one upload.
+function categoryFromPath(path: string, options: Category[]): string | null {
+  for (const part of path.split("/").slice(0, -1)) {
+    const name = part.trim().toLowerCase();
+    const hit = options.find((c) => c.key.toLowerCase() === name || categoryLabel(c.key).toLowerCase() === name);
+    if (hit) return hit.key;
+  }
+  return null;
+}
+
 type FileStatus = {
   name: string;
   status: "pending" | "uploading" | "done" | "skipped" | "error";
@@ -104,14 +115,17 @@ export default function AdminUploadPage() {
       .filter((p) => /\.pdf$/i.test(p.file.name))
       .map(({ file, path: picked }) => {
         const path = picked || file.name;
+        const jobCategory = categoryFromPath(path, categoryOptions) ?? category;
+        const jobLevels = occasion ? undefined : subcategoriesFor(jobCategory);
         const answers = isAnswer || path.split("/").slice(0, -1).some((p) => ANSWERS_FOLDER.test(p.trim()));
         return {
           file,
           path,
+          category: jobCategory,
           answers,
           largePrint: !answers && (isLargePrint || LARGE_PRINT_FOLDER.test(path)),
           language: isLanguageCategory ? languageFromPath(path) ?? language : "",
-          subcategory: levels ? subcategoryFromPath(category, path) ?? (level || levels[0].slug) : "",
+          subcategory: jobLevels ? subcategoryFromPath(jobCategory, path) ?? (level || jobLevels[0].slug) : "",
         };
       })
       .sort(
@@ -124,41 +138,48 @@ export default function AdminUploadPage() {
     // language/level/occasion) already has one attached.
     const skip = new Set<number>();
     if (skipExisting) {
-      try {
-        const res = await fetch(`/api/admin/upload-template?category=${encodeURIComponent(category)}`);
-        const data = await res.json();
-        if (res.ok && data?.ok) {
-          const worksheets = new Set<string>();
-          const variants = new Map<string, { largePrint: boolean; answers: boolean }>();
-          for (const e of data.existing as { fileName: string; number: string | null; scope: string; largePrint: boolean; answers: boolean }[]) {
-            worksheets.add(`${e.scope}|${e.fileName}`);
-            if (e.number) variants.set(`${e.scope}|${e.number}`, e);
-          }
-          jobs.forEach((j, i) => {
-            const scope = occasion || j.language || j.subcategory || "";
-            const number = j.file.name.match(/^(\d+)/)?.[1];
-            const worksheet = number ? variants.get(`${scope}|${parseInt(number, 10)}`) : undefined;
-            if (j.answers ? worksheet?.answers : j.largePrint ? worksheet?.largePrint : worksheets.has(`${scope}|${j.file.name}`)) {
-              skip.add(i);
+      type Existing = { fileName: string; number: string | null; scope: string; largePrint: boolean; answers: boolean };
+      const known = new Map<string, { worksheets: Set<string>; variants: Map<string, Existing> }>();
+      for (const cat of Array.from(new Set(jobs.map((j) => j.category)))) {
+        try {
+          const res = await fetch(`/api/admin/upload-template?category=${encodeURIComponent(cat)}`);
+          const data = await res.json();
+          if (res.ok && data?.ok) {
+            const worksheets = new Set<string>();
+            const variants = new Map<string, Existing>();
+            for (const e of data.existing as Existing[]) {
+              worksheets.add(`${e.scope}|${e.fileName}`);
+              if (e.number) variants.set(`${e.scope}|${e.number}`, e);
             }
-          });
+            known.set(cat, { worksheets, variants });
+          }
+        } catch {
+          // couldn't check this category; upload all of its files
         }
-      } catch {
-        // couldn't check; upload everything
       }
+      jobs.forEach((j, i) => {
+        const ex = known.get(j.category);
+        if (!ex) return;
+        const scope = occasion || j.language || j.subcategory || "";
+        const number = j.file.name.match(/^(\d+)/)?.[1];
+        const worksheet = number ? ex.variants.get(`${scope}|${parseInt(number, 10)}`) : undefined;
+        if (j.answers ? worksheet?.answers : j.largePrint ? worksheet?.largePrint : ex.worksheets.has(`${scope}|${j.file.name}`)) {
+          skip.add(i);
+        }
+      });
     }
 
     setStatuses(jobs.map((j, i) => ({ name: j.path, status: skip.has(i) ? "skipped" : "pending" })));
 
     const uploadOne = async (i: number) => {
-      const { file, largePrint, answers, language: jobLanguage, subcategory: jobLevel } = jobs[i];
+      const { file, category: jobCategory, largePrint, answers, language: jobLanguage, subcategory: jobLevel } = jobs[i];
       setStatuses((prev) =>
         prev.map((s, idx) => (idx === i ? { ...s, status: "uploading" } : s))
       );
 
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("category", category);
+      formData.append("category", jobCategory);
       formData.append("title", titleFromFilename(file.name));
       formData.append("isAnswer", String(answers));
       formData.append("isLargePrint", String(largePrint));
@@ -332,6 +353,19 @@ export default function AdminUploadPage() {
 
       <label className="block text-xs font-semibold text-inkSoft mb-1">Files or a whole folder</label>
       <DropZone accept=".pdf" disabled={uploading} onPick={setFiles} />
+      {files && files.length > 0 && (() => {
+        const counts = new Map<string, number>();
+        for (const p of files) {
+          if (!/\.pdf$/i.test(p.file.name)) continue;
+          const c = categoryFromPath(p.path, categoryOptions) ?? category;
+          counts.set(c, (counts.get(c) ?? 0) + 1);
+        }
+        return (
+          <p className="text-xs text-inkSoft mb-3">
+            Will go to: {Array.from(counts).map(([c, n]) => `${categoryLabel(c)} (${n})`).join(" · ")}. A folder named after a category sends its files there; anything else goes to the category chosen above.
+          </p>
+        );
+      })()}
       <p className="text-xs text-inkSoft mb-4">
         Everything inside is uploaded. Files in a folder with "Large Print" in its name, or in
         an "Answers" folder, are attached after the standard files have gone up.
