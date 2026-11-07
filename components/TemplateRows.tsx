@@ -19,6 +19,7 @@ export type TemplateRow = {
   hasLargePrint: boolean;
   hasAnswers: boolean;
   video: string | null;
+  play?: boolean; // overrides the list-wide `playable` for this one activity
   completed: boolean;
   starred: boolean;
 };
@@ -189,7 +190,7 @@ function TileGrid({
                   <Upgrade />
                 ) : (
                   <>
-                    {playable && (
+                    {(t.play ?? playable) && (
                       <Link href={`/dashboard/play/${t.id}`} prefetch={false} className={`${btnBase} ac-btn-play`} style={{ background: "#2F7A63", color: "#fff" }}>
                         <Play size={14} /> Play online
                       </Link>
@@ -286,7 +287,7 @@ function RowList({
                   <Upgrade />
                 ) : (
                   <>
-                    {playable && (
+                    {(t.play ?? playable) && (
                       <Link href={`/dashboard/play/${t.id}`} prefetch={false} className="flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold" style={{ background: "#2F7A63", color: "#fff" }}>
                         <Play size={14} />
                         Play online

@@ -29,6 +29,7 @@ export default async function TemplateList({
   templates,
   completedIds,
   playable = false,
+  playableIds,
   isPremium = true,
   tiles = false,
   favouritesOnly = false,
@@ -36,6 +37,9 @@ export default async function TemplateList({
   templates: Template[];
   completedIds?: string[];
   playable?: boolean;
+  // Instead of `playable` for the whole list: only these activities get "Play online" (calendar occasion
+  // pages, where only some have a puzzle).
+  playableIds?: string[];
   // Standard accounts: false. Defaults to true so callers that haven't been
   // updated yet (there shouldn't be any) don't accidentally lock everyone out.
   isPremium?: boolean;
@@ -69,6 +73,7 @@ export default async function TemplateList({
     hasLargePrint: !!t.largePrintFileUrl,
     hasAnswers: !!t.answerFileUrl,
     video: t.videoUrl ?? null,
+    play: playableIds ? playableIds.includes(t.id) : undefined,
     completed: !!done?.has(t.id),
     starred: starred.has(t.id),
   }));

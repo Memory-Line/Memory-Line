@@ -61,6 +61,6 @@ export function occasionHref(label: string): string {
 // The only categories that get themed activities for each occasion. Every other
 // category is left off the occasion pages, even though it still shows up
 // everywhere else (sidebar, dashboard home, etc).
-const OCCASION_CATEGORY_KEYS = ["Crosswords", "Word Searches", "Guess the Word", "Trivia", "Bingo"];
+const OCCASION_CATEGORY_KEYS = ["Crosswords", "Word Searches", "Guess the Word", "Colouring Pages", "Matching Pairs", "Remembrance Cards"];
 
 export const THEMEABLE_CATEGORIES = CATEGORIES.filter((c) => OCCASION_CATEGORY_KEYS.includes(c.key));

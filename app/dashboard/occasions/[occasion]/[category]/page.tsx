@@ -5,6 +5,7 @@ import { authOptions } from "@/lib/auth";
 import { categoryBySlug } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { occasionBySlug, THEMEABLE_CATEGORIES } from "@/lib/occasions";
+import { PLAY_FROM_PDF } from "@/lib/occasionPlay";
 import TemplateList from "@/components/TemplateList";
 import { completedIds, getViewer } from "@/lib/viewer";
 
@@ -23,6 +24,10 @@ export default async function OccasionCategoryPage({
     where: { category: category.key, occasion: occasion.slug },
     orderBy: { createdAt: "desc" },
   });
+  // Word searches, crosswords and guess-the-word are playable once their puzzle has been loaded; matching pairs and
+  // colouring pages are read straight from their own PDF, whose layout is the same for every occasion.
+  const stored = await prisma.playData.findMany({ where: { templateId: { in: templates.map((t) => t.id) } }, select: { templateId: true } });
+  const playableIds = PLAY_FROM_PDF.has(category.key) ? templates.map((t) => t.id) : stored.map((p) => p.templateId);
   const viewer = await getViewer();
   const done = viewer.has("completion-tracking")
     ? await completedIds(viewer.userId, templates.map((t) => t.id))
@@ -57,7 +62,7 @@ export default async function OccasionCategoryPage({
       </div>
 
       {templates.length > 0 ? (
-        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} />
+        <TemplateList templates={templates} completedIds={done} isPremium={viewer.isPremium} playableIds={playableIds} />
       ) : (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
           No {category.key.toLowerCase()} for {occasion.label} yet.

@@ -26,6 +26,8 @@ import ColouringPlayer from "@/components/ColouringPlayer";
 import MatchingPairsPlayer from "@/components/MatchingPairsPlayer";
 import SpotDifferencePlayer from "@/components/SpotDifferencePlayer";
 import { GameFrame } from "@/components/EasyView";
+import { occasionBySlug } from "@/lib/occasions";
+import { OCCASION_COLOURING_FRAME, OCCASION_MATCHING_PICTURES } from "@/lib/occasionPlay";
 
 export const dynamic = "force-dynamic";
 
@@ -136,6 +138,30 @@ export default async function PlayPage({ params }: { params: { id: string } }) {
       player = (
         <SpotDifferencePlayer {...common} pdfUrl={template.fileUrl ?? undefined} pictureA={data.pictureA} pictureB={data.pictureB} />
       );
+    }
+  }
+
+  // A calendar occasion's activity: word searches, crosswords and guess-the-word use the puzzle stored with the
+  // activity (PlayData); matching pairs and colouring pages are read from the activity's own PDF.
+  if (template.occasion && player === null) {
+    const occ = occasionBySlug(template.occasion);
+    back = {
+      href: `/dashboard/occasions/${template.occasion}/${category?.slug ?? ""}`,
+      label: `${occ?.label ?? "Calendar"}: ${template.category}`,
+    };
+    if (template.category === "Matching Pairs") {
+      player = <MatchingPairsPlayer {...common} pdfUrl={template.fileUrl ?? undefined} theme={displayTitle(template)} pictures={OCCASION_MATCHING_PICTURES} />;
+    } else if (template.category === "Colouring Pages") {
+      player = <ColouringPlayer {...common} pdfUrl={template.fileUrl ?? undefined} frame={OCCASION_COLOURING_FRAME} />;
+    } else {
+      const stored = await prisma.playData.findUnique({ where: { templateId: template.id } });
+      const d = stored?.data as any;
+      if (d) {
+        if (template.category === "Word Searches") player = <WordSearchPlayer {...common} grid={d.grid} words={d.words} />;
+        else if (template.category === "Crosswords")
+          player = <CrosswordPlayer {...common} rows={d.rows} cols={d.cols} solution={d.solution} numbers={d.numbers} across={d.across} down={d.down} />;
+        else if (template.category === "Guess the Word") player = <GuessTheWordPlayer {...common} clue={d.clue} answer={d.answer} tries={d.tries} />;
+      }
     }
   }
 
