@@ -43,7 +43,7 @@ export default function PrivacyPage() {
           <ul className="list-disc pl-5 space-y-1.5">
             <li>
               <span className="font-medium text-ink">Account details</span> — your name (or your
-              care home's name), email address, whether you've registered as a personal or
+              organisation's name), email address, whether you've registered as a personal or
               care-home account, and a password. Your password is stored as a one-way hash and is
               never stored or visible in plain text.
             </li>
@@ -70,7 +70,7 @@ export default function PrivacyPage() {
             <li>
               <span className="font-medium text-ink">Files, links and questionnaires</span> — files
               you upload to a shared link are stored so the link works. Answers to an online
-              questionnaire are emailed to the care home that set it up and are not kept by us.
+              questionnaire are emailed to the care organisation that set it up and are not kept by us.
             </li>
             <li>
               <span className="font-medium text-ink">Messages to us</span> — what you write when you
@@ -91,7 +91,7 @@ export default function PrivacyPage() {
             understanding how the library is used and keeping it useful, in a way that doesn't
             override your own rights and interests. We send news and offers by email to account holders and
             subscribers only if you have agreed (your consent), and you can withdraw that at any
-            time. Emails to care home businesses are covered in section 6.
+            time. Emails to care providers are covered in section 6.
           </p>
         </Section>
 
@@ -121,14 +121,14 @@ export default function PrivacyPage() {
           </p>
         </Section>
 
-        <Section title="6. Emails to care home businesses">
+        <Section title="6. Emails to care providers">
           <p>
-            We may email care homes and care providers (limited companies and similar
+            We may email care homes, care services and other care providers (limited companies and similar
             organisations) to tell them about Activity Central.
           </p>
           <p>
             <strong>Whose details we use.</strong> We use general business contact details that
-            organisations publish themselves, such as the contact email address on a care home&apos;s
+            organisations publish themselves, such as the contact email address on a care provider&apos;s
             own website, and public registers such as the Care Quality Commission&apos;s directory of
             services. We don&apos;t use personal email addresses, and we don&apos;t send this kind of email to
             sole traders or partnerships.
@@ -192,7 +192,7 @@ export default function PrivacyPage() {
 
         <Section title="9. Children's data">
           <p>
-            Activity Central is intended for use by care home staff and adults supporting people
+            Activity Central is intended for use by care teams and staff in care settings and adults supporting people
             living with dementia. It is not intended for use by children, and we do not knowingly
             collect personal data from children.
           </p>
