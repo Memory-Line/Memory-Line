@@ -8,17 +8,24 @@ export const PREVIEW_COOKIE = "season-preview";
 
 // The admin's settings, kept for a few minutes so a page view doesn't hit the
 // database every time. Saving settings clears this (tag "seasons").
-export const getSeasonRows = unstable_cache(
-  async () => {
-    try {
-      return await prisma.siteSeason.findMany();
-    } catch {
-      return [];
-    }
-  },
+// A failed read is never kept: unstable_cache does not store a thrown error, so the next page view tries
+// again. Meanwhile the last good answer is used, so a busy database can't switch the look off.
+const readSeasonRows = unstable_cache(
+  async () => prisma.siteSeason.findMany(),
   ["site-seasons"],
   { revalidate: 300, tags: ["seasons"] }
 );
+let lastGoodRows: Awaited<ReturnType<typeof readSeasonRows>> | null = null;
+
+export async function getSeasonRows() {
+  try {
+    const rows = await readSeasonRows();
+    lastGoodRows = rows;
+    return rows;
+  } catch {
+    return lastGoodRows ?? [];
+  }
+}
 
 type Row = { key: string; bannerText: string | null; forceNow: boolean };
 
