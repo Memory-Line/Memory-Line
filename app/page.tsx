@@ -419,6 +419,7 @@ export default async function LandingPage() {
         <p>© {new Date().getFullYear()} Activity Central. Built for care teams and care settings. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
         <p className="mt-3 text-[11px]">Activity Central Ltd · Registered in England and Wales, company number 17510590 · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ</p>
+        <p className="mt-1 text-[11px]">Activity Central Ltd is registered with the Information Commissioner&rsquo;s Office (ICO). Registration number: ZC295389.</p>
         <p className="mt-4 flex items-center justify-center gap-2">
           <Link href="/terms" className="hover:text-ink">Terms</Link>
           <span aria-hidden="true">·</span>
