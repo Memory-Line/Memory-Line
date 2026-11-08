@@ -184,6 +184,10 @@ export default function PrivacyPage() {
             also have the right to complain to the UK's data protection regulator, the
             Information Commissioner's Office (ICO), at ico.org.uk.
           </p>
+          <p>
+            Activity Central Ltd is registered with the Information Commissioner&rsquo;s Office (ICO).
+            Registration number: ZC295389.
+          </p>
         </Section>
 
         <Section title="9. Children's data">
