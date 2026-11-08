@@ -44,7 +44,7 @@ export default function PrivacyPage() {
             <li>
               <span className="font-medium text-ink">Account details</span> — your name (or your
               organisation's name), email address, whether you've registered as a personal or
-              care-home account, and a password. Your password is stored as a one-way hash and is
+              care-organisation account, and a password. Your password is stored as a one-way hash and is
               never stored or visible in plain text.
             </li>
             <li>
