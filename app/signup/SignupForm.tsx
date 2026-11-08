@@ -84,7 +84,7 @@ export default function SignupForm() {
               <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    ["care-home", "A care home"],
+                    ["care-home", "A care organisation / service"],
                     ["personal", "Personal use"],
                   ] as const
                 ).map(([value, label]) => (
@@ -108,7 +108,7 @@ export default function SignupForm() {
             </div>
             <div>
               <label className="block text-xs font-semibold text-inkSoft mb-1">
-                {accountType === "care-home" ? "Care home name" : "Your name"}
+                {accountType === "care-home" ? "Organisation name" : "Your name"}
               </label>
               <input
                 required

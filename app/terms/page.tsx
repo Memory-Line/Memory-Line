@@ -32,7 +32,7 @@ export default function TermsPage() {
         <Section title="1. Who we are">
           <p>
             Activity Central ("we", "us", "our") provides an online subscription library of
-            downloadable and printable activity resources for care home activity teams and
+            downloadable and printable activity resources for care teams and care settings, and
             individuals supporting people living with dementia.
           </p>
           <p>
@@ -66,7 +66,7 @@ export default function TermsPage() {
           </p>
           <p>
             You must provide accurate information when registering, including whether the account
-            is for personal use or on behalf of a care home.
+            is for personal use or on behalf of a care organisation or service.
           </p>
         </Section>
 
