@@ -99,10 +99,10 @@ export default async function LandingPage() {
           <p className="inline-block rounded-full bg-cardTint text-sageDeep font-semibold text-sm px-4 py-1.5 mb-5">Coming soon</p>
         )}
         <p className="text-clay font-semibold text-sm tracking-wide uppercase mb-4">
-          For care home activity teams
+          For care teams and care settings
         </p>
         <h1 className="font-serif text-[34px] sm:text-5xl leading-tight text-ink mb-5 sm:mb-6">
-          A ready-made library of engagement activities for care homes
+          A ready-made library of engagement activities for care teams
         </h1>
         <p className="text-inkSoft text-base sm:text-lg max-w-2xl mx-auto mb-8 sm:mb-9">
           Ready-to-run downloadable activities across physical &amp; exercise, word puzzles, trivia
@@ -366,7 +366,7 @@ export default async function LandingPage() {
             {/* Premium */}
             <div className="flex-1 w-full relative flex flex-col rounded-2xl border-[3px] border-clay bg-card p-6 sm:p-8 shadow-[0_18px_36px_-14px_rgba(176,137,104,0.4)]">
               <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">
-                Recommended for care homes
+                Recommended for care settings
               </span>
 
               <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
@@ -416,7 +416,7 @@ export default async function LandingPage() {
       )}
 
       <footer className="border-t border-line py-8 px-5 sm:px-8 text-center text-xs text-inkSoft max-w-3xl mx-auto">
-        <p>© {new Date().getFullYear()} Activity Central. Built for care home activity teams. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
+        <p>© {new Date().getFullYear()} Activity Central. Built for care teams and care settings. <Link href="/support" className="underline hover:text-ink">Support</Link></p>
         <p className="mt-3 text-[11px] leading-relaxed">Titles, descriptions, and linked videos are generated to closely match each activity, but may occasionally be inaccurate or mismatched. Staff should always review an activity and any linked video before use, and use their professional judgement to ensure it is safe and appropriate for the residents taking part.</p>
         <p className="mt-3 text-[11px]">Activity Central Ltd · Registered in England and Wales, company number 17510590 · 71-75 Shelton Street, Covent Garden, London, WC2H 9JQ</p>
         <p className="mt-4 flex items-center justify-center gap-2">
