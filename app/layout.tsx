@@ -9,9 +9,9 @@ import { seasonVars } from "@/lib/seasons";
 // Pages follow the date (a seasonal look can switch on or off), so none of them is built once and kept.
 export const dynamic = "force-dynamic";
 
-const SITE_TITLE = "Activity Central – Engagement activities for care home staff";
+const SITE_TITLE = "Activity Central – Engagement activities for care teams";
 const SITE_DESCRIPTION =
-  "A subscription library of ready-to-use engagement activities for care homes: puzzles and games, quizzes, sing-alongs, reminiscence newsletters and talking communication boards, ready to print or play on screen.";
+  "A subscription library of ready-to-use engagement activities for care teams and care settings: puzzles and games, quizzes, sing-alongs, reminiscence newsletters and talking communication boards, ready to print or play on screen.";
 
 // openGraph and twitter are what Facebook, LinkedIn and similar sites show when the link is shared.
 export const metadata: Metadata = {

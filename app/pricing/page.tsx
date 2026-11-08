@@ -110,7 +110,7 @@ export default function PricingPage() {
           {/* Premium */}
           <div className="flex-1 w-full relative flex flex-col rounded-2xl border-[3px] border-clay bg-card p-6 sm:p-8 shadow-[0_18px_36px_-14px_rgba(176,137,104,0.4)]">
             <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-clay px-4 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white">
-              Recommended for care homes
+              Recommended for care settings
             </span>
 
             <p className="font-serif text-lg text-sageDeep mb-1 mt-1">Premium</p>
