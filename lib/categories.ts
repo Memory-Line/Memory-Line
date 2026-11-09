@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { CATEGORIES, type Category } from "@/lib/data";
+import { getActiveSeason } from "@/lib/seasonDb";
 
 // The categories people see: the built-in ones (lib/data.ts) minus any the admin has
 // removed, plus any the admin has made. If the database can't be read the built-in
@@ -13,7 +14,14 @@ export function slugify(name: string) {
 
 // Read from the database at most every five minutes, not on every page. The admin's category screen clears it
 // straight away (tag "categories"), so a change shows at once.
-export const getCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 300, tags: ["categories"] });
+const readAllCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 300, tags: ["categories"] });
+
+// Christmas Carols is only on the site while the Christmas look is on.
+export async function getCategories(): Promise<SiteCategory[]> {
+  const all = await readAllCategories();
+  const season = await getActiveSeason().catch(() => null);
+  return season?.season.key === "christmas" ? all : all.filter((c) => c.key !== "Christmas Carols");
+}
 
 async function readCategories(): Promise<SiteCategory[]> {
   try {

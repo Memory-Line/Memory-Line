@@ -53,6 +53,7 @@ export const CATEGORY_ICONS: Record<string, any> = {
   "Matching Pairs": Layers,
   "Spot the Difference": Eye,
   "Sing-Alongs": Mic,
+  "Christmas Carols": Music,
   "Communication Cards": MessageSquareText,
   "BSL Tools": Hand,
   Newsletters: Newspaper,

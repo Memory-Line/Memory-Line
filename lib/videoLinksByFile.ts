@@ -3,6 +3,30 @@
 // video index supplied with each pack). Large print versions attach to
 // their worksheet, so they pick up the same video.
 export const VIDEO_LINKS_BY_FILE: Record<string, Record<string, string>> = {
+  "Christmas Carols": {
+    "001-silent-night-carol.pdf": "https://www.youtube.com/watch?v=nEH7_2c644Q",
+    "002-away-in-a-manger-carol.pdf": "https://www.youtube.com/watch?v=AnwO_0DrpCk",
+    "003-o-come-all-ye-faithful-carol.pdf": "https://www.youtube.com/watch?v=1tM5pwvUGMI",
+    "004-hark-the-herald-angels-sing-carol.pdf": "https://www.youtube.com/watch?v=xqooC4ZG75Y",
+    "005-the-first-noel-carol.pdf": "https://www.youtube.com/watch?v=D5uud2fjtoo",
+    "006-once-in-royal-davids-city-carol.pdf": "https://www.youtube.com/watch?v=knEuXzMpTbE",
+    "007-o-little-town-of-bethlehem-carol.pdf": "https://www.youtube.com/watch?v=sI7_TGZaOIE",
+    "008-while-shepherds-watched-their-flocks-carol.pdf": "https://www.youtube.com/watch?v=eSyUvOUZwxQ",
+    "009-good-king-wenceslas-carol.pdf": "https://www.youtube.com/watch?v=tMRj0i6N0E8",
+    "010-god-rest-ye-merry-gentlemen-carol.pdf": "https://www.youtube.com/watch?v=ECe81D3Gz6c",
+    "011-we-three-kings-carol.pdf": "https://www.youtube.com/watch?v=jBwL3y-Wlms",
+    "012-joy-to-the-world-carol.pdf": "https://www.youtube.com/watch?v=30OaM6b48k8",
+    "013-deck-the-halls-carol.pdf": "https://www.youtube.com/watch?v=SIFqnEoctI4",
+    "014-ding-dong-merrily-on-high-carol.pdf": "https://www.youtube.com/watch?v=zJbRURK3zWo",
+    "015-the-holly-and-the-ivy-carol.pdf": "https://www.youtube.com/watch?v=LgzgmEJoCSw",
+    "016-o-christmas-tree-carol.pdf": "https://www.youtube.com/watch?v=zQLdqnICsS8",
+    "017-we-wish-you-a-merry-christmas-carol.pdf": "https://www.youtube.com/watch?v=g-OF7KGyDis",
+    "018-jingle-bells-carol.pdf": "https://www.youtube.com/watch?v=3CWJNqyub3o",
+    "019-angels-from-the-realms-of-glory-carol.pdf": "https://www.youtube.com/watch?v=p5CZ8STVcks",
+    "020-it-came-upon-the-midnight-clear-carol.pdf": "https://www.youtube.com/watch?v=TqfIjm0E1Fk",
+    "021-i-saw-three-ships-carol.pdf": "https://www.youtube.com/watch?v=wM6ppOuPuxk",
+    "022-the-twelve-days-of-christmas-carol.pdf": "https://www.youtube.com/watch?v=oyEyMjdD2uk",
+  },
   "Sing-Alongs": {
     "001-moonlight-bay-singalong.pdf": "https://www.youtube.com/watch?v=fTg6lw4O0w4",
     "002-pack-up-your-troubles-singalong.pdf": "https://www.youtube.com/watch?v=USTf1dkXmSE",
