@@ -25,6 +25,8 @@ export const CATEGORIES: Category[] = [
   { key: "Matching Pairs", slug: "matching-pairs", color: "#C97B5A", tint: "#EFDCCB" },
   { key: "Spot the Difference", slug: "spot-the-difference", color: "#6E56A0", tint: "#E0D7EE" },
   { key: "Sing-Alongs", slug: "sing-alongs", color: "#A78BB5", tint: "#E7DEEC" },
+  // Only shown while the Christmas look is on (see lib/categories.ts).
+  { key: "Christmas Carols", slug: "christmas-carols", color: "#B3272D", tint: "#F3DAD8" },
   { key: "Communication Cards", slug: "communication-cards", color: "#B5453D", tint: "#F3DAD8" },
   { key: "BSL Tools", slug: "bsl-tools", color: "#5A8A44", tint: "#DCEAD5" },
   { key: "Newsletters", slug: "newsletters", color: "#B5714A", tint: "#F3E3D6" },

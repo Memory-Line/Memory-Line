@@ -114,6 +114,16 @@ export default async function DashboardHome({
           <span>{look.label} activities are ready. Open the {look.label} activities &rsaquo;</span>
         </Link>
       )}
+      {active && look?.key === "christmas" && (
+        <Link
+          href="/dashboard/christmas-carols"
+          className="festive-banner mt-3 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-white"
+          style={{ background: "#8E1D22", boxShadow: "inset 0 0 0 3px #F6D98B" }}
+        >
+          <Music size={22} aria-hidden="true" />
+          <span>Christmas Carols are ready. Open the Christmas Carols &rsaquo;</span>
+        </Link>
+      )}
 
       {searchParams?.billing && (
         <p className="mt-4 rounded-lg px-3 py-2 text-sm bg-cardTint text-ink">

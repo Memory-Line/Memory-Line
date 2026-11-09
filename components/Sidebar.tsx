@@ -30,6 +30,7 @@ const HOVER_COLORS: Record<string, string> = {
   "Matching Pairs": "#B5714A",
   "Spot the Difference": "#6E56A0",
   "Sing-Alongs": "#2F7A63",
+  "Christmas Carols": "#B3272D",
   "Communication Cards": "#A23B3B",
   "BSL Tools": "#3E6E4A",
   Newsletters: "#B5714A",
