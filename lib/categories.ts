@@ -49,6 +49,12 @@ async function readCategories(): Promise<SiteCategory[]> {
   }
 }
 
+// A category that has been switched off with the Hide button (so its page can say it is being updated).
+export async function getHiddenCategoryBySlug(slug: string) {
+  const [all, hidden] = await Promise.all([readAllCategories(), getHiddenCategoryNames()]);
+  return all.find((c) => c.slug === slug && hidden.includes(c.key));
+}
+
 export async function getCategoryBySlug(slug: string) {
   return (await getCategories()).find((c) => c.slug === slug);
 }

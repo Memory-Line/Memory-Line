@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCategoryBySlug } from "@/lib/categories";
+import { getCategoryBySlug, getHiddenCategoryBySlug } from "@/lib/categories";
+import { categoryLabel } from "@/lib/data";
+import CategoryMaintenance from "@/components/CategoryMaintenance";
 import { prisma } from "@/lib/prisma";
 import { subcategoryBySlug, usesTopics, EARLIER } from "@/lib/subcategories";
 import { completedIds, getViewer } from "@/lib/viewer";
@@ -16,6 +18,10 @@ export default async function SubcategoryPage({
   params: { category: string; sub: string };
 }) {
   const category = await getCategoryBySlug(params.category);
+  if (!category) {
+    const hidden = await getHiddenCategoryBySlug(params.category);
+    if (hidden) return <CategoryMaintenance name={categoryLabel(hidden.key)} />;
+  }
   // "other" is the tile for activities made before the category was sorted into topics.
   const sub = category && (subcategoryBySlug(category.key, params.sub) ?? (usesTopics(category.key) && params.sub === EARLIER.slug ? EARLIER : undefined));
   if (!category || !sub) notFound();
