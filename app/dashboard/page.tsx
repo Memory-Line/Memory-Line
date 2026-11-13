@@ -203,16 +203,18 @@ export default async function DashboardHome({
               <Link
                 key={c.slug}
                 href={`/dashboard/${c.slug}`}
-                className="ac-tile flex items-center gap-2 rounded-lg p-3"
+                className="ac-tile flex items-center gap-1.5 sm:gap-2 rounded-lg p-2 sm:p-3"
                 style={look ? { background: c.tint, border: `2px solid ${look.palette.sage}` } : { background: c.tint }}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: c.color }}>
+                <span className="flex h-7 w-7 sm:h-9 sm:w-9 shrink-0 items-center justify-center rounded-full [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-[19px] sm:[&>svg]:w-[19px]" style={{ background: c.color }}>
                   <Icon size={19} color="#fff" aria-hidden="true" />
                 </span>
-                <span className="text-sm font-semibold">{categoryLabel(c.key)}</span>
+                {/* min-w-0 + break-words: a long name wraps inside the tile instead of running out of it on a phone. */}
+                <span className="min-w-0 text-xs sm:text-sm font-semibold leading-snug [overflow-wrap:anywhere]">{categoryLabel(c.key)}</span>
                 {look && (
+                  // The seasonal picture is left out on phones, where the tile has no room to spare for it.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img alt="" aria-hidden="true" src={`/season/${look.icons[c.slug.length % look.icons.length]}.svg`} className="ml-auto" style={{ height: 20, width: "auto", opacity: 0.85 }} />
+                  <img alt="" aria-hidden="true" src={`/season/${look.icons[c.slug.length % look.icons.length]}.svg`} className="ml-auto hidden sm:block" style={{ height: 20, width: "auto", opacity: 0.85 }} />
                 )}
               </Link>
             );
