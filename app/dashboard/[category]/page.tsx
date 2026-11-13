@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getCategoryBySlug } from "@/lib/categories";
+import { getCategoryBySlug, getHiddenCategoryBySlug } from "@/lib/categories";
+import { categoryLabel } from "@/lib/data";
+import CategoryMaintenance from "@/components/CategoryMaintenance";
 import { prisma } from "@/lib/prisma";
 import TemplateList from "@/components/TemplateList";
 import { subcategoriesFor, usesTopics, EARLIER } from "@/lib/subcategories";
@@ -44,7 +46,11 @@ const SUBTITLES: Record<string, string> = {
 
 export default async function CategoryPage({ params }: { params: { category: string } }) {
   const category = await getCategoryBySlug(params.category);
-  if (!category) notFound();
+  if (!category) {
+    const hidden = await getHiddenCategoryBySlug(params.category);
+    if (hidden) return <CategoryMaintenance name={categoryLabel(hidden.key)} />;
+    notFound();
+  }
 
   // Categories split into sub-categories (e.g. Sudoku levels): pick one first.
   const viewer = await getViewer();
