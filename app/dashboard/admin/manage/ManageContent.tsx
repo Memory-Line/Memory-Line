@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { categoryLabel } from "@/lib/data";
 
-type Cat = { name: string; builtIn: boolean; removed: boolean; count: number; icon?: string };
+type Cat = { name: string; builtIn: boolean; removed: boolean; hidden?: boolean; count: number; icon?: string };
 type Colour = { name: string; color: string; tint: string };
 type Item = { id: string; title: string; fileName: string; hasAnswers: boolean; hasLargePrint: boolean };
 
@@ -91,6 +91,13 @@ export default function ManageContent() {
     setList(null);
   }
 
+  async function setHidden(c: Cat, hide: boolean) {
+    const { ok, data } = await call("/api/admin/categories", "POST", { action: hide ? "hide" : "show", name: c.name });
+    if (!ok) return setMessage({ ok: false, text: data.error ?? "That didn't work." });
+    setMessage({ ok: true, text: hide ? `"${c.name}" is hidden from customers. Nothing was deleted.` : `"${c.name}" is showing to customers again.` });
+    loadCats();
+  }
+
   async function restoreCategory(c: Cat) {
     await call("/api/admin/categories", "POST", { action: "restore", name: c.name });
     setMessage({ ok: true, text: `"${c.name}" is back (empty). Upload activities into it again.` });
@@ -155,7 +162,7 @@ export default function ManageContent() {
 
       <section className={box}>
         <h2 className="font-serif text-lg mb-1">Categories</h2>
-        <p className="text-[13px] text-inkSoft mb-3">Removing a category deletes all its activities for good. Calendar occasion packs are not touched.</p>
+        <p className="text-[13px] text-inkSoft mb-3">Hide takes a category off the site for customers and deletes nothing. Removing a category deletes all its activities for good. Calendar occasion packs are not touched.</p>
         {cats === null && <p className="text-sm text-inkSoft">Loading...</p>}
         <div className="divide-y divide-line">
           {live.map((c) => (
@@ -163,9 +170,15 @@ export default function ManageContent() {
               <span>
                 <b>{c.name}</b> <span className="text-inkSoft">· {c.count} activities{c.builtIn ? "" : " · made by you"}</span>
               </span>
-              <button type="button" disabled={busy} onClick={() => removeCategory(c)} className="text-xs font-semibold text-red-600 underline disabled:opacity-60">
-                Remove category
-              </button>
+              <span className="flex items-center gap-3 shrink-0">
+                {c.hidden && <span className="text-xs font-semibold text-clay">Hidden from customers</span>}
+                <button type="button" disabled={busy} onClick={() => setHidden(c, !c.hidden)} className="text-xs font-semibold text-sageDeep underline disabled:opacity-60">
+                  {c.hidden ? "Show again" : "Hide from customers"}
+                </button>
+                <button type="button" disabled={busy} onClick={() => removeCategory(c)} className="text-xs font-semibold text-red-600 underline disabled:opacity-60">
+                  Remove category
+                </button>
+              </span>
             </div>
           ))}
         </div>
