@@ -13,7 +13,25 @@ export function slugify(name: string) {
 
 // Read from the database at most every five minutes, not on every page. The admin's category screen clears it
 // straight away (tag "categories"), so a change shows at once.
-export const getCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 300, tags: ["categories"] });
+// Categories hidden with the admin's Hide button. If the table can't be read, nothing is hidden.
+export const getHiddenCategoryNames = unstable_cache(
+  async (): Promise<string[]> => {
+    try {
+      return (await prisma.hiddenCategory.findMany({ select: { name: true } })).map((h) => h.name);
+    } catch {
+      return [];
+    }
+  },
+  ["hidden-categories"],
+  { revalidate: 300, tags: ["categories"] }
+);
+
+const readAllCategories = unstable_cache(readCategories, ["site-categories"], { revalidate: 300, tags: ["categories"] });
+
+export async function getCategories(): Promise<SiteCategory[]> {
+  const [all, hidden] = await Promise.all([readAllCategories(), getHiddenCategoryNames()]);
+  return all.filter((c) => !hidden.includes(c.key));
+}
 
 async function readCategories(): Promise<SiteCategory[]> {
   try {

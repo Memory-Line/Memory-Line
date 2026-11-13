@@ -2,7 +2,7 @@ import Link from "next/link";
 import { categoryLabel } from "@/lib/data";
 import { getSession } from "@/lib/viewer";
 import { prisma } from "@/lib/prisma";
-import { getCategories } from "@/lib/categories";
+import { getCategories, getHiddenCategoryNames } from "@/lib/categories";
 import { customIcon, CATEGORY_ICONS as ICONS } from "@/lib/categoryIcons";
 import { getActiveSeason } from "@/lib/seasonDb";
 import { OCCASION_LINKS_VISIBLE, isOccasionLive, occasionHref } from "@/lib/occasions";
@@ -19,11 +19,12 @@ export default async function DashboardHome({
 }) {
   const session = await getSession();
   const userId = session!.user.id;
+  const hiddenNames = await getHiddenCategoryNames();
   const [categories, latestDownloads, activityCount, account, active] = await Promise.all([
     getCategories(),
     // The last downloads of activities that still exist (downloads of the old sample activities are skipped).
     prisma.download.findMany({ where: { userId }, orderBy: { downloadedAt: "desc" }, take: 20 }),
-    prisma.template.count({ where: { occasion: null } }),
+    prisma.template.count({ where: { occasion: null, category: { notIn: hiddenNames } } }),
     prisma.user.findUnique({ where: { id: userId }, select: { accountType: true } }),
     getActiveSeason(),
   ]);
@@ -37,7 +38,7 @@ export default async function DashboardHome({
       })
     ).map((t) => t.id)
   );
-  const recentDownloads = latestDownloads.filter((d) => existingIds.has(d.templateId)).slice(0, 3);
+  const recentDownloads = latestDownloads.filter((d) => existingIds.has(d.templateId) && !hiddenNames.includes(d.category)).slice(0, 3);
 
   // Care homes are greeted by the home's full name ("Westcliff Lodge"),
   // personal accounts by first name.
@@ -73,7 +74,7 @@ export default async function DashboardHome({
     ).map((t) => t.id)
   );
   const popular = topDownloads
-    .filter((d) => stillThere.has(d.templateId))
+    .filter((d) => stillThere.has(d.templateId) && !hiddenNames.includes(d.category))
     .slice(0, 4)
     .map((d) => ({ id: d.templateId, title: d.templateName, category: d.category }));
 

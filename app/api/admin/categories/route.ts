@@ -15,17 +15,19 @@ export const maxDuration = 60;
 // Admin only. The categories (built-in and made by you) with how many activities each has.
 async function GET_() {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
-  const [removed, custom, counts] = await Promise.all([
+  const [removed, custom, counts, hiddenRows] = await Promise.all([
     prisma.removedCategory.findMany(),
     prisma.customCategory.findMany({ orderBy: [{ position: "asc" }, { createdAt: "asc" }] }),
     prisma.template.groupBy({ by: ["category"], where: { occasion: null }, _count: { _all: true } }),
+    prisma.hiddenCategory.findMany().catch(() => []),
   ]);
   const gone = new Set(removed.map((r) => r.name));
+  const hiddenSet = new Set(hiddenRows.map((h) => h.name));
   const countFor = (name: string) => counts.find((c) => c.category === name)?._count._all ?? 0;
   return NextResponse.json({
     categories: [
-      ...CATEGORIES.map((c) => ({ name: c.key, builtIn: true, removed: gone.has(c.key), count: countFor(c.key) })),
-      ...custom.map((c) => ({ name: c.name, slug: c.slug, builtIn: false, removed: false, count: countFor(c.name), icon: c.icon, color: c.color })),
+      ...CATEGORIES.map((c) => ({ name: c.key, builtIn: true, removed: gone.has(c.key), hidden: hiddenSet.has(c.key), count: countFor(c.key) })),
+      ...custom.map((c) => ({ name: c.name, slug: c.slug, builtIn: false, removed: false, hidden: hiddenSet.has(c.name), count: countFor(c.name), icon: c.icon, color: c.color })),
     ],
     icons: ICON_CHOICES,
     colours: COLOUR_CHOICES,
@@ -36,6 +38,16 @@ async function GET_() {
 async function POST_(req: Request) {
   if (!(await requireAdmin())) return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   const body = await req.json().catch(() => ({}));
+
+  // Hide a category from customers without deleting anything, and show it again.
+  if (body.action === "hide" || body.action === "show") {
+    const hideName = String(body.name ?? "");
+    if (!hideName) return NextResponse.json({ error: "Which category?" }, { status: 400 });
+    if (body.action === "hide") await prisma.hiddenCategory.upsert({ where: { name: hideName }, create: { name: hideName }, update: {} });
+    else await prisma.hiddenCategory.deleteMany({ where: { name: hideName } });
+    revalidateTag("categories");
+    return NextResponse.json({ ok: true });
+  }
 
   if (body.action === "restore") {
     await prisma.removedCategory.deleteMany({ where: { name: String(body.name ?? "") } });
