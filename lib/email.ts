@@ -177,6 +177,30 @@ Questions? Reply to this email or write to support@activitycentral.co.uk.`,
   };
 }
 
+// Sent to an address someone asked to stop our emails to, so the owner of the address confirms it is really them.
+export function stopConfirmEmail(to: string, link: string): Message {
+  return {
+    to,
+    subject: "Please confirm: stop emails from Activity Central",
+    html: layout(
+      "Confirm you want to stop our emails",
+      `<p>Hello,</p>
+<p>Someone asked us to stop emailing this address. To confirm it was you, press the button below. The link works for 48 hours.</p>
+${button(link, "Yes, stop emailing me")}
+<p>If it wasn't you, ignore this email: nothing changes and you'll carry on hearing from us as before.</p>`
+    ),
+    text: `Hello,
+
+Someone asked us to stop emailing this address. To confirm it was you, use this link. It works for 48 hours:
+
+${link}
+
+If it wasn't you, ignore this email: nothing changes and you'll carry on hearing from us as before.
+
+Questions? Reply to this email or write to support@activitycentral.co.uk.`,
+  };
+}
+
 // Goes to the support inbox, with Reply set to the customer so answering it in
 // Gmail goes straight back to them.
 export function supportMessageEmail(input: {

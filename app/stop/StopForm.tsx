@@ -29,10 +29,11 @@ export default function StopForm({ prefill }: { prefill: string }) {
   if (done) {
     return (
       <>
-        <h1 className="font-serif text-2xl mb-2">Done. We won&apos;t email you again</h1>
+        <h1 className="font-serif text-2xl mb-2">Please check your email</h1>
         <p className="text-inkSoft text-sm">
-          We&apos;ve added <b>{email.trim()}</b> to our do-not-contact list. Sorry to have bothered you. If you ever change your mind, you
-          can find us at activitycentral.co.uk.
+          We&apos;ve sent a message to <b>{email.trim()}</b>. Press the button in it to confirm, and we&apos;ll stop emailing you straight
+          away. If it doesn&apos;t arrive in a few minutes, look in your junk folder, or write to support@activitycentral.co.uk and we&apos;ll
+          stop the emails for you.
         </p>
       </>
     );
@@ -42,7 +43,8 @@ export default function StopForm({ prefill }: { prefill: string }) {
     <form onSubmit={handleSubmit}>
       <h1 className="font-serif text-2xl mb-2">Stop emails from Activity Central</h1>
       <p className="text-inkSoft text-sm mb-5">
-        Enter your email address and we&apos;ll add it to our do-not-contact list, so we don&apos;t email you again. It only takes a moment.
+        Enter your email address and we&apos;ll send you a message to confirm. Once you press the button in it, we&apos;ll add your address to
+        our do-not-contact list, so we don&apos;t email you again.
       </p>
       <label className="block text-xs font-semibold text-inkSoft mb-1" htmlFor="stop-email">Email address</label>
       <input
@@ -60,7 +62,7 @@ export default function StopForm({ prefill }: { prefill: string }) {
         disabled={loading}
         className="w-full rounded-lg bg-sage text-white py-2.5 font-semibold text-sm hover:bg-sageDeep transition-colors disabled:opacity-60"
       >
-        {loading ? "Adding you..." : "Stop emailing me"}
+        {loading ? "Sending..." : "Send me the confirmation"}
       </button>
     </form>
   );
