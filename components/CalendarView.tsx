@@ -407,6 +407,9 @@ export default function CalendarView({
     });
   }
 
+  // The days that have something on, in order. Used by the phone list (below the grid, phones only).
+  const agendaDays = Object.keys(eventsByDay).map(Number).sort((a, b) => a - b);
+
   function openAddModal(day?: number) {
     setModal({ mode: "add" });
     setFormTitle("");
@@ -523,6 +526,7 @@ export default function CalendarView({
           .cal-day-cell { height: 100% !important; min-height: 0 !important; }
           .cal-day-cell-inner { height: 100% !important; overflow: hidden !important; }
           .cal-event-tab-overflow { display: flex !important; }
+          .cal-agenda { display: none !important; }
           .cal-notes { flex: 0 0 auto !important; margin-top: 3mm !important; border: 1px solid #EAE4D6 !important; border-radius: 3mm !important; background: #fff !important; padding: 2mm 3mm !important; }
           .cal-notes[data-include="false"] { display: none !important; }
           .cal-notes-print { display: block !important; }
@@ -556,6 +560,10 @@ export default function CalendarView({
           .cal-dementia .cal-day-plain { font-size: 15px !important; }
           .cal-dementia .cal-event-tab { font-size: 11px !important; }
         }
+        /* The phone list of days is hidden everywhere except on a phone's screen. */
+        .cal-agenda { display: none; }
+        .cal-dementia .cal-agenda-tab { background: #FFD23F !important; color: #1a1a1a !important; border: 2px solid #1a1a1a !important; font-size: 17px !important; }
+        .cal-dementia .cal-agenda-day { color: #1a1a1a !important; }
         /* The printed copy of the notes is only shown when printing. */
         .cal-notes-print { display: none; }
         /* Short weekday names are only for phones (never printed). */
@@ -571,7 +579,9 @@ export default function CalendarView({
           .cal-year { font-size: 15px !important; padding: 6px 14px !important; }
           .cal-toolbar { flex-wrap: wrap; gap: 8px !important; }
           .cal-toolbar button { padding: 9px 12px !important; font-size: 13px; }
-          .cal-weekday-row, .cal-grid { gap: 2px !important; }
+          /* On a phone the seven-column grid is too narrow for words: show a list of the days with something on instead. */
+          .cal-weekday-row, .cal-grid { display: none !important; }
+          .cal-agenda { display: block; }
           .cal-weekday { font-size: 11px !important; padding: 6px 0 !important; border-radius: 6px !important; }
           .cal-wd-long { display: none; }
           .cal-wd-short { display: inline; }
@@ -1018,6 +1028,86 @@ export default function CalendarView({
                     )}
                   </>
                 )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Phones only (see the style block above): a list of the days that have something on, with the
+            full names in colour bars. Your own events have Edit and Delete beside them, as in the day
+            popover; dates with activities ready link through. Never printed. */}
+        <div className="cal-agenda cal-no-print">
+          {agendaDays.length === 0 && (
+            <p style={{ textAlign: "center", fontSize: 14, color: "#8A7A6B", margin: "10px 0" }}>Nothing listed this month.</p>
+          )}
+          {agendaDays.map((day) => {
+            const weekday = (new Date(year, monthIndex, day).getDay() + 6) % 7;
+            const { bg, text } = TAB_COLORS[weekday];
+            return (
+              <div key={day} style={{ display: "flex", gap: 10, padding: "9px 0", borderTop: "1px solid #EAE4D6" }}>
+                <div className="cal-agenda-day" style={{ width: 50, flex: "0 0 50px", textAlign: "center", color: text }}>
+                  <div style={{ fontSize: 11, fontWeight: 700 }}>{WEEKDAYS[weekday].slice(0, 3).toUpperCase()}</div>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: "#3F3237" }}>{day}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {eventsByDay[day].map((ev) => {
+                    const barStyle: CSSProperties = {
+                      background: bg,
+                      color: text,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      lineHeight: 1.25,
+                      padding: "8px 10px",
+                      borderRadius: 8,
+                      marginBottom: 4,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      textDecoration: "none",
+                      overflowWrap: "anywhere",
+                      boxShadow: ev.link ? `inset 0 0 0 2px ${text}` : undefined,
+                    };
+                    const label = (
+                      <span style={{ flex: 1, minWidth: 0 }}>
+                        {ev.label}
+                        {ev.time ? ` · ${ev.time}` : ""}
+                      </span>
+                    );
+                    if (ev.link) {
+                      return (
+                        <Link key={ev.key} href={ev.link} className="cal-agenda-tab" style={barStyle}>
+                          {label}
+                          <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.75, whiteSpace: "nowrap" }}>Browse →</span>
+                        </Link>
+                      );
+                    }
+                    if (ev.custom && ev.id) {
+                      const actionStyle: CSSProperties = { border: "none", background: "none", color: "inherit", font: "inherit", fontSize: 13, textDecoration: "underline", cursor: "pointer", padding: "4px 6px" };
+                      return (
+                        <div key={ev.key} className="cal-agenda-tab" style={barStyle}>
+                          {label}
+                          {confirmDeleteId === ev.id ? (
+                            <span style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                              <button type="button" style={actionStyle} onClick={() => !saving && deleteEvent(ev.id!)}>Confirm delete</button>
+                              <button type="button" style={{ ...actionStyle, opacity: 0.75 }} onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                            </span>
+                          ) : (
+                            <span style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                              <button type="button" style={actionStyle} onClick={() => openEditModal(customEvents.find((c) => c.id === ev.id)!)}>Edit</button>
+                              <button type="button" style={actionStyle} onClick={() => setConfirmDeleteId(ev.id!)}>Delete</button>
+                            </span>
+                          )}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={ev.key} className="cal-agenda-tab" style={barStyle}>
+                        {label}
+                        {ev.rota && <span style={{ fontSize: 11, fontWeight: 700, opacity: 0.6 }}>ROTA</span>}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
