@@ -26,7 +26,7 @@ export default function TermsPage() {
       </Link>
 
       <h1 className="font-serif text-3xl text-ink mb-2">Terms &amp; Conditions</h1>
-      <p className="text-xs text-inkSoft mb-10">Last updated: 9 October 2026</p>
+      <p className="text-xs text-inkSoft mb-10">Last updated: 13 November 2026</p>
 
       <div className="rounded-2xl border border-line bg-card p-6 sm:p-8">
         <Section title="1. Who we are">
@@ -152,7 +152,42 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="10. Changes to these terms">
+        <Section title="10. How we protect your data">
+          <p>
+            We take the security of your information seriously. We use the following measures, and
+            we check them regularly:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5">
+            <li>Our website uses HTTPS, so information is encrypted between you and us.</li>
+            <li>
+              Card payments are handled by Stripe. We never see or store your card details.
+            </li>
+            <li>
+              Access to our systems is limited to authorised people, and the administrator accounts
+              are protected with two-step login.
+            </li>
+            <li>
+              We keep regular backups of our data so that we can restore the service if something
+              goes wrong.
+            </li>
+            <li>
+              We review who has access, and the security of our suppliers, at least once a year.
+            </li>
+          </ul>
+          <p>
+            If we discover a breach of personal data, we will act quickly to contain it. Where the
+            law requires it, we will tell the Information Commissioner's Office within 72 hours and
+            tell the people affected without undue delay. We keep a written plan for this and review
+            it every year.
+          </p>
+          <p>
+            You can help by using a strong, unique password, not sharing your login, and telling us
+            straight away at support@activitycentral.co.uk if you think your account has been
+            accessed without your permission.
+          </p>
+        </Section>
+
+        <Section title="11. Changes to these terms">
           <p>
             We may update these terms from time to time, for example to reflect changes to the
             service or to the law. We'll post the updated terms on this page with a new "last
@@ -161,14 +196,14 @@ export default function TermsPage() {
           </p>
         </Section>
 
-        <Section title="11. Governing law">
+        <Section title="12. Governing law">
           <p>
             These terms are governed by the laws of England and Wales, and any disputes will be
             handled by the courts of England and Wales.
           </p>
         </Section>
 
-        <Section title="12. Contact">
+        <Section title="13. Contact">
           <p>
             Questions about these terms can be sent to support@activitycentral.co.uk.
           </p>
