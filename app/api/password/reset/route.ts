@@ -28,7 +28,8 @@ async function POST_(req: Request) {
 
   await prisma.user.update({
     where: { id: record.userId },
-    data: { passwordHash: await bcrypt.hash(parsed.data.password, 10) },
+    // passwordChangedAt signs out every device that was logged in before this moment.
+    data: { passwordHash: await bcrypt.hash(parsed.data.password, 10), passwordChangedAt: new Date() },
   });
   // The link works once.
   await prisma.passwordResetToken.deleteMany({ where: { userId: record.userId } });

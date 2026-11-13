@@ -27,6 +27,8 @@ model User {
   plan                 String    @default("premium") // standard | premium
   email                String    @unique
   passwordHash         String
+  // When the password was last changed by a reset. Logins older than this are signed out (lib/auth.ts).
+  passwordChangedAt    DateTime?
   createdAt            DateTime  @default(now())
 
   // Stripe
