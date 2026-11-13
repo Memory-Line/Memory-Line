@@ -148,8 +148,8 @@ export default function PrivacyPage() {
           <p>
             <strong>How to unsubscribe.</strong> Reply &ldquo;stop&rdquo; or &ldquo;no thanks&rdquo; to any of our emails, use our
             unsubscribe page at{" "}
-            <a href="https://activitycentral.co.uk/stop" className="text-sageDeep underline">https://activitycentral.co.uk/stop</a>, or
-            write to support@activitycentral.co.uk. We&apos;ll stop straight away and keep your email
+            <a href="https://activitycentral.co.uk/stop" className="text-sageDeep underline">https://activitycentral.co.uk/stop</a>, (we&apos;ll email you a link to confirm it&apos;s really you, and
+            you press the button in it), or write to support@activitycentral.co.uk. We&apos;ll stop straight away (on your reply, or once you confirm) and keep your email
             address on a do-not-contact list so that we don&apos;t contact you again. We keep it only for
             that reason. If you have also signed up for our news and offers, each of those emails has
             an unsubscribe link.
