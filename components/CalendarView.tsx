@@ -230,7 +230,19 @@ export default function CalendarView({
   // on (or every line when "Whole note" is ticked) and becomes the colour for new lines.
   const [wholeNote, setWholeNote] = useState(false);
   const [focusLine, setFocusLine] = useState(0);
-  const lineRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const lineRefs = useRef<(HTMLTextAreaElement | null)[]>([]);
+  // Each notes line is a one-row box that grows when the line wraps (so a long line is fully visible on a phone).
+  function fitLine(el: HTMLTextAreaElement | null) {
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }
+  useEffect(() => {
+    // Turning the phone sideways (or resizing the window) changes where lines wrap.
+    const refit = () => lineRefs.current.forEach(fitLine);
+    window.addEventListener("resize", refit);
+    return () => window.removeEventListener("resize", refit);
+  }, []);
   const pendingFocus = useRef<{ i: number; pos: number } | null>(null);
   const noteLines = parseNoteLines(notesText, notesColour);
   function setLines(lines: NoteLine[]) {
@@ -292,7 +304,7 @@ export default function CalendarView({
   }
   // Enter starts a new line (a new bullet after a bulleted line; Enter on an empty bullet ends the list);
   // Backspace on an empty line removes it; the arrows move between lines.
-  function handleLineKey(e: React.KeyboardEvent<HTMLInputElement>, i: number) {
+  function handleLineKey(e: React.KeyboardEvent<HTMLTextAreaElement>, i: number) {
     const lines = parseNoteLines(notesText, notesColour);
     const cur = lines[i];
     const el = e.currentTarget;
@@ -318,10 +330,11 @@ export default function CalendarView({
       lines.splice(i, 1);
       pendingFocus.current = { i: Math.max(0, i - 1), pos: 99999 };
       setLines(lines);
-    } else if (e.key === "ArrowUp" && i > 0) {
+    } else if (e.key === "ArrowUp" && i > 0 && (el.scrollHeight <= 34 || el.selectionStart === 0)) {
+      // A line that wraps onto a second row keeps the arrow for moving within it; the jump to the line above happens from its start.
       e.preventDefault();
       lineRefs.current[i - 1]?.focus();
-    } else if (e.key === "ArrowDown" && i < lines.length - 1) {
+    } else if (e.key === "ArrowDown" && i < lines.length - 1 && (el.scrollHeight <= 34 || el.selectionEnd === el.value.length)) {
       e.preventDefault();
       lineRefs.current[i + 1]?.focus();
     }
@@ -568,6 +581,7 @@ export default function CalendarView({
         .cal-notes-print { display: none; }
         /* Short weekday names are only for phones (never printed). */
         .cal-wd-short { display: none; }
+        .cal-help-phone { display: none; }
         /* Phones: stack the header, shorten weekday names and tighten the grid.
            Screen only, so printing is unchanged. */
         @media screen and (max-width: 640px) {
@@ -585,6 +599,8 @@ export default function CalendarView({
           .cal-weekday { font-size: 11px !important; padding: 6px 0 !important; border-radius: 6px !important; }
           .cal-wd-long { display: none; }
           .cal-wd-short { display: inline; }
+          .cal-help-desktop { display: none; }
+          .cal-help-phone { display: inline; }
           .cal-day-cell { min-height: 68px !important; }
           .cal-day-cell-inner { padding: 4px !important; }
           .cal-day-plain { font-size: 12px !important; }
@@ -723,8 +739,14 @@ export default function CalendarView({
         )}
         {signedIn && (
           <p className="cal-no-print" style={{ textAlign: "center", fontSize: 11.5, color: "#8A7A6B", margin: "0 0 16px" }}>
-            <b>To edit or delete an event you've added, click it.</b> Clicking a day's number shows all of that
-            day's events. The built-in dates can't be changed.
+            <span className="cal-help-desktop">
+              <b>To edit or delete an event you've added, click it.</b> Clicking a day's number shows all of that
+              day's events.{" "}
+            </span>
+            <span className="cal-help-phone">
+              <b>To edit or delete an event you've added, tap Edit or Delete beside it.</b>{" "}
+            </span>
+            The built-in dates can't be changed.
           </p>
         )}
         <p className="cal-no-print" style={{ textAlign: "center", fontSize: 12, color: "#8A7A6B", margin: "0 0 24px" }}>
@@ -1162,18 +1184,20 @@ export default function CalendarView({
             </div>
             <div style={{ border: "1px solid #EAE4D6", borderRadius: 8, background: "#FBF9F4", padding: "6px 8px" }}>
               {noteLines.map((l, i) => (
-                <input
+                <textarea
                   key={i}
+                  rows={1}
                   ref={(el) => {
                     lineRefs.current[i] = el;
+                    fitLine(el);
                   }}
                   value={l.text}
                   maxLength={200}
-                  onChange={(e) => changeLine(i, e.target.value)}
+                  onChange={(e) => changeLine(i, e.target.value.replace(/\r?\n/g, " "))}
                   onKeyDown={(e) => handleLineKey(e, i)}
                   onFocus={() => setFocusLine(i)}
                   placeholder={i === 0 && noteLines.length === 1 ? `Type notes for ${month.name} ${year}. They print under the calendar. Leave it empty to print blank lines to write on.` : ""}
-                  style={{ display: "block", width: "100%", padding: "4px 3px", border: "none", borderBottom: "1px dotted #E3DCCB", background: i === focusLine ? "#F3ECDD" : "transparent", fontSize: 14, fontFamily: "inherit", color: l.colour, fontWeight: 600, outline: "none" }}
+                  style={{ display: "block", width: "100%", padding: "4px 3px", border: "none", borderBottom: "1px dotted #E3DCCB", background: i === focusLine ? "#F3ECDD" : "transparent", fontSize: 14, fontFamily: "inherit", color: l.colour, fontWeight: 600, outline: "none", boxSizing: "border-box", resize: "none", overflow: "hidden", lineHeight: 1.3 }}
                 />
               ))}
             </div>
