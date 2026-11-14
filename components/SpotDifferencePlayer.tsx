@@ -120,6 +120,12 @@ export default function SpotDifferencePlayer({
   const canvasBRef = useRef<HTMLCanvasElement | null>(null);
   const [aspectA, setAspectA] = useState(1.4);
   const [aspectB, setAspectB] = useState(1.4);
+  // The answers are page 2 of the sheet's own PDF (the picture with the differences circled and numbered, and a
+  // list). A sheet without a second page has no answers, so the tab is not shown for it.
+  const [tab, setTab] = useState<"play" | "answers">("play");
+  const [hasAnswers, setHasAnswers] = useState(false);
+  const answersRef = useRef<HTMLCanvasElement | null>(null);
+  const [aspectAnswers, setAspectAnswers] = useState(1.41);
 
   useEffect(() => {
     try {
@@ -193,6 +199,27 @@ export default function SpotDifferencePlayer({
         if (a) setAspectA(a.width / a.height);
         if (b) setAspectB(b.width / b.height);
         if (!cancelled) setStatus("ready");
+
+        // The answers page, if the sheet has one. A problem here never stops the game itself.
+        if (doc.numPages >= 2) {
+          try {
+            const ap = await doc.getPage(2);
+            const avp = ap.getViewport({ scale: RENDER_SCALE });
+            const target = answersRef.current;
+            const actx = target?.getContext("2d");
+            if (target && actx && !cancelled) {
+              target.width = Math.ceil(avp.width);
+              target.height = Math.ceil(avp.height);
+              await ap.render({ canvasContext: actx, viewport: avp }).promise;
+              if (!cancelled) {
+                setAspectAnswers(avp.width / avp.height);
+                setHasAnswers(true);
+              }
+            }
+          } catch {
+            // no answers shown
+          }
+        }
       } catch {
         if (!cancelled) setStatus("error");
       }
@@ -233,8 +260,46 @@ export default function SpotDifferencePlayer({
     save([], []);
   }
 
+  const tabButton = (key: "play" | "answers", label: string) => {
+    const on = tab === key;
+    return (
+      <button
+        type="button"
+        role="tab"
+        aria-selected={on}
+        onClick={() => setTab(key)}
+        className={ev ? "rounded-xl px-5 py-3 text-lg font-bold border-[3px] border-black" : "rounded-lg px-4 py-2 text-sm font-semibold"}
+        style={
+          ev
+            ? { background: on ? "#FFD23F" : "#fff", color: "#1a1a1a" }
+            : { background: on ? "#6D8C6A" : "#E4EEE2", color: on ? "#fff" : "#6D8C6A" }
+        }
+      >
+        {label}
+      </button>
+    );
+  };
+
   return (
     <div className="w-full max-w-[980px]">
+      {hasAnswers && (
+        <div role="tablist" className="flex flex-wrap gap-2 mb-3">
+          {tabButton("play", "Find the differences")}
+          {tabButton("answers", "Show answers")}
+        </div>
+      )}
+
+      {/* The answers page: drawn once when the sheet loads, shown only on its own tab. */}
+      <div style={{ display: tab === "answers" && hasAnswers ? "block" : "none" }} className="mb-4">
+        <div className="rounded-xl bg-white border border-line overflow-hidden" style={{ width: "100%", aspectRatio: `${aspectAnswers}`, border: ev ? "4px solid #1a1a1a" : undefined }}>
+          <canvas ref={answersRef} aria-label="The answers: the differences circled and numbered" style={{ width: "100%", height: "100%", display: "block" }} />
+        </div>
+        <p className={ev ? "mt-3 font-bold" : "mt-2 text-sm text-inkSoft"} style={ev ? { fontSize: 18 } : undefined}>
+          The circled spots are the seven differences. Press &ldquo;Find the differences&rdquo; to go back to the pictures.
+        </p>
+      </div>
+
+      <div style={{ display: tab === "answers" && hasAnswers ? "none" : "block" }}>
       {status === "error" ? (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line mb-4">
           The pictures couldn't be loaded for playing on screen right now, but you can still print the sheet below.
@@ -319,6 +384,7 @@ export default function SpotDifferencePlayer({
           <Check size={14} /> Marked as completed
         </p>
       )}
+      </div>
 
       <div className="mt-4 pt-3 border-t border-line">
         <p className="text-xs font-semibold text-inkSoft mb-2">Prefer paper?</p>
