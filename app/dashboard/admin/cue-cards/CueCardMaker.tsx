@@ -5,7 +5,7 @@ import * as Lucide from "lucide-react";
 import { Printer, Trash2 } from "lucide-react";
 import { CUE_GROUPS, CUE_WORDS, findCueWord, type CueGroupKey } from "@/lib/cueCards";
 
-type Card = { id: number; label: string; src: string | null; icon: string | null; colour: string; category: string; num: string };
+type Card = { id: number; label: string; src: string | null; icon: string | null; tabler: string | null; colour: string; category: string; num: string };
 
 type IconCmp = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 const LUCIDE = Lucide as unknown as Record<string, IconCmp>;
@@ -30,6 +30,7 @@ export default function CueCardMaker() {
         label: hit ? hit.word : p,
         src: hit?.src ?? null,
         icon: hit?.icon ?? null,
+        tabler: hit?.tabler ?? null,
         colour: g ? g.colour : NEUTRAL,
         category: g ? g.label : "Cue card",
         num: hit ? String(index).padStart(3, "0") : "",
@@ -60,6 +61,7 @@ export default function CueCardMaker() {
         .cue-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 14px 6px; }
         .cue-circle { width: 78%; max-width: 250px; aspect-ratio: 1; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .cue-circle img { width: 74%; height: 74%; }
+        .cue-ico { display: block; width: 62%; height: 62%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain; }
         .cue-word { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 44px; line-height: 1.05; text-align: center; margin-top: 14px; color: #2a2a24; }
         .cue-foot { text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #8a8478; padding: 0 0 12px; }
         @media print {
@@ -143,6 +145,17 @@ export default function CueCardMaker() {
                   <div className="cue-circle">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={c.src} alt="" />
+                  </div>
+                ) : c.tabler ? (
+                  <div className="cue-circle">
+                    <span
+                      className="cue-ico"
+                      style={{
+                        background: c.colour,
+                        WebkitMaskImage: `url(/cue-symbols/t/${c.tabler}.svg)`,
+                        maskImage: `url(/cue-symbols/t/${c.tabler}.svg)`,
+                      }}
+                    />
                   </div>
                 ) : c.icon ? (
                   <div className="cue-circle">
