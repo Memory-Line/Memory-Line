@@ -51,7 +51,7 @@ export default async function BslToolsPage() {
           <UpgradePrompt message="BSL Tools are part of the Premium plan." />
         </div>
       )}
-      {locked ? groups : <BslHome groups={groups} favourites={starred} favouriteIds={favouriteIds} canBuild={viewer.isAdmin} />}
+      {locked ? groups : <BslHome groups={groups} favourites={starred} favouriteIds={favouriteIds} canBuild />}
     </div>
   );
 }
