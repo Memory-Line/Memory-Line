@@ -32,23 +32,24 @@ const SAMPLE_LINK =
 
 
 async function findFreeSamples(categories: string[]) {
-  const sampleFor = (category: string) =>
-    prisma.template.findFirst({
-      where: {
-        category,
-        occasion: null,
-        language: null,
-        // A gentle first taste for Sudoku, rather than whichever level
-        // happens to sort first by file name.
-        ...(category === "Sudoku" ? { subcategory: "beginner" } : {}),
-      },
-      orderBy: { fileName: "asc" },
-    });
-  let found: Awaited<ReturnType<typeof sampleFor>>[] = [];
-  for (let i = 0; i < categories.length; i += 4) {
-    found = found.concat(await Promise.all(categories.slice(i, i + 4).map(sampleFor)));
+  // Two database questions in all (was one per category, sixteen or more at once, which used up the
+  // site's few database connections and made other pages wait): first a light list of every candidate,
+  // then the full rows of just the chosen ones.
+  const candidates = await prisma.template.findMany({
+    where: { category: { in: categories }, occasion: null, language: null },
+    select: { id: true, category: true, subcategory: true, fileName: true },
+    orderBy: { fileName: "asc" },
+  });
+  const chosen: string[] = [];
+  for (const category of categories) {
+    // A gentle first taste for Sudoku, rather than whichever level happens to sort first by file name.
+    const pick = candidates.find((c) => c.category === category && (category !== "Sudoku" || c.subcategory === "beginner"));
+    if (pick) chosen.push(pick.id);
   }
-  return found.filter((t): t is NonNullable<typeof t> => t !== null);
+  if (!chosen.length) return [];
+  const rows = await prisma.template.findMany({ where: { id: { in: chosen } } });
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  return chosen.map((id) => byId.get(id)).filter((t): t is NonNullable<typeof t> => !!t);
 }
 
 const keptSamples = unstable_cache(findFreeSamples, ["home-free-samples"], { revalidate: 600 });
