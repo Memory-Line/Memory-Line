@@ -1,9 +1,5 @@
 // Word list for the cue card maker (admin test only).
 // Each word has a picture: one of our own drawn symbols (src), or one of the line icons the site already uses (icon).
-import { ICON_WORDS } from "./cueWords";
-import { TABLER_WORDS } from "./cueWordsTabler";
-import { EMOJI_WORDS } from "./cueWordsEmoji";
-import { PHOSPHOR_WORDS } from "./cueWordsPhosphor";
 import { OWN_WORDS } from "./cueOwn";
 
 export type CueGroupKey = "food" | "wash" | "health" | "comfort" | "feelings" | "chat" | "activities" | "out";
@@ -79,22 +75,10 @@ const DRAWN: CueWord[] = [
   { word: "Candle", group: "activities", src: C + "candle.svg", also: ["candles"] },
 ];
 
-export const USE_BORROWED = false;
-
 export const CUE_WORDS: CueWord[] = [
   // Our own glossy pictures come first, so they win over every borrowed picture below.
   ...OWN_WORDS.map(([word, file, group, also]) => ({ word, src: "/cue-symbols/o/" + file + ".svg", group, also })),
   ...DRAWN,
-  // Borrowed open-source pictures (Lucide, Tabler, Noto Emoji, Phosphor). Switched off so every card uses only our own artwork.
-  // Turn USE_BORROWED on to widen the word list, but then the picture credits on the admin page must also be shown to customers.
-  ...(USE_BORROWED
-    ? [
-        ...ICON_WORDS.map(([word, icon, group, also]) => ({ word, icon, group, also })),
-        ...TABLER_WORDS.map(([word, tabler, group, also]) => ({ word, tabler, group, also })),
-        ...EMOJI_WORDS.map(([word, emoji, group, also]) => ({ word, emoji, group, also })),
-        ...PHOSPHOR_WORDS.map(([word, phosphor, group, also]) => ({ word, phosphor, group, also })),
-      ]
-    : []),
 ];
 
 function clean(s: string): string {
