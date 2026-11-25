@@ -11,6 +11,17 @@ import { prisma } from "@/lib/prisma";
 import { COMING_SOON } from "@/lib/launch";
 import { displayTitle } from "@/lib/titles";
 import { unstable_cache } from "next/cache";
+import { SITE_URL, SUPPORT_EMAIL } from "@/lib/site";
+
+const ORGANIZATION_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Activity Central",
+  legalName: "ACTIVITY CENTRAL LTD",
+  url: SITE_URL,
+  logo: `${SITE_URL}/activity-central-icon.png`,
+  email: SUPPORT_EMAIL,
+};
 
 // The free samples come from the database, but they change rarely (only
 // when a new category's first upload changes), so the page is cached and
@@ -73,6 +84,7 @@ export default async function LandingPage() {
 
   return (
     <main>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSON_LD) }} />
       {/* Nav */}
       <header className="flex items-center justify-between gap-3 px-4 sm:px-8 py-4 sm:py-5 max-w-6xl mx-auto">
         <div className="flex items-center gap-2 shrink-0">

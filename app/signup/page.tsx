@@ -3,7 +3,11 @@ import Image from "next/image";
 import { COMING_SOON } from "@/lib/launch";
 import SignupForm from "./SignupForm";
 
-export const metadata = { title: "Sign up | Activity Central" };
+export const metadata = {
+  title: "Sign up | Activity Central",
+  description: "Create an account to use ready-made activities for care homes with your residents.",
+  alternates: { canonical: "/signup" },
+};
 
 // While COMING_SOON is on (lib/launch.ts) nobody can create an account; the sign-up form is kept
 // exactly as it was in SignupForm.tsx and comes straight back when the switch is turned off.

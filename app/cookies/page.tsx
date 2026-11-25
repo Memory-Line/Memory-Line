@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
+  alternates: { canonical: "/cookies" },
   title: "Cookie Policy – Activity Central",
   description: "Which cookies Activity Central uses and why.",
 };

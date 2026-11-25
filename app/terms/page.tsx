@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
+  alternates: { canonical: "/terms" },
   title: "Terms & Conditions – Activity Central",
   description: "Terms and conditions for using Activity Central.",
 };

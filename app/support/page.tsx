@@ -4,7 +4,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import SupportForm from "./SupportForm";
 
-export const metadata = { title: "Support | Activity Central" };
+export const metadata = {
+  title: "Support | Activity Central",
+  description: "Get help with Activity Central: contact the team about your account, activities and printing.",
+  alternates: { canonical: "/support" },
+};
 
 const HELP = [
   {

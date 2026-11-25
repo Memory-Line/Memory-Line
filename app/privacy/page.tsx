@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 export const metadata = {
+  alternates: { canonical: "/privacy" },
   title: "Privacy Policy – Activity Central",
   description: "How Activity Central collects, uses, and protects your personal data.",
 };

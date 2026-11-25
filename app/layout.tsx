@@ -5,16 +5,19 @@ import CookieNotice from "@/components/CookieNotice";
 import { SeasonSky, SeasonGround, SeasonFalling } from "@/components/SeasonScenes";
 import { getActiveSeason } from "@/lib/seasonDb";
 import { seasonVars } from "@/lib/seasons";
+import { SITE_URL } from "@/lib/site";
 
 // Pages follow the date (a seasonal look can switch on or off), so none of them is built once and kept.
 export const dynamic = "force-dynamic";
 
-const SITE_TITLE = "Activity Central – Engagement activities for care teams";
+const SITE_TITLE = "Activity Central – Ready-made activities for care homes";
 const SITE_DESCRIPTION =
-  "A subscription library of ready-to-use engagement activities for care teams and care settings: puzzles and games, quizzes, sing-alongs, reminiscence newsletters and talking communication boards, ready to print or play on screen.";
+  "Ready-made activities for care homes: puzzles, quizzes, sing-alongs, reminiscence newsletters and talking boards for residents, including dementia-friendly activities. Print them or play online. Try the free samples with no sign-up.";
+const SHARE_IMAGE = `${SITE_URL}/activity-central-icon.png`;
 
 // openGraph and twitter are what Facebook, LinkedIn and similar sites show when the link is shared.
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   openGraph: {
@@ -23,13 +26,16 @@ export const metadata: Metadata = {
     siteName: "Activity Central",
     type: "website",
     locale: "en_GB",
-    url: "https://activitycentral.co.uk",
+    url: SITE_URL,
+    images: [{ url: SHARE_IMAGE, alt: "Activity Central" }],
   },
   twitter: {
     card: "summary",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
+    images: [SHARE_IMAGE],
   },
+  alternates: { canonical: "/" },
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
