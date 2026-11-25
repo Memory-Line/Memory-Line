@@ -1,0 +1,2 @@
+Pictures in this folder are from Google Noto Emoji (https://github.com/googlefonts/noto-emoji), licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+Word lists use Emojibase data (MIT, https://emojibase.dev).

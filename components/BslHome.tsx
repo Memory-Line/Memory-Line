@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, Sparkles } from "lucide-react";
 import BslList, { type BslItem } from "@/components/BslList";
+import CueCardMaker from "@/components/CueCardMaker";
 
 // The top of BSL Tools: the groups, and a Favourites tab with every sign the person has starred (from any group),
 // the same way the talking boards and the activity categories have one.
@@ -10,12 +11,14 @@ export default function BslHome({
   groups,
   favourites,
   favouriteIds,
+  canBuild = false,
 }: {
   groups: React.ReactNode;
   favourites: BslItem[];
   favouriteIds: string[];
+  canBuild?: boolean;
 }) {
-  const [view, setView] = useState<"groups" | "favs">("groups");
+  const [view, setView] = useState<"groups" | "favs" | "build">("groups");
   const tab = (on: boolean) =>
     `flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold border-2 ${on ? "bg-sage text-white border-sage" : "bg-white text-sageDeep border-line"}`;
   return (
@@ -27,8 +30,15 @@ export default function BslHome({
         <button type="button" onClick={() => setView("favs")} aria-pressed={view === "favs"} className={tab(view === "favs")}>
           <Star size={15} fill={view === "favs" ? "#fff" : "none"} aria-hidden="true" /> Favourites ({favourites.length})
         </button>
+        {canBuild && (
+          <button type="button" onClick={() => setView("build")} aria-pressed={view === "build"} className={tab(view === "build")}>
+            <Sparkles size={15} aria-hidden="true" /> Build your own
+          </button>
+        )}
       </div>
-      {view === "groups" ? (
+      {view === "build" && canBuild ? (
+        <CueCardMaker />
+      ) : view === "groups" ? (
         groups
       ) : favourites.length === 0 ? (
         <p className="text-sm text-inkSoft rounded-xl p-4 bg-card border border-line">
