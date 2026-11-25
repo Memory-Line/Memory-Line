@@ -21,6 +21,7 @@ const ORGANIZATION_JSON_LD = {
   url: SITE_URL,
   logo: `${SITE_URL}/activity-central-icon.png`,
   email: SUPPORT_EMAIL,
+  sameAs: ["https://www.facebook.com/ActivityCentralUK", "https://www.linkedin.com/in/dominikbrygida"],
 };
 
 // The free samples come from the database, but they change rarely (only
