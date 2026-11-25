@@ -5,7 +5,7 @@ import * as Lucide from "lucide-react";
 import { Printer, Trash2 } from "lucide-react";
 import { CUE_GROUPS, CUE_WORDS, findCueWord, type CueGroupKey } from "@/lib/cueCards";
 
-type Card = { id: number; label: string; src: string | null; icon: string | null; tabler: string | null; emoji: string | null; colour: string; category: string; num: string };
+type Card = { id: number; label: string; src: string | null; icon: string | null; tabler: string | null; phosphor: string | null; emoji: string | null; colour: string; category: string; num: string };
 
 type IconCmp = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 const LUCIDE = Lucide as unknown as Record<string, IconCmp>;
@@ -32,6 +32,7 @@ export default function CueCardMaker() {
         icon: hit?.icon ?? null,
         tabler: hit?.tabler ?? null,
         emoji: hit?.emoji ?? null,
+        phosphor: hit?.phosphor ?? null,
         colour: g ? g.colour : NEUTRAL,
         category: g ? g.label : "Cue card",
         num: hit ? String(index).padStart(3, "0") : "",
@@ -152,14 +153,14 @@ export default function CueCardMaker() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={`/cue-symbols/e/${c.emoji}.svg`} alt="" style={{ width: "66%", height: "66%" }} />
                   </div>
-                ) : c.tabler ? (
+                ) : c.tabler || c.phosphor ? (
                   <div className="cue-circle">
                     <span
                       className="cue-ico"
                       style={{
                         background: c.colour,
-                        WebkitMaskImage: `url(/cue-symbols/t/${c.tabler}.svg)`,
-                        maskImage: `url(/cue-symbols/t/${c.tabler}.svg)`,
+                        WebkitMaskImage: `url(${c.tabler ? `/cue-symbols/t/${c.tabler}.svg` : `/cue-symbols/p/${c.phosphor}.svg`})`,
+                        maskImage: `url(${c.tabler ? `/cue-symbols/t/${c.tabler}.svg` : `/cue-symbols/p/${c.phosphor}.svg`})`,
                       }}
                     />
                   </div>
