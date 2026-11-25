@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { Star, Sparkles } from "lucide-react";
 import BslList, { type BslItem } from "@/components/BslList";
-import CueCardMaker from "@/components/CueCardMaker";
+import dynamic from "next/dynamic";
+
+// Loaded only when the Build your own tab is opened, so the rest of BSL Tools stays light.
+const CueCardMaker = dynamic(() => import("@/components/CueCardMaker"), { ssr: false });
 
 // The top of BSL Tools: the groups, and a Favourites tab with every sign the person has starred (from any group),
 // the same way the talking boards and the activity categories have one.

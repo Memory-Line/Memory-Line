@@ -1,14 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import * as Lucide from "lucide-react";
 import { Printer, Search, Trash2 } from "lucide-react";
 import { CUE_GROUPS, CUE_WORDS, findCueWord, searchCueWords, type CueWord } from "@/lib/cueCards";
 
 type Card = { id: number; label: string; src: string | null; icon: string | null; tabler: string | null; phosphor: string | null; emoji: string | null; colour: string; category: string; num: string };
-
-type IconCmp = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-const LUCIDE = Lucide as unknown as Record<string, IconCmp>;
 
 const NEUTRAL = "#7A7468";
 
@@ -189,13 +185,6 @@ export default function CueCardMaker() {
                         maskImage: `url(${c.tabler ? `/cue-symbols/t/${c.tabler}.svg` : `/cue-symbols/p/${c.phosphor}.svg`})`,
                       }}
                     />
-                  </div>
-                ) : c.icon ? (
-                  <div className="cue-circle">
-                    {(() => {
-                      const Cmp = LUCIDE[c.icon] ?? Lucide.Circle;
-                      return <Cmp size={140} color={c.colour} strokeWidth={1.8} />;
-                    })()}
                   </div>
                 ) : (
                   <p className="cue-nosym text-sm text-clay text-center mb-2">No symbol for this word yet. The card will print the word only.</p>
