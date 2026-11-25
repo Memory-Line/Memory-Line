@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Printer, Trash2 } from "lucide-react";
-import { CUE_WORDS, findCueWord } from "@/lib/cueCards";
+import { CUE_GROUPS, CUE_WORDS, findCueWord } from "@/lib/cueCards";
 
-type Card = { id: number; label: string; src: string | null };
+type Card = { id: number; label: string; src: string | null; colour: string; category: string; num: string };
+
+const NEUTRAL = "#7A7468";
 
 export default function CueCardMaker() {
   const [text, setText] = useState("");
@@ -17,7 +19,16 @@ export default function CueCardMaker() {
     let id = next;
     const made: Card[] = parts.map((p) => {
       const hit = findCueWord(p);
-      return { id: id++, label: hit ? hit.word : p, src: hit ? hit.src : null };
+      const g = hit ? CUE_GROUPS[hit.group] : null;
+      const index = hit ? CUE_WORDS.indexOf(hit) + 1 : 0;
+      return {
+        id: id++,
+        label: hit ? hit.word : p,
+        src: hit ? hit.src : null,
+        colour: g ? g.colour : NEUTRAL,
+        category: g ? g.label : "Cue card",
+        num: hit ? String(index).padStart(3, "0") : "",
+      };
     });
     setNext(id);
     setCards((c) => [...c, ...made]);
@@ -34,11 +45,24 @@ export default function CueCardMaker() {
           .cue-nosym { display: none !important; }
           @page { size: A4 portrait; margin: 8mm; }
         }
-        .cue-sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-        .cue-card { border: 1.5px dashed #b9b2a4; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px; break-inside: avoid; min-height: 280px; }
-        .cue-card img { width: 100%; max-width: 230px; height: auto; aspect-ratio: 1; }
-        .cue-word { font-family: Arial, Helvetica, sans-serif; font-weight: 800; color: #1a1a1a; text-align: center; line-height: 1.05; margin-top: 12px; font-size: 40px; }
-        @media print { .cue-card { min-height: 136mm; } .cue-card img { max-width: 70mm; } .cue-word { font-size: 40pt; } }
+        .cue-sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .cue-card { position: relative; border: 3px solid var(--tint); border-radius: 22px; background: #fff; overflow: hidden; display: flex; flex-direction: column; break-inside: avoid; min-height: 430px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .cue-head { background: var(--c); color: #fff; display: flex; align-items: center; gap: 10px; padding: 10px 14px; }
+        .cue-head img { width: 38px; height: 38px; border-radius: 9px; background: #fff; padding: 3px; }
+        .cue-brand { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 18px; line-height: 1.1; }
+        .cue-cat { font-family: Arial, Helvetica, sans-serif; font-size: 11px; letter-spacing: .05em; text-transform: uppercase; opacity: .92; }
+        .cue-num { margin-left: auto; font-family: Arial, Helvetica, sans-serif; font-weight: 700; font-size: 14px; opacity: .85; }
+        .cue-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 14px 14px 6px; }
+        .cue-circle { width: 78%; max-width: 250px; aspect-ratio: 1; border-radius: 50%; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .cue-circle img { width: 74%; height: 74%; }
+        .cue-word { font-family: Georgia, "Times New Roman", serif; font-weight: 700; font-size: 44px; line-height: 1.05; text-align: center; margin-top: 14px; color: #2a2a24; }
+        .cue-foot { text-align: center; font-family: Arial, Helvetica, sans-serif; font-size: 11px; color: #8a8478; padding: 0 0 12px; }
+        @media print {
+          .cue-sheet { gap: 6mm; }
+          .cue-card { min-height: 133mm; }
+          .cue-circle { max-width: 64mm; }
+          .cue-word { font-size: 38pt; margin-top: 4mm; }
+        }
       `}</style>
 
       <form
@@ -90,18 +114,32 @@ export default function CueCardMaker() {
       <div className="cue-print">
         <div className="cue-sheet">
           {cards.map((c) => (
-            <div key={c.id} className="cue-card relative">
-              {c.src ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={c.src} alt="" />
-              ) : (
-                <p className="cue-nosym text-sm text-clay text-center mb-2">No symbol for this word yet. The card will print the word only.</p>
-              )}
-              <p className="cue-word">{c.label}</p>
+            <div key={c.id} className="cue-card" style={{ ["--c" as string]: c.colour, ["--tint" as string]: c.colour + "66", ["--bg" as string]: c.colour + "1F" }}>
+              <div className="cue-head">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icon.png" alt="" />
+                <div>
+                  <div className="cue-brand">Activity Central</div>
+                  <div className="cue-cat">{c.category}</div>
+                </div>
+                <div className="cue-num">{c.num}</div>
+              </div>
+              <div className="cue-body">
+                {c.src ? (
+                  <div className="cue-circle">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={c.src} alt="" />
+                  </div>
+                ) : (
+                  <p className="cue-nosym text-sm text-clay text-center mb-2">No symbol for this word yet. The card will print the word only.</p>
+                )}
+                <p className="cue-word">{c.label}</p>
+              </div>
+              <div className="cue-foot">Bringing Moments to Life</div>
               <button
                 type="button"
                 onClick={() => setCards((all) => all.filter((x) => x.id !== c.id))}
-                className="cue-nosym absolute top-2 right-2 rounded-md border border-line bg-white px-2 py-0.5 text-xs"
+                className="cue-nosym absolute top-14 right-2 rounded-md border border-line bg-white px-2 py-0.5 text-xs"
                 aria-label={`Remove the ${c.label} card`}
               >
                 Remove
