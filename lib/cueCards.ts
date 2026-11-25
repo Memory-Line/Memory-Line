@@ -90,7 +90,7 @@ export const CUE_WORDS: CueWord[] = [
 ];
 
 function clean(s: string): string {
-  return s.toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
+  return s.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 // Finds the card for what staff typed: an exact word or alias first, then a whole word inside a longer phrase.
