@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import * as Lucide from "lucide-react";
-import { Printer, Trash2 } from "lucide-react";
-import { CUE_GROUPS, CUE_WORDS, findCueWord, type CueGroupKey } from "@/lib/cueCards";
+import { Printer, Search, Trash2 } from "lucide-react";
+import { CUE_GROUPS, CUE_WORDS, findCueWord, searchCueWords, type CueWord } from "@/lib/cueCards";
 
 type Card = { id: number; label: string; src: string | null; icon: string | null; tabler: string | null; phosphor: string | null; emoji: string | null; colour: string; category: string; num: string };
 
@@ -17,34 +17,41 @@ export default function CueCardMaker() {
   const [cards, setCards] = useState<Card[]>([]);
   const [next, setNext] = useState(1);
 
-  function addMany(raw: string) {
-    const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
-    if (!parts.length) return;
+  function makeCard(id: number, hit: CueWord | null, typed: string): Card {
+    const g = hit ? CUE_GROUPS[hit.group] : null;
+    const index = hit ? CUE_WORDS.indexOf(hit) + 1 : 0;
+    return {
+      id,
+      label: hit ? hit.word : typed,
+      src: hit?.src ?? null,
+      icon: hit?.icon ?? null,
+      tabler: hit?.tabler ?? null,
+      emoji: hit?.emoji ?? null,
+      phosphor: hit?.phosphor ?? null,
+      colour: g ? g.colour : NEUTRAL,
+      category: g ? g.label : "Cue card",
+      num: hit ? String(index).padStart(3, "0") : "",
+    };
+  }
+
+  function addCards(items: { hit: CueWord | null; typed: string }[]) {
+    if (!items.length) return;
     let id = next;
-    const made: Card[] = parts.map((p) => {
-      const hit = findCueWord(p);
-      const g = hit ? CUE_GROUPS[hit.group] : null;
-      const index = hit ? CUE_WORDS.indexOf(hit) + 1 : 0;
-      return {
-        id: id++,
-        label: hit ? hit.word : p,
-        src: hit?.src ?? null,
-        icon: hit?.icon ?? null,
-        tabler: hit?.tabler ?? null,
-        emoji: hit?.emoji ?? null,
-        phosphor: hit?.phosphor ?? null,
-        colour: g ? g.colour : NEUTRAL,
-        category: g ? g.label : "Cue card",
-        num: hit ? String(index).padStart(3, "0") : "",
-      };
-    });
+    const made = items.map((i) => makeCard(id++, i.hit, i.typed));
     setNext(id);
     setCards((c) => [...c, ...made]);
     setText("");
   }
 
+  function addMany(raw: string) {
+    const parts = raw.split(",").map((p) => p.trim()).filter(Boolean);
+    addCards(parts.map((p) => ({ hit: findCueWord(p), typed: p })));
+  }
+
+  const suggestions = text.includes(",") ? [] : searchCueWords(text, 12);
+
   return (
-    <div className="mt-5">
+    <div className="mt-1">
       <style>{`
         @media print {
           body * { visibility: hidden !important; }
@@ -77,39 +84,58 @@ export default function CueCardMaker() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          addMany(text);
+          if (text.includes(",")) addMany(text);
+          else if (suggestions.length) addCards([{ hit: suggestions[0], typed: suggestions[0].word }]);
+          else addMany(text);
         }}
-        className="flex flex-wrap gap-2"
+        className="relative"
       >
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Type a word, e.g. tea (separate several with commas)"
-          className="flex-1 min-w-[220px] rounded-lg border border-line bg-white px-3 py-2 text-base"
-          aria-label="Word for the card"
-        />
-        <button type="submit" className="rounded-lg px-4 py-2 font-semibold text-white" style={{ background: "#6D8C6A" }}>
-          Add
-        </button>
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-clay" aria-hidden="true" />
+            <input
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Search for a word, e.g. tea, bed, garden"
+              className="w-full rounded-xl border-2 border-line bg-white pl-10 pr-3 py-3 text-base"
+              aria-label="Search for a word to make a cue card"
+              autoComplete="off"
+            />
+          </div>
+          <button type="submit" className="rounded-xl px-5 py-3 font-semibold text-white" style={{ background: "#6D8C6A" }}>
+            Add
+          </button>
+        </div>
+        {text.trim() && (
+          <div className="mt-2 rounded-xl border border-line bg-white p-2">
+            {suggestions.length ? (
+              <ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                {suggestions.map((w) => (
+                  <li key={w.word}>
+                    <button
+                      type="button"
+                      onClick={() => addCards([{ hit: w, typed: w.word }])}
+                      className="w-full flex items-center gap-2 rounded-lg border border-line bg-white px-2 py-1.5 text-left hover:bg-card"
+                    >
+                      {w.src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={w.src} alt="" className="w-9 h-9 shrink-0" />
+                      ) : (
+                        <span className="w-9 h-9 shrink-0" />
+                      )}
+                      <span className="text-sm font-semibold" style={{ color: CUE_GROUPS[w.group].colour }}>
+                        {w.word}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-clay px-1 py-1">No picture for that word yet. Press Add to print a word-only card.</p>
+            )}
+          </div>
+        )}
       </form>
-
-      <p className="text-xs text-clay mt-3 mb-1 font-semibold">{CUE_WORDS.length} words with a picture in this test. Click one to add its card.</p>
-      <div className="space-y-2">
-        {(Object.keys(CUE_GROUPS) as CueGroupKey[]).map((g) => (
-          <details key={g} className="rounded-lg border border-line bg-white px-3 py-2">
-            <summary className="cursor-pointer text-sm font-semibold" style={{ color: CUE_GROUPS[g].colour }}>
-              {CUE_GROUPS[g].label} ({CUE_WORDS.filter((w) => w.group === g).length})
-            </summary>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {CUE_WORDS.filter((w) => w.group === g).map((w) => (
-                <button key={w.word} type="button" onClick={() => addMany(w.word)} className="rounded-full border border-line bg-white px-3 py-1 text-sm">
-                  {w.word}
-                </button>
-              ))}
-            </div>
-          </details>
-        ))}
-      </div>
 
       <div className="flex flex-wrap items-center gap-3 mt-6 mb-3">
         <button

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   LayoutDashboard, Footprints, Grid3x3, Grid2x2, Search, HelpCircle, Brain, Hash,
-  Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages, Hand,
+  Dices, Heart, Palette, MessageCircle, Copy, Eye, Music, Languages,
   Briefcase, Calendar, CalendarDays, Newspaper, Settings2, Shield, Menu, X, LifeBuoy, Mail, UserCircle, FileText, ClipboardList, Upload,
 } from "lucide-react";
 import { CATEGORIES, categoryLabel } from "@/lib/data";
@@ -178,12 +178,6 @@ export default function Sidebar({
             icon={Calendar}
             label="Seasonal looks"
             active={pathname === "/dashboard/admin/season"}
-          />
-          <NavItem
-            href="/dashboard/admin/cue-cards"
-            icon={Hand}
-            label="Cue card maker (test)"
-            active={pathname === "/dashboard/admin/cue-cards"}
           />
           <NavItem
             href="/dashboard/admin/manage"

@@ -119,6 +119,39 @@ export function findCueWord(typed: string): CueWord | null {
   return findInPhrase(t);
 }
 
+// Pictures that match what is being typed, best matches first (for the search box suggestions).
+export function searchCueWords(typed: string, limit = 12): CueWord[] {
+  const t = clean(typed);
+  if (!t) return [];
+  const scored: { w: CueWord; s: number }[] = [];
+  for (const w of CUE_WORDS) {
+    const main = clean(w.word);
+    let best = 99;
+    if (main === t) best = 0;
+    else if (main.startsWith(t)) best = 1;
+    else {
+      for (const a of w.also ?? []) {
+        const c = clean(a);
+        if (c === t) best = Math.min(best, 2);
+        else if (c.startsWith(t)) best = Math.min(best, 3);
+      }
+      if (best === 99 && main.includes(t)) best = 4;
+      if (best === 99 && (w.also ?? []).some((a) => clean(a).includes(t))) best = 5;
+    }
+    if (best < 99) scored.push({ w, s: best });
+  }
+  scored.sort((a, b) => a.s - b.s);
+  const seen = new Set<string>();
+  const out: CueWord[] = [];
+  for (const { w } of scored) {
+    if (seen.has(w.word)) continue;
+    seen.add(w.word);
+    out.push(w);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 function findExact(t: string): CueWord | null {
   for (const w of CUE_WORDS) {
     if (clean(w.word) === t || (w.also ?? []).some((a) => clean(a) === t)) return w;
