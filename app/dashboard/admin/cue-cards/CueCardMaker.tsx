@@ -1,10 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import * as Lucide from "lucide-react";
 import { Printer, Trash2 } from "lucide-react";
-import { CUE_GROUPS, CUE_WORDS, findCueWord } from "@/lib/cueCards";
+import { CUE_GROUPS, CUE_WORDS, findCueWord, type CueGroupKey } from "@/lib/cueCards";
 
-type Card = { id: number; label: string; src: string | null; colour: string; category: string; num: string };
+type Card = { id: number; label: string; src: string | null; icon: string | null; colour: string; category: string; num: string };
+
+type IconCmp = React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+const LUCIDE = Lucide as unknown as Record<string, IconCmp>;
 
 const NEUTRAL = "#7A7468";
 
@@ -24,7 +28,8 @@ export default function CueCardMaker() {
       return {
         id: id++,
         label: hit ? hit.word : p,
-        src: hit ? hit.src : null,
+        src: hit?.src ?? null,
+        icon: hit?.icon ?? null,
         colour: g ? g.colour : NEUTRAL,
         category: g ? g.label : "Cue card",
         num: hit ? String(index).padStart(3, "0") : "",
@@ -84,12 +89,21 @@ export default function CueCardMaker() {
         </button>
       </form>
 
-      <p className="text-xs text-clay mt-3 mb-1 font-semibold">Words with a symbol in this test</p>
-      <div className="flex flex-wrap gap-1.5">
-        {CUE_WORDS.map((w) => (
-          <button key={w.word} type="button" onClick={() => addMany(w.word)} className="rounded-full border border-line bg-white px-3 py-1 text-sm">
-            {w.word}
-          </button>
+      <p className="text-xs text-clay mt-3 mb-1 font-semibold">{CUE_WORDS.length} words with a picture in this test. Click one to add its card.</p>
+      <div className="space-y-2">
+        {(Object.keys(CUE_GROUPS) as CueGroupKey[]).map((g) => (
+          <details key={g} className="rounded-lg border border-line bg-white px-3 py-2">
+            <summary className="cursor-pointer text-sm font-semibold" style={{ color: CUE_GROUPS[g].colour }}>
+              {CUE_GROUPS[g].label} ({CUE_WORDS.filter((w) => w.group === g).length})
+            </summary>
+            <div className="flex flex-wrap gap-1.5 mt-2">
+              {CUE_WORDS.filter((w) => w.group === g).map((w) => (
+                <button key={w.word} type="button" onClick={() => addMany(w.word)} className="rounded-full border border-line bg-white px-3 py-1 text-sm">
+                  {w.word}
+                </button>
+              ))}
+            </div>
+          </details>
         ))}
       </div>
 
@@ -129,6 +143,13 @@ export default function CueCardMaker() {
                   <div className="cue-circle">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={c.src} alt="" />
+                  </div>
+                ) : c.icon ? (
+                  <div className="cue-circle">
+                    {(() => {
+                      const Cmp = LUCIDE[c.icon] ?? Lucide.Circle;
+                      return <Cmp size={140} color={c.colour} strokeWidth={1.8} />;
+                    })()}
                   </div>
                 ) : (
                   <p className="cue-nosym text-sm text-clay text-center mb-2">No symbol for this word yet. The card will print the word only.</p>

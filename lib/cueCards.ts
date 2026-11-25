@@ -1,22 +1,27 @@
-// Sample word list for the cue card maker (admin test only). Each word points to one of our own drawn symbols.
-// Food and drink reuse the board symbols; the rest live in /public/cue-symbols.
-export type CueGroupKey = "food" | "health" | "feelings" | "comfort" | "chat" | "activities";
-export type CueWord = { word: string; src: string; group: CueGroupKey; also?: string[] };
+// Word list for the cue card maker (admin test only).
+// Each word has a picture: one of our own drawn symbols (src), or one of the line icons the site already uses (icon).
+import { ICON_WORDS } from "./cueWords";
+
+export type CueGroupKey = "food" | "wash" | "health" | "comfort" | "feelings" | "chat" | "activities" | "out";
+export type CueWord = { word: string; group: CueGroupKey; src?: string; icon?: string; also?: string[] };
 
 // Same group names and colours as the BSL cards.
 export const CUE_GROUPS: Record<CueGroupKey, { label: string; colour: string }> = {
   food: { label: "Food and drink", colour: "#B5714A" },
-  health: { label: "Health and pain", colour: "#B94545" },
-  feelings: { label: "Feelings", colour: "#6B5A9B" },
-  comfort: { label: "Comfort and moving about", colour: "#2F7A7A" },
-  chat: { label: "Chat", colour: "#3E6E96" },
-  activities: { label: "Activities", colour: "#8E6BC4" },
+  wash: { label: "Washing and personal care", colour: "#3E6E96" },
+  health: { label: "Health and pain", colour: "#B5453D" },
+  comfort: { label: "Comfort and moving about", colour: "#2F7A7C" },
+  feelings: { label: "Feelings", colour: "#6A5A9A" },
+  chat: { label: "Everyday chat", colour: "#4F7A45" },
+  activities: { label: "Activities and family", colour: "#A0507A" },
+  out: { label: "Out and about", colour: "#8A6D1F" },
 };
 
 const B = "/boards/icons/";
 const C = "/cue-symbols/";
 
-export const CUE_WORDS: CueWord[] = [
+// Hand-drawn symbols first: they win over a line icon when both could fit.
+const DRAWN: CueWord[] = [
   { word: "Tea", group: "food", src: B + "tea.svg", also: ["cup of tea", "brew"] },
   { word: "Coffee", group: "food", src: B + "coffee.svg" },
   { word: "Water", group: "food", src: B + "water.svg", also: ["drink of water"] },
@@ -30,9 +35,9 @@ export const CUE_WORDS: CueWord[] = [
   { word: "Cereal", group: "food", src: B + "cereal.svg" },
   { word: "Fruit", group: "food", src: B + "fruit.svg" },
   { word: "Sugar", group: "food", src: B + "sugar.svg" },
-  { word: "Toilet", group: "comfort", src: C + "toilet.svg", also: ["loo", "bathroom"] },
+  { word: "Toilet", group: "wash", src: C + "toilet.svg", also: ["loo", "bathroom"] },
+  { word: "Shower", group: "wash", src: C + "shower.svg", also: ["wash"] },
   { word: "Bed", group: "comfort", src: C + "bed.svg", also: ["sleep", "rest"] },
-  { word: "Shower", group: "comfort", src: C + "shower.svg", also: ["wash"] },
   { word: "Chair", group: "comfort", src: C + "chair.svg", also: ["sit", "sit down"] },
   { word: "Happy", group: "feelings", src: C + "happy.svg", also: ["smile", "good"] },
   { word: "Sad", group: "feelings", src: C + "sad.svg", also: ["upset", "unhappy"] },
@@ -42,11 +47,16 @@ export const CUE_WORDS: CueWord[] = [
   { word: "Music", group: "activities", src: C + "music.svg", also: ["song", "singing", "sing"] },
 ];
 
+export const CUE_WORDS: CueWord[] = [
+  ...DRAWN,
+  ...ICON_WORDS.map(([word, icon, group, also]) => ({ word, icon, group, also })),
+];
+
 function clean(s: string): string {
   return s.toLowerCase().replace(/[^a-z\s]/g, " ").replace(/\s+/g, " ").trim();
 }
 
-// Finds the symbol for what staff typed: an exact word or alias first, then a whole word inside a longer phrase.
+// Finds the card for what staff typed: an exact word or alias first, then a whole word inside a longer phrase.
 export function findCueWord(typed: string): CueWord | null {
   const t = clean(typed);
   if (!t) return null;
