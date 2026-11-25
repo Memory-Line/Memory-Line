@@ -11,7 +11,7 @@ export default function BslHome({
   groups,
   favourites,
   favouriteIds,
-  canBuild = false,
+  canBuild = true,
 }: {
   groups: React.ReactNode;
   favourites: BslItem[];
