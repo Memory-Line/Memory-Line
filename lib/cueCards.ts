@@ -4,6 +4,7 @@ import { ICON_WORDS } from "./cueWords";
 import { TABLER_WORDS } from "./cueWordsTabler";
 import { EMOJI_WORDS } from "./cueWordsEmoji";
 import { PHOSPHOR_WORDS } from "./cueWordsPhosphor";
+import { OWN_WORDS } from "./cueOwn";
 
 export type CueGroupKey = "food" | "wash" | "health" | "comfort" | "feelings" | "chat" | "activities" | "out";
 export type CueWord = { word: string; group: CueGroupKey; src?: string; icon?: string; tabler?: string; phosphor?: string; emoji?: string; also?: string[] };
@@ -79,6 +80,8 @@ const DRAWN: CueWord[] = [
 ];
 
 export const CUE_WORDS: CueWord[] = [
+  // Our own glossy pictures come first, so they win over every borrowed picture below.
+  ...OWN_WORDS.map(([word, file, group, also]) => ({ word, src: "/cue-symbols/o/" + file + ".svg", group, also })),
   ...DRAWN,
   ...ICON_WORDS.map(([word, icon, group, also]) => ({ word, icon, group, also })),
   ...TABLER_WORDS.map(([word, tabler, group, also]) => ({ word, tabler, group, also })),
