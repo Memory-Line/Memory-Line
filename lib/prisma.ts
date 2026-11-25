@@ -13,6 +13,8 @@ const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 // page loads (not just big uploads) feel slow. Uploads are separately
 // throttled elsewhere (2 at a time), so this isn't relying on this cap
 // alone to prevent another overload.
+// November 2026: the pooled cap went from 3 to 10 per copy after the database allowance was raised to 20 and the
+// logs showed "connection pool timed out" errors (limit 3) on the home page, /dashboard and /play.
 function datasourceUrl(): string | undefined {
   const url = process.env.DATABASE_URL;
   if (!url || !/^postgres(ql)?:\/\//.test(url) || /[?&]connection_limit=/.test(url)) return undefined;
@@ -24,7 +26,7 @@ function datasourceUrl(): string | undefined {
   const pooledUrl = process.env.DB_FORCE_DIRECT ? null : url.replace(/@db\.prisma\.io(?=[:/])/, "@pooled.db.prisma.io");
   const pooled = !!pooledUrl && pooledUrl !== url;
   const base = pooled ? pooledUrl! : url;
-  const extra = pooled ? "pgbouncer=true&connection_limit=3&pool_timeout=30" : "connection_limit=1&pool_timeout=30";
+  const extra = pooled ? "pgbouncer=true&connection_limit=10&pool_timeout=30" : "connection_limit=1&pool_timeout=30";
   return `${base}${base.includes("?") ? "&" : "?"}${extra}`;
 }
 
