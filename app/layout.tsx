@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 const SITE_TITLE = "Activity Central – Ready-made activities for care homes";
 const SITE_DESCRIPTION =
   "Ready-made activities for care homes: puzzles, quizzes, sing-alongs, reminiscence newsletters and talking boards for residents, including dementia-friendly activities. Print them or play online. Try the free samples with no sign-up.";
-const SHARE_IMAGE = "/activity-central-icon.png";
+const SHARE_IMAGE = `${SITE_URL}/activity-central-icon.png`;
 
 // openGraph and twitter are what Facebook, LinkedIn and similar sites show when the link is shared.
 export const metadata: Metadata = {
