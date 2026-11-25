@@ -105,9 +105,28 @@ function clean(s: string): string {
 export function findCueWord(typed: string): CueWord | null {
   const t = clean(typed);
   if (!t) return null;
+  const hit = findExact(t);
+  if (hit) return hit;
+  // Plural or "-ing" forms: "apples" finds apple, "biscuits" finds biscuit, "berries" finds berry.
+  const singles: string[] = [];
+  if (t.endsWith("ies")) singles.push(t.slice(0, -3) + "y");
+  if (t.endsWith("es")) singles.push(t.slice(0, -2));
+  if (t.endsWith("s")) singles.push(t.slice(0, -1));
+  for (const s of singles) {
+    const h = findExact(s);
+    if (h) return h;
+  }
+  return findInPhrase(t);
+}
+
+function findExact(t: string): CueWord | null {
   for (const w of CUE_WORDS) {
     if (clean(w.word) === t || (w.also ?? []).some((a) => clean(a) === t)) return w;
   }
+  return null;
+}
+
+function findInPhrase(t: string): CueWord | null {
   const padded = " " + t + " ";
   for (const w of CUE_WORDS) {
     const names = [w.word, ...(w.also ?? [])].map(clean);
